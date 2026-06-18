@@ -39,7 +39,7 @@ const products = [
     price: 'SOLD OUT',
     status: 'SOLD OUT',
     image:
-      '/skym-shop-assets/images/items/009a5cdcca1badfeec38fad4838bbb11.jpg',
+      '/skym-shop-assets/images/products/009a5cdcca1badfeec38fad4838bbb11.jpg',
   },
   {
     name: '〖VELVET ARTS〗フォルテ 2.1g（キックオンザフェスタ）',
@@ -47,7 +47,7 @@ const products = [
     price: 'SOLD OUT',
     status: 'SOLD OUT',
     image:
-      '/skym-shop-assets/images/items/0f3609149d944d478f4f2004dcf8842a.jpg',
+      '/skym-shop-assets/images/products/0f3609149d944d478f4f2004dcf8842a.jpg',
   },
   {
     name: '〖VELVET ARTS〗フォルテ 2.1g（シルバー）',
@@ -55,7 +55,7 @@ const products = [
     price: '¥500',
     status: 'NEW',
     image:
-      '/skym-shop-assets/images/items/161b25ac6ba3c56743cad57b38ad7ee5.jpg',
+      '/skym-shop-assets/images/products/161b25ac6ba3c56743cad57b38ad7ee5.jpg',
   },
   {
     name: '1089工房 さかさにょろ Slim 35FS',
@@ -63,7 +63,7 @@ const products = [
     price: '¥1,980',
     status: 'LIMITED',
     image:
-      '/skym-shop-assets/images/items/02d6f2ac86e6516284eb5680692eabff.jpg',
+      '/skym-shop-assets/images/products/02d6f2ac86e6516284eb5680692eabff.jpg',
   },
   {
     name: '〖ValkeIN〗HI BURST 1.6g(UVフラッシュ)',
@@ -71,7 +71,7 @@ const products = [
     price: '¥400',
     status: 'RESTOCK',
     image:
-      '/skym-shop-assets/images/items/01ffb9bb455cb67ba79e0f8049e3c6e0.jpg',
+      '/skym-shop-assets/images/products/01ffb9bb455cb67ba79e0f8049e3c6e0.jpg',
   },
   {
     name: '〖RODIO CRAFT〗ドリフトスピン',
@@ -79,7 +79,7 @@ const products = [
     price: '¥500',
     status: 'NEW',
     image:
-      '/skym-shop-assets/images/items/033805811c6e8f5bae5e02633d66741f.jpg',
+      '/skym-shop-assets/images/products/033805811c6e8f5bae5e02633d66741f.jpg',
   },
 ]
 

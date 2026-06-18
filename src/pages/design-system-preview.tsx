@@ -91,7 +91,7 @@ const products = [
     badge: 'NEW',
     badgeClassName: 'bg-product-new text-product-new-foreground',
     image:
-      '/skym-shop-assets/images/items/009a5cdcca1badfeec38fad4838bbb11.jpg',
+      '/skym-shop-assets/images/products/009a5cdcca1badfeec38fad4838bbb11.jpg',
   },
   {
     name: '1089工房 さかさにょろ Slim 35FS',
@@ -100,7 +100,7 @@ const products = [
     badge: 'LIMITED',
     badgeClassName: 'bg-primary text-primary-foreground',
     image:
-      '/skym-shop-assets/images/items/02d6f2ac86e6516284eb5680692eabff.jpg',
+      '/skym-shop-assets/images/products/02d6f2ac86e6516284eb5680692eabff.jpg',
   },
   {
     name: 'SKYM original hook set',
@@ -109,7 +109,7 @@ const products = [
     badge: 'SALE',
     badgeClassName: 'bg-product-sale text-product-sale-foreground',
     image:
-      '/skym-shop-assets/images/items/04ac9a0e6908849f3cf8a5d496c1f898.jpg',
+      '/skym-shop-assets/images/products/04ac9a0e6908849f3cf8a5d496c1f898.jpg',
   },
 ]
 
