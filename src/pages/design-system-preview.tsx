@@ -125,7 +125,7 @@ export function DesignSystemPreview() {
         <div className="mx-auto flex max-w-7xl flex-col gap-3 px-gutter py-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex min-w-0 items-center gap-3">
             <p className="shrink-0 font-heading text-base font-semibold">
-              SKYM TACKLE
+              SKYMSHOP
             </p>
             <Separator className="hidden h-5 sm:block" orientation="vertical" />
             <p className="truncate text-sm font-medium text-muted-foreground">
@@ -151,7 +151,7 @@ export function DesignSystemPreview() {
         <div className="mx-auto grid w-full max-w-7xl gap-cluster px-gutter py-section text-white lg:grid-cols-[minmax(0,1fr)_360px] lg:items-end">
           <div className="max-w-3xl">
             <Badge className="mb-4 bg-white/15 text-white ring-1 ring-white/20">
-              SKYM TACKLE
+              SKYM SHOP
             </Badge>
             <h1 className="font-heading text-4xl leading-tight font-semibold sm:text-5xl lg:text-6xl">
               Design System Preview
@@ -395,11 +395,7 @@ function ProductCard({ product }: { product: Product }) {
   return (
     <Card className="gap-0 py-0">
       <div className="relative aspect-[4/5] overflow-hidden bg-muted">
-        <img
-          alt=""
-          className="size-full object-cover transition duration-300 group-hover/card:scale-[1.03]"
-          src={product.image}
-        />
+        <img alt="" className="size-full object-cover" src={product.image} />
         <div className="absolute top-3 left-3">
           <Badge className={product.badgeClassName}>{product.badge}</Badge>
         </div>

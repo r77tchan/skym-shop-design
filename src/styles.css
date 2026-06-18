@@ -1,5 +1,4 @@
 @import 'tailwindcss';
-@import 'tw-animate-css';
 @import 'shadcn/tailwind.css';
 @import '@fontsource-variable/noto-sans-jp/wght.css';
 
@@ -15,6 +14,10 @@
   --color-brand: var(--brand);
   --color-brand-foreground: var(--brand-foreground);
   --color-brand-muted: var(--brand-muted);
+  --color-footer: var(--footer);
+  --color-footer-foreground: var(--footer-foreground);
+  --color-footer-muted: var(--footer-muted);
+  --color-footer-border: var(--footer-border);
   --color-product-new: var(--product-new);
   --color-product-new-foreground: var(--product-new-foreground);
   --color-product-sale: var(--product-sale);
@@ -103,6 +106,10 @@
   --brand: var(--primary);
   --brand-foreground: var(--primary-foreground);
   --brand-muted: oklch(0.94 0.03 205);
+  --footer: oklch(0.14 0.025 245);
+  --footer-foreground: oklch(0.98 0.004 230);
+  --footer-muted: oklch(0.82 0.018 230);
+  --footer-border: oklch(1 0 0 / 12%);
   --product-new: oklch(0.62 0.14 197);
   --product-new-foreground: oklch(0.985 0 0);
   --product-sale: oklch(0.64 0.19 31);
@@ -147,6 +154,10 @@
   --brand: var(--primary);
   --brand-foreground: var(--primary-foreground);
   --brand-muted: oklch(0.25 0.02 215);
+  --footer: oklch(0.11 0.022 245);
+  --footer-foreground: oklch(0.98 0.004 230);
+  --footer-muted: oklch(0.78 0.018 230);
+  --footer-border: oklch(1 0 0 / 12%);
   --product-new: oklch(0.72 0.13 197);
   --product-new-foreground: oklch(0.145 0 0);
   --product-sale: oklch(0.72 0.18 31);
@@ -175,5 +186,98 @@
   }
   html {
     @apply font-sans;
+  }
+}
+
+.site-header {
+  --site-header-bg: transparent;
+  --site-header-border: transparent;
+  --site-header-foreground: var(--foreground);
+  --site-header-control-bg: transparent;
+  --site-header-control-border: transparent;
+  --site-header-control-foreground: var(--site-header-foreground);
+  --site-header-control-hover-bg: var(--accent);
+  --site-header-control-hover-foreground: var(--accent-foreground);
+  --site-header-control-active-bg: var(--accent);
+  --site-header-control-active-foreground: var(--accent-foreground);
+
+  background-color: var(--site-header-bg);
+  border-bottom: 1px solid var(--site-header-border);
+  color: var(--site-header-foreground);
+}
+
+.site-header--top {
+  --site-header-foreground: oklch(1 0 0);
+  --site-header-control-bg: oklch(0 0 0 / 10%);
+  --site-header-control-border: oklch(1 0 0 / 24%);
+  --site-header-control-foreground: oklch(1 0 0);
+  --site-header-control-hover-bg: oklch(0 0 0 / 18%);
+  --site-header-control-hover-foreground: oklch(1 0 0);
+  --site-header-control-active-bg: oklch(0 0 0 / 24%);
+  --site-header-control-active-foreground: oklch(1 0 0);
+}
+
+.site-header--pinned {
+  --site-header-bg: color-mix(in oklch, var(--background) 88%, transparent);
+  --site-header-border: color-mix(in oklch, var(--border) 70%, transparent);
+  --site-header-foreground: var(--foreground);
+  --site-header-control-bg: color-mix(
+    in oklch,
+    var(--background) 85%,
+    transparent
+  );
+  --site-header-control-border: color-mix(
+    in oklch,
+    var(--border) 70%,
+    transparent
+  );
+
+  box-shadow: 0 1px 2px oklch(0 0 0 / 8%);
+}
+
+.header-control-group {
+  background-color: var(--site-header-control-bg);
+  border-color: var(--site-header-control-border);
+  color: var(--site-header-control-foreground);
+}
+
+.header-control-button {
+  background-color: var(--site-header-control-bg);
+  border-color: var(--site-header-control-border);
+  color: var(--site-header-control-foreground);
+}
+
+.header-control-group .header-control-button {
+  background-color: transparent;
+  border-color: transparent;
+}
+
+.header-control-button:hover,
+.header-control-button:focus-visible {
+  background-color: var(--site-header-control-hover-bg);
+  color: var(--site-header-control-hover-foreground);
+}
+
+.header-control-button[aria-pressed='true'],
+.header-control-button--active {
+  background-color: var(--site-header-control-active-bg);
+  color: var(--site-header-control-active-foreground);
+}
+
+.header-control-button[aria-pressed='true']:hover,
+.header-control-button--active:hover {
+  background-color: var(--site-header-control-active-bg);
+  color: var(--site-header-control-active-foreground);
+}
+
+@supports ((-webkit-backdrop-filter: blur(0)) or (backdrop-filter: blur(0))) {
+  .site-header--pinned {
+    --site-header-bg: color-mix(in oklch, var(--background) 78%, transparent);
+  }
+
+  .header-control-group,
+  .header-control-button {
+    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
   }
 }
