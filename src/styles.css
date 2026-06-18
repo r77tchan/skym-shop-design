@@ -241,6 +241,20 @@
   color: var(--site-header-control-foreground);
 }
 
+.site-header-logo {
+  border-radius: var(--radius-md);
+  color: var(--site-header-foreground);
+  margin-inline-start: -0.625rem;
+  padding: 0.5rem 0.625rem;
+}
+
+.site-header-logo:hover,
+.site-header-logo:focus-visible {
+  background-color: var(--site-header-control-hover-bg);
+  color: var(--site-header-control-hover-foreground);
+  outline: none;
+}
+
 .header-control-button {
   background-color: var(--site-header-control-bg);
   border-color: var(--site-header-control-border);

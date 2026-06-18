@@ -110,7 +110,7 @@ export function HomePage() {
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-gutter py-3">
           <Link
             className={cn(
-              'shrink-0 font-heading text-base font-semibold tracking-normal',
+              'site-header-logo shrink-0 font-heading text-base font-semibold tracking-normal',
               isHeaderPinned
                 ? 'drop-shadow-none'
                 : 'drop-shadow-[0_1px_10px_rgba(0,0,0,0.45)]',
