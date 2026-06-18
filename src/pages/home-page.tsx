@@ -1,36 +1,12 @@
-import { ArrowRightIcon, ShoppingCartIcon } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { ArrowRightIcon } from 'lucide-react'
 import { Link } from 'react-router'
 
-import { ThemeToggle } from '@/components/theme-toggle'
+import { SiteFooter } from '@/components/site-footer'
+import { SiteHeader } from '@/components/site-header'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { assetUrl } from '@/lib/asset-url'
-import { cn } from '@/lib/utils'
-
-const newsItems = [
-  {
-    date: '2026.06.01',
-    label: '入荷',
-    title: 'ValkeINスプーン 入荷しました',
-    body: '人気のValkeINスプーンが各カラー再入荷しました。',
-  },
-  {
-    date: '2026.05.28',
-    label: '入荷',
-    title: 'ロデオクラフト ドリフトスピン 入荷しました',
-    body: '高実績のドリフトスピンが入荷。エリアの定番スプーンです。',
-  },
-  {
-    date: '2026.05.25',
-    label: 'SALE',
-    title: 'サマーセール開催中',
-    body: '対象のルアーが最大50%OFF。この機会にぜひ。',
-  },
-]
-
-const shopDescription =
-  '株式会社SKYM が運営するフィッシングタックル オンラインストア。トラウトを中心に、フィールドを愛するアングラーへ確かな道具をお届けします。'
+import { newsItems, shopDescription } from '@/lib/shop-content'
 
 const products = [
   {
@@ -84,61 +60,9 @@ const products = [
 ]
 
 export function HomePage() {
-  const [isHeaderPinned, setIsHeaderPinned] = useState(false)
-
-  useEffect(() => {
-    const updateHeaderState = () => {
-      setIsHeaderPinned(window.scrollY > 24)
-    }
-
-    updateHeaderState()
-    window.addEventListener('scroll', updateHeaderState, { passive: true })
-
-    return () => {
-      window.removeEventListener('scroll', updateHeaderState)
-    }
-  }, [])
-
   return (
     <main className="min-h-svh bg-background text-foreground">
-      <header
-        className={cn(
-          'site-header fixed inset-x-0 top-0 z-50',
-          isHeaderPinned ? 'site-header--pinned' : 'site-header--top',
-        )}
-      >
-        <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-gutter py-3">
-          <Link
-            className={cn(
-              'site-header-logo shrink-0 font-heading text-base font-semibold tracking-normal',
-              isHeaderPinned
-                ? 'drop-shadow-none'
-                : 'drop-shadow-[0_1px_10px_rgba(0,0,0,0.45)]',
-            )}
-            to="/"
-          >
-            SKYMSHOP
-          </Link>
-
-          <div className="flex items-center gap-2">
-            <ThemeToggle
-              activeButtonClassName="header-control-button--active"
-              buttonClassName="header-control-button"
-              className="header-control-group"
-            />
-            <Button
-              aria-label="カート"
-              className="header-control-button size-[38px]"
-              size="icon-sm"
-              title="カート"
-              variant="ghost"
-            >
-              <ShoppingCartIcon aria-hidden="true" className="size-3.5" />
-              <span className="sr-only">カート</span>
-            </Button>
-          </div>
-        </div>
-      </header>
+      <SiteHeader transparentOnTop />
 
       <section className="relative isolate flex min-h-[620px] items-end overflow-hidden lg:min-h-[88svh]">
         <img
@@ -208,19 +132,19 @@ export function HomePage() {
               className="shrink-0 border-primary/25 bg-primary/10 px-3.5 text-primary hover:bg-primary hover:text-primary-foreground"
               variant="outline"
             >
-              <a href="#news">
+              <Link to="/news">
                 全てのお知らせ
                 <ArrowRightIcon data-icon="inline-end" />
-              </a>
+              </Link>
             </Button>
           </div>
 
           <div className="grid gap-3">
-            {newsItems.map((item) => (
-              <a
+            {newsItems.slice(0, 3).map((item) => (
+              <Link
                 className="grid gap-2 rounded-lg border bg-background p-4 hover:bg-accent sm:grid-cols-[auto_auto_minmax(0,1fr)] sm:items-center"
-                href="#all-items"
                 key={item.title}
+                to="/news"
               >
                 <span className="text-xs font-medium text-muted-foreground">
                   {item.date}
@@ -231,30 +155,13 @@ export function HomePage() {
                 <span className="min-w-0 text-sm font-medium">
                   {item.title}
                 </span>
-              </a>
+              </Link>
             ))}
           </div>
         </div>
       </section>
 
-      <footer className="border-t border-footer-border bg-footer text-footer-foreground">
-        <div className="mx-auto grid max-w-7xl gap-section px-gutter py-section md:grid-cols-[minmax(0,1fr)_repeat(2,minmax(140px,180px))]">
-          <div>
-            <p className="font-heading text-lg font-semibold">SKYMSHOP</p>
-            <p className="mt-3 max-w-md text-sm leading-6 text-footer-muted">
-              {shopDescription}
-            </p>
-          </div>
-          <FooterColumn
-            items={['お問い合わせ', '特定商取引法', 'プライバシーポリシー']}
-            title="GUIDE"
-          />
-          <FooterColumn items={['Instagram', 'X', 'LINE']} title="SNS" />
-          <p className="text-xs text-footer-muted md:col-span-3 md:justify-self-end">
-            Copyright © SKYM, Inc. All Rights Reserved.
-          </p>
-        </div>
-      </footer>
+      <SiteFooter />
     </main>
   )
 }
@@ -308,25 +215,5 @@ function ProductRailCard({ product }: { product: Product }) {
         </div>
       </div>
     </a>
-  )
-}
-
-function FooterColumn({ items, title }: { items: string[]; title: string }) {
-  return (
-    <div>
-      <p className="text-sm font-semibold text-footer-foreground">{title}</p>
-      <ul className="mt-3 grid gap-2">
-        {items.map((item) => (
-          <li key={item}>
-            <a
-              className="text-sm text-footer-muted hover:text-footer-foreground"
-              href="#"
-            >
-              {item}
-            </a>
-          </li>
-        ))}
-      </ul>
-    </div>
   )
 }

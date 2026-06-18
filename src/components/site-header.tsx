@@ -1,0 +1,77 @@
+import { ShoppingCartIcon } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { Link } from 'react-router'
+
+import { ThemeToggle } from '@/components/theme-toggle'
+import { Button } from '@/components/ui/button'
+import { cn } from '@/lib/utils'
+
+type SiteHeaderProps = {
+  transparentOnTop?: boolean
+}
+
+export function SiteHeader({ transparentOnTop = false }: SiteHeaderProps) {
+  const [isPastTop, setIsPastTop] = useState(() =>
+    transparentOnTop && typeof window !== 'undefined'
+      ? window.scrollY > 24
+      : false,
+  )
+  const isHeaderPinned = !transparentOnTop || isPastTop
+
+  useEffect(() => {
+    if (!transparentOnTop) {
+      return
+    }
+
+    const updateHeaderState = () => {
+      setIsPastTop(window.scrollY > 24)
+    }
+
+    window.addEventListener('scroll', updateHeaderState, { passive: true })
+
+    return () => {
+      window.removeEventListener('scroll', updateHeaderState)
+    }
+  }, [transparentOnTop])
+
+  return (
+    <header
+      className={cn(
+        'site-header fixed inset-x-0 top-0 z-50',
+        isHeaderPinned ? 'site-header--pinned' : 'site-header--top',
+      )}
+    >
+      <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-gutter py-3">
+        <Link
+          className={cn(
+            'site-header-logo shrink-0 font-heading text-base font-semibold tracking-normal',
+            isHeaderPinned
+              ? 'drop-shadow-none'
+              : 'drop-shadow-[0_1px_10px_rgba(0,0,0,0.45)]',
+          )}
+          to="/"
+        >
+          SKYMSHOP
+        </Link>
+
+        <div className="flex items-center gap-2">
+          <ThemeToggle
+            activeButtonClassName="header-control-button--active"
+            buttonClassName="header-control-button"
+            className="header-control-group"
+          />
+          <Button
+            aria-label="カート"
+            className="header-control-button size-[38px]"
+            size="icon-sm"
+            title="カート"
+            variant="ghost"
+          >
+            <ShoppingCartIcon aria-hidden="true" className="size-3.5" />
+            <span className="sr-only">カート</span>
+          </Button>
+        </div>
+      </div>
+    </header>
+  )
+}
