@@ -6,7 +6,7 @@ import { SiteHeader } from '@/components/site-header'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { assetUrl } from '@/lib/asset-url'
-import { newsItems, shopDescription } from '@/lib/shop-content'
+import { getNewsItemPath, newsItems, shopDescription } from '@/lib/shop-content'
 
 const products = [
   {
@@ -98,7 +98,7 @@ export function HomePage() {
             </div>
             <Button
               asChild
-              className="shrink-0 border-primary/25 bg-primary/10 px-3.5 text-primary hover:bg-primary hover:text-primary-foreground"
+              className="h-11 shrink-0 border-primary/25 bg-primary/10 px-4 text-primary hover:bg-primary hover:text-primary-foreground"
               variant="outline"
             >
               <a href="#all-items">
@@ -129,7 +129,7 @@ export function HomePage() {
             </div>
             <Button
               asChild
-              className="shrink-0 border-primary/25 bg-primary/10 px-3.5 text-primary hover:bg-primary hover:text-primary-foreground"
+              className="h-11 shrink-0 border-primary/25 bg-primary/10 px-4 text-primary hover:bg-primary hover:text-primary-foreground"
               variant="outline"
             >
               <Link to="/news">
@@ -144,7 +144,7 @@ export function HomePage() {
               <Link
                 className="grid gap-2 rounded-lg border bg-background p-4 hover:bg-accent sm:grid-cols-[auto_auto_minmax(0,1fr)] sm:items-center"
                 key={item.title}
-                to="/news"
+                to={getNewsItemPath(item)}
               >
                 <span className="text-xs font-medium text-muted-foreground">
                   {item.date}

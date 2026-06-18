@@ -4,8 +4,7 @@ import { Link } from 'react-router'
 import { SiteFooter } from '@/components/site-footer'
 import { SiteHeader } from '@/components/site-header'
 import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import { newsItems } from '@/lib/shop-content'
+import { getNewsItemPath, newsItems } from '@/lib/shop-content'
 
 export function NewsPage() {
   return (
@@ -45,9 +44,11 @@ export function NewsPage() {
       <section>
         <div className="mx-auto grid max-w-7xl gap-4 px-gutter py-8 sm:py-10">
           {newsItems.map((item) => (
-            <article
-              className="grid gap-3 rounded-lg border bg-card p-5 hover:border-primary/35 hover:bg-accent/45 sm:grid-cols-[9rem_minmax(0,1fr)_auto] sm:items-start sm:gap-5"
+            <Link
+              aria-label={`${item.title}の詳細へ`}
+              className="grid gap-3 rounded-lg border bg-card p-5 hover:border-primary/35 hover:bg-accent/45 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none sm:grid-cols-[9rem_minmax(0,1fr)_2rem] sm:items-center sm:gap-5"
               key={item.title}
+              to={getNewsItemPath(item)}
             >
               <div className="flex items-center gap-3 sm:grid sm:gap-3">
                 <time
@@ -65,21 +66,13 @@ export function NewsPage() {
                 <h2 className="text-base leading-6 font-semibold">
                   {item.title}
                 </h2>
-                <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                  {item.body}
-                </p>
               </div>
 
-              <Button
-                aria-label={`${item.title}の詳細へ`}
-                className="w-fit px-3"
-                size="sm"
-                variant="ghost"
-              >
-                詳細
-                <ArrowRightIcon data-icon="inline-end" />
-              </Button>
-            </article>
+              <ArrowRightIcon
+                aria-hidden="true"
+                className="size-4 text-muted-foreground sm:justify-self-end"
+              />
+            </Link>
           ))}
         </div>
       </section>
