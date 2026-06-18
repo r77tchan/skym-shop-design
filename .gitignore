@@ -12,6 +12,9 @@ dist
 dist-ssr
 *.local
 
+# Downloaded product images
+public/skym-shop-assets/images/items/
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
