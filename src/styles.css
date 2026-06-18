@@ -1,13 +1,17 @@
 @import 'tailwindcss';
 @import 'tw-animate-css';
 @import 'shadcn/tailwind.css';
-@import '@fontsource-variable/geist';
+@import '@fontsource-variable/noto-sans-jp/wght.css';
 
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
   --font-heading: var(--font-sans);
-  --font-sans: 'Geist Variable', sans-serif;
+  --font-sans: 'Noto Sans JP Variable', sans-serif;
+  --spacing-gutter: var(--gutter);
+  --spacing-section: var(--section);
+  --spacing-cluster: var(--cluster);
+  --spacing-card-pad: var(--card-pad);
   --color-brand: var(--brand);
   --color-brand-foreground: var(--brand-foreground);
   --color-brand-muted: var(--brand-muted);
@@ -58,42 +62,47 @@
 :root {
   color-scheme: light;
 
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
+  --gutter: 1rem;
+  --section: 3.5rem;
+  --cluster: 1.5rem;
+  --card-pad: 1rem;
+
+  --background: oklch(0.99 0.005 230);
+  --foreground: oklch(0.18 0.025 245);
   --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
+  --card-foreground: oklch(0.18 0.025 245);
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
+  --popover-foreground: oklch(0.18 0.025 245);
+  --primary: oklch(0.34 0.085 240);
   --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
+  --secondary: oklch(0.95 0.015 220);
+  --secondary-foreground: oklch(0.25 0.035 245);
+  --muted: oklch(0.95 0.012 220);
+  --muted-foreground: oklch(0.49 0.028 245);
+  --accent: oklch(0.93 0.045 195);
+  --accent-foreground: oklch(0.23 0.045 245);
   --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
+  --border: oklch(0.89 0.012 230);
+  --input: oklch(0.89 0.012 230);
+  --ring: oklch(0.62 0.13 210);
+  --chart-1: oklch(0.62 0.14 197);
+  --chart-2: oklch(0.57 0.11 245);
+  --chart-3: oklch(0.69 0.15 145);
+  --chart-4: oklch(0.76 0.16 75);
+  --chart-5: oklch(0.64 0.19 31);
   --radius: 0.625rem;
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
+  --sidebar: oklch(0.985 0.006 230);
+  --sidebar-foreground: oklch(0.18 0.025 245);
+  --sidebar-primary: var(--primary);
   --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  --sidebar-accent: var(--accent);
+  --sidebar-accent-foreground: var(--accent-foreground);
+  --sidebar-border: var(--border);
+  --sidebar-ring: var(--ring);
 
   --brand: var(--primary);
   --brand-foreground: var(--primary-foreground);
-  --brand-muted: oklch(0.97 0.01 215);
+  --brand-muted: oklch(0.94 0.03 205);
   --product-new: oklch(0.62 0.14 197);
   --product-new-foreground: oklch(0.985 0 0);
   --product-sale: oklch(0.64 0.19 31);
@@ -103,37 +112,37 @@
 .dark {
   color-scheme: dark;
 
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
+  --background: oklch(0.145 0.025 245);
+  --foreground: oklch(0.97 0.006 230);
+  --card: oklch(0.19 0.026 245);
+  --card-foreground: oklch(0.97 0.006 230);
+  --popover: oklch(0.19 0.026 245);
+  --popover-foreground: oklch(0.97 0.006 230);
+  --primary: oklch(0.74 0.13 205);
+  --primary-foreground: oklch(0.15 0.025 245);
+  --secondary: oklch(0.25 0.028 245);
+  --secondary-foreground: oklch(0.97 0.006 230);
+  --muted: oklch(0.24 0.026 245);
+  --muted-foreground: oklch(0.75 0.026 230);
+  --accent: oklch(0.28 0.055 200);
+  --accent-foreground: oklch(0.96 0.012 210);
   --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+  --border: oklch(1 0 0 / 12%);
+  --input: oklch(1 0 0 / 16%);
+  --ring: oklch(0.68 0.12 205);
+  --chart-1: oklch(0.74 0.13 205);
+  --chart-2: oklch(0.7 0.11 245);
+  --chart-3: oklch(0.72 0.15 145);
+  --chart-4: oklch(0.78 0.16 75);
+  --chart-5: oklch(0.72 0.18 31);
+  --sidebar: oklch(0.18 0.026 245);
+  --sidebar-foreground: oklch(0.97 0.006 230);
+  --sidebar-primary: var(--primary);
+  --sidebar-primary-foreground: var(--primary-foreground);
+  --sidebar-accent: var(--accent);
+  --sidebar-accent-foreground: var(--accent-foreground);
+  --sidebar-border: var(--border);
+  --sidebar-ring: var(--ring);
 
   --brand: var(--primary);
   --brand-foreground: var(--primary-foreground);
@@ -142,6 +151,15 @@
   --product-new-foreground: oklch(0.145 0 0);
   --product-sale: oklch(0.72 0.18 31);
   --product-sale-foreground: oklch(0.145 0 0);
+}
+
+@media (min-width: 640px) {
+  :root {
+    --gutter: 1.5rem;
+    --section: 4.5rem;
+    --cluster: 2rem;
+    --card-pad: 1.25rem;
+  }
 }
 
 @layer base {
