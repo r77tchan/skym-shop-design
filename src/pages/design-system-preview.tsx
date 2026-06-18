@@ -20,6 +20,7 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
+import { assetUrl } from '@/lib/asset-url'
 
 const colorTokens = [
   {
@@ -145,7 +146,7 @@ export function DesignSystemPreview() {
         <img
           alt=""
           className="absolute inset-0 -z-20 size-full object-cover"
-          src="/skym-shop-assets/images/site/skym-hero.jpg"
+          src={assetUrl('/skym-shop-assets/images/site/skym-hero.jpg')}
         />
         <div className="absolute inset-0 -z-10 bg-[linear-gradient(90deg,oklch(0.14_0.025_245_/_.86),oklch(0.14_0.025_245_/_.34)_56%,transparent)]" />
         <div className="mx-auto grid w-full max-w-7xl gap-cluster px-gutter py-section text-white lg:grid-cols-[minmax(0,1fr)_360px] lg:items-end">
@@ -395,7 +396,11 @@ function ProductCard({ product }: { product: Product }) {
   return (
     <Card className="gap-0 py-0">
       <div className="relative aspect-[4/5] overflow-hidden bg-muted">
-        <img alt="" className="size-full object-cover" src={product.image} />
+        <img
+          alt=""
+          className="size-full object-cover"
+          src={assetUrl(product.image)}
+        />
         <div className="absolute top-3 left-3">
           <Badge className={product.badgeClassName}>{product.badge}</Badge>
         </div>

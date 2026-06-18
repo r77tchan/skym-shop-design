@@ -5,6 +5,7 @@ import { Link } from 'react-router'
 import { ThemeToggle } from '@/components/theme-toggle'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { assetUrl } from '@/lib/asset-url'
 import { cn } from '@/lib/utils'
 
 const newsItems = [
@@ -143,7 +144,7 @@ export function HomePage() {
         <img
           alt=""
           className="absolute inset-0 -z-20 size-full object-cover"
-          src="/skym-shop-assets/images/site/skym-hero.jpg"
+          src={assetUrl('/skym-shop-assets/images/site/skym-hero.jpg')}
         />
         <div className="absolute inset-0 -z-10 bg-[linear-gradient(180deg,oklch(0.14_0.025_245_/_.02)_0%,oklch(0.14_0.025_245_/_.06)_42%,oklch(0.14_0.025_245_/_.3)_100%)] sm:bg-[linear-gradient(90deg,oklch(0.14_0.025_245_/_.16),oklch(0.14_0.025_245_/_.08)_45%,transparent_72%)]" />
         <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_22%_78%,oklch(0.11_0.02_245_/_.68)_0%,oklch(0.11_0.02_245_/_.42)_30%,oklch(0.11_0.02_245_/_.16)_52%,transparent_70%)] sm:bg-[radial-gradient(ellipse_at_23%_82%,oklch(0.11_0.02_245_/_.62)_0%,oklch(0.11_0.02_245_/_.36)_30%,oklch(0.11_0.02_245_/_.1)_52%,transparent_68%)]" />
@@ -272,7 +273,7 @@ function ProductRailCard({ product }: { product: Product }) {
         <img
           alt=""
           className="size-full object-cover group-hover:opacity-92"
-          src={product.image}
+          src={assetUrl(product.image)}
         />
       </div>
       <div className="grid min-w-0 gap-2">
