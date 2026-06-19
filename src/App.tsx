@@ -6,6 +6,7 @@ import { DesignSystemPreview } from '@/pages/design-system-preview'
 import { HomePage } from '@/pages/home-page'
 import { NewsDetailPage } from '@/pages/news-detail-page'
 import { NewsPage } from '@/pages/news-page'
+import { PrivacyPolicyPage } from '@/pages/privacy-policy-page'
 import { ProductDetailPage } from '@/pages/product-detail-page'
 import { ProductListPage } from '@/pages/product-list-page'
 
@@ -19,6 +20,7 @@ export function App() {
       <Route element={<NewsDetailPage />} path="/news/:newsId" />
       <Route element={<ContactPage />} path="/contact" />
       <Route element={<CommercialTransactionsPage />} path="/law" />
+      <Route element={<PrivacyPolicyPage />} path="/privacy" />
       <Route element={<DesignSystemPreview />} path="/design-system" />
       <Route element={<Navigate replace to="/" />} path="*" />
     </Routes>

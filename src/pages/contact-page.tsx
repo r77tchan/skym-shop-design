@@ -8,6 +8,7 @@ import {
 } from 'lucide-react'
 import { Link } from 'react-router'
 
+import { RelatedGuideLinks } from '@/components/related-guide-links'
 import { SiteFooter } from '@/components/site-footer'
 import { SiteHeader } from '@/components/site-header'
 import { Button } from '@/components/ui/button'
@@ -164,6 +165,12 @@ export function ContactPage() {
                 </div>
               </div>
             ))}
+
+            <RelatedGuideLinks
+              current="contact"
+              text="返品、個人情報、販売事業者に関する確認はこちらからできます。"
+              title="ご確認ください"
+            />
 
             <div className="rounded-lg border bg-card p-4">
               <div className="flex items-start gap-3">

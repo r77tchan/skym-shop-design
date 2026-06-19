@@ -38,7 +38,7 @@ export function SiteFooter() {
           items={[
             { label: 'お問い合わせ', to: '/contact' },
             { label: '特定商取引法に基づく表記', to: '/law' },
-            { href: '#', label: 'プライバシーポリシー' },
+            { label: 'プライバシーポリシー', to: '/privacy' },
           ]}
           title="GUIDE"
         />

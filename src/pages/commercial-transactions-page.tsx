@@ -1,9 +1,9 @@
-import { ArrowRightIcon, FileTextIcon, MailIcon } from 'lucide-react'
+import { FileTextIcon } from 'lucide-react'
 import { Link } from 'react-router'
 
+import { RelatedGuideLinks } from '@/components/related-guide-links'
 import { SiteFooter } from '@/components/site-footer'
 import { SiteHeader } from '@/components/site-header'
-import { Button } from '@/components/ui/button'
 
 const commercialTransactionItems = [
   {
@@ -125,25 +125,10 @@ export function CommercialTransactionsPage() {
               </div>
             </div>
 
-            <div className="rounded-lg border bg-card p-4">
-              <div className="flex items-start gap-3">
-                <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-accent text-accent-foreground">
-                  <MailIcon aria-hidden="true" className="size-5" />
-                </div>
-                <div>
-                  <p className="text-sm font-semibold">お問い合わせ</p>
-                  <p className="mt-1 text-xs leading-5 text-muted-foreground">
-                    注文内容の確認や返品に関する相談はこちらからお送りください。
-                  </p>
-                  <Button asChild className="mt-3 h-9 px-3" size="sm">
-                    <Link to="/contact">
-                      お問い合わせ
-                      <ArrowRightIcon data-icon="inline-end" />
-                    </Link>
-                  </Button>
-                </div>
-              </div>
-            </div>
+            <RelatedGuideLinks
+              current="law"
+              text="お問い合わせと個人情報の取扱いもあわせて確認できます。"
+            />
           </aside>
         </div>
       </section>
