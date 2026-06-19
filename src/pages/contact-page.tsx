@@ -20,6 +20,10 @@ const fieldClassName =
 const selectFieldClassName =
   'h-11 w-full cursor-pointer appearance-none rounded-lg border bg-background py-0 pr-12 pl-3 text-sm outline-none focus:border-ring focus:ring-3 focus:ring-ring/30'
 
+const fieldGroupClassName = 'grid items-start gap-4 sm:grid-cols-2'
+
+const fieldWrapperClassName = 'grid content-start gap-2'
+
 const contactTopics = [
   {
     icon: MessageSquareTextIcon,
@@ -76,8 +80,8 @@ export function ContactPage() {
       <section>
         <div className="mx-auto grid max-w-7xl gap-6 px-gutter py-8 lg:grid-cols-[minmax(0,1fr)_360px] lg:py-10">
           <form className="grid gap-5 rounded-lg border bg-card p-5">
-            <div className="grid gap-4 sm:grid-cols-2">
-              <label className="grid gap-2">
+            <div className={fieldGroupClassName}>
+              <label className={fieldWrapperClassName}>
                 <span className="text-sm font-semibold">お名前</span>
                 <input
                   autoComplete="name"
@@ -87,7 +91,7 @@ export function ContactPage() {
                 />
               </label>
 
-              <label className="grid gap-2">
+              <label className={fieldWrapperClassName}>
                 <span className="text-sm font-semibold">メールアドレス</span>
                 <input
                   autoComplete="email"
@@ -98,8 +102,8 @@ export function ContactPage() {
               </label>
             </div>
 
-            <div className="grid gap-4 sm:grid-cols-2">
-              <label className="grid gap-2">
+            <div className={fieldGroupClassName}>
+              <label className={fieldWrapperClassName}>
                 <span className="text-sm font-semibold">お問い合わせ種別</span>
                 <div className="relative">
                   <select className={selectFieldClassName}>
@@ -115,7 +119,7 @@ export function ContactPage() {
                 </div>
               </label>
 
-              <label className="grid gap-2">
+              <label className={fieldWrapperClassName}>
                 <span className="text-sm font-semibold">注文番号</span>
                 <input
                   className={fieldClassName}
@@ -125,7 +129,7 @@ export function ContactPage() {
               </label>
             </div>
 
-            <label className="grid gap-2">
+            <label className={fieldWrapperClassName}>
               <span className="text-sm font-semibold">件名</span>
               <input
                 className={fieldClassName}
@@ -134,7 +138,7 @@ export function ContactPage() {
               />
             </label>
 
-            <label className="grid gap-2">
+            <label className={fieldWrapperClassName}>
               <span className="text-sm font-semibold">お問い合わせ内容</span>
               <textarea
                 className="min-h-40 resize-y rounded-lg border bg-background px-3 py-3 text-sm leading-6 outline-none placeholder:text-muted-foreground focus:border-ring focus:ring-3 focus:ring-ring/30"
