@@ -7,3 +7,5 @@ export const interactiveCardTitleClassName = 'group-hover:text-primary'
 
 export const interactiveCardMutedTextClassName =
   'group-hover:text-foreground/75'
+
+export const sectionActionButtonClassName = 'h-11 shrink-0 px-4'

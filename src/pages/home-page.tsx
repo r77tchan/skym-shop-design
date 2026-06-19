@@ -22,6 +22,7 @@ import {
   interactiveCardLinkClassName,
   interactiveCardMutedTextClassName,
   interactiveCardTitleClassName,
+  sectionActionButtonClassName,
 } from '@/lib/ui-styles'
 import { cn } from '@/lib/utils'
 
@@ -62,11 +63,7 @@ export function HomePage() {
                 商品一覧
               </h2>
             </div>
-            <Button
-              asChild
-              className="h-11 shrink-0 border-primary/25 bg-primary/10 px-4 text-primary hover:bg-primary hover:text-primary-foreground"
-              variant="outline"
-            >
+            <Button asChild className={sectionActionButtonClassName}>
               <Link to="/items">
                 全ての商品
                 <ArrowRightIcon data-icon="inline-end" />
@@ -93,11 +90,7 @@ export function HomePage() {
                 お知らせ
               </h2>
             </div>
-            <Button
-              asChild
-              className="h-11 shrink-0 border-primary/25 bg-primary/10 px-4 text-primary hover:bg-primary hover:text-primary-foreground"
-              variant="outline"
-            >
+            <Button asChild className={sectionActionButtonClassName}>
               <Link to="/news">
                 全てのお知らせ
                 <ArrowRightIcon data-icon="inline-end" />
