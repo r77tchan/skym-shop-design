@@ -7,6 +7,7 @@ import {
   ShoppingCartIcon,
   TruckIcon,
 } from 'lucide-react'
+import { useState } from 'react'
 import { Link, Navigate, useParams } from 'react-router'
 
 import { ProductStatusBadge } from '@/components/product-status-badge'
@@ -101,7 +102,7 @@ export function ProductDetailPage() {
 
         <section>
           <div className="mx-auto grid max-w-7xl gap-8 px-gutter py-8 lg:grid-cols-[minmax(0,1fr)_430px] lg:gap-10 lg:py-10">
-            <ProductMedia product={product} />
+            <ProductMedia key={product.id} product={product} />
             <ProductPurchasePanel product={product} soldOut={soldOut} />
           </div>
         </section>
@@ -228,28 +229,44 @@ export function ProductDetailPage() {
 }
 
 function ProductMedia({ product }: { product: Product }) {
+  const [selectedImageIndex, setSelectedImageIndex] = useState(0)
+  const selectedImage = product.images[selectedImageIndex] ?? product.image
+
   return (
     <div className="grid gap-3">
       <div className="overflow-hidden rounded-lg border bg-muted">
         <img
           alt=""
           className="aspect-square size-full object-cover lg:aspect-[5/6]"
-          src={assetUrl(product.image)}
+          src={assetUrl(selectedImage)}
         />
       </div>
-      <div className="flex gap-2">
-        <button
-          aria-label="商品画像 1"
-          aria-pressed="true"
-          className="size-16 overflow-hidden rounded-lg border-2 border-primary bg-muted p-0"
-          type="button"
-        >
-          <img
-            alt=""
-            className="size-full object-cover"
-            src={assetUrl(product.image)}
-          />
-        </button>
+      <div className="flex flex-wrap gap-2">
+        {product.images.map((image, index) => {
+          const selected = index === selectedImageIndex
+
+          return (
+            <button
+              aria-label={`商品画像 ${index + 1} を表示`}
+              aria-pressed={selected}
+              className={cn(
+                'size-16 overflow-hidden rounded-lg border-2 bg-muted p-0 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none',
+                selected
+                  ? 'border-primary'
+                  : 'border-border hover:border-primary/55',
+              )}
+              key={image}
+              onClick={() => setSelectedImageIndex(index)}
+              type="button"
+            >
+              <img
+                alt=""
+                className="size-full object-cover"
+                src={assetUrl(image)}
+              />
+            </button>
+          )
+        })}
       </div>
     </div>
   )

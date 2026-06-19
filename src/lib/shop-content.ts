@@ -110,6 +110,10 @@ export const products = [
     ],
     image:
       '/skym-shop-assets/images/products/009a5cdcca1badfeec38fad4838bbb11.jpg',
+    images: [
+      '/skym-shop-assets/images/products/009a5cdcca1badfeec38fad4838bbb11.jpg',
+      '/skym-shop-assets/images/products/584d25c2afd6e229b5a9e852761016f6.jpg',
+    ],
   },
   {
     id: 'velvet-arts-forte-kick-on-the-festa',
@@ -132,6 +136,10 @@ export const products = [
     ],
     image:
       '/skym-shop-assets/images/products/0f3609149d944d478f4f2004dcf8842a.jpg',
+    images: [
+      '/skym-shop-assets/images/products/0f3609149d944d478f4f2004dcf8842a.jpg',
+      '/skym-shop-assets/images/products/0646814113c352a6df4a9a1ac9416ddc.jpg',
+    ],
   },
   {
     id: 'velvet-arts-forte-silver',
@@ -157,6 +165,10 @@ export const products = [
     ],
     image:
       '/skym-shop-assets/images/products/161b25ac6ba3c56743cad57b38ad7ee5.jpg',
+    images: [
+      '/skym-shop-assets/images/products/161b25ac6ba3c56743cad57b38ad7ee5.jpg',
+      '/skym-shop-assets/images/products/69a73427456d41f2899fbc9a0d38e7af.jpg',
+    ],
   },
   {
     id: '1089-sakasa-nyoro-slim',
@@ -179,6 +191,10 @@ export const products = [
     ],
     image:
       '/skym-shop-assets/images/products/02d6f2ac86e6516284eb5680692eabff.jpg',
+    images: [
+      '/skym-shop-assets/images/products/02d6f2ac86e6516284eb5680692eabff.jpg',
+      '/skym-shop-assets/images/products/0243fb9faa79d8386e9bd9842da44ad7.jpg',
+    ],
   },
   {
     id: 'valkein-hi-burst-uv-flash',
@@ -201,6 +217,10 @@ export const products = [
     ],
     image:
       '/skym-shop-assets/images/products/01ffb9bb455cb67ba79e0f8049e3c6e0.jpg',
+    images: [
+      '/skym-shop-assets/images/products/01ffb9bb455cb67ba79e0f8049e3c6e0.jpg',
+      '/skym-shop-assets/images/products/745f95f1b68fd2a62f47f427db72f9b1.jpg',
+    ],
   },
   {
     id: 'rodio-craft-drift-spin',
@@ -223,6 +243,10 @@ export const products = [
     ],
     image:
       '/skym-shop-assets/images/products/033805811c6e8f5bae5e02633d66741f.jpg',
+    images: [
+      '/skym-shop-assets/images/products/033805811c6e8f5bae5e02633d66741f.jpg',
+      '/skym-shop-assets/images/products/19e666848cfebbab385005605c629181.jpg',
+    ],
   },
   {
     id: 'skym-original-hook-set',
@@ -245,6 +269,10 @@ export const products = [
     ],
     image:
       '/skym-shop-assets/images/products/04ac9a0e6908849f3cf8a5d496c1f898.jpg',
+    images: [
+      '/skym-shop-assets/images/products/04ac9a0e6908849f3cf8a5d496c1f898.jpg',
+      '/skym-shop-assets/images/products/46592f4f09cc5d786f4f5939510113e8.jpg',
+    ],
   },
 ] as const
 
