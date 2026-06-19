@@ -1,9 +1,10 @@
 import { Link } from 'react-router'
 
+import { assetUrl } from '@/lib/asset-url'
 import { companyName, companyUrl, shopDescription } from '@/lib/shop-content'
 
 const footerLinkClassName =
-  '-mx-1.5 inline-flex min-h-8 items-center rounded-md px-1.5 text-sm text-footer-muted hover:bg-white/8 hover:text-footer-foreground focus-visible:ring-2 focus-visible:ring-footer-foreground/60 focus-visible:ring-offset-2 focus-visible:ring-offset-footer focus-visible:outline-none'
+  'group -mx-1.5 inline-flex min-h-8 items-center gap-2 rounded-md px-1.5 text-sm text-footer-muted hover:bg-white/8 hover:text-footer-foreground focus-visible:ring-2 focus-visible:ring-footer-foreground/60 focus-visible:ring-offset-2 focus-visible:ring-offset-footer focus-visible:outline-none'
 
 export function SiteFooter() {
   return (
@@ -18,9 +19,15 @@ export function SiteFooter() {
           </Link>
           <p className="mt-3 max-w-md text-sm leading-6 text-footer-muted">
             <a
-              className="rounded-sm underline decoration-footer-muted/70 decoration-1 underline-offset-4 hover:text-footer-foreground hover:decoration-footer-foreground focus-visible:ring-2 focus-visible:ring-footer-foreground/60 focus-visible:ring-offset-2 focus-visible:ring-offset-footer focus-visible:outline-none"
+              className="relative inline-flex items-center gap-1.5 rounded-sm after:pointer-events-none after:absolute after:right-0 after:bottom-[2px] after:left-0 after:border-b after:border-footer-muted/70 after:content-[''] hover:text-footer-foreground hover:after:border-footer-foreground focus-visible:ring-2 focus-visible:ring-footer-foreground/60 focus-visible:ring-offset-2 focus-visible:ring-offset-footer focus-visible:outline-none"
               href={companyUrl}
             >
+              <img
+                alt=""
+                aria-hidden="true"
+                className="size-4 shrink-0"
+                src={assetUrl('/favicon.ico')}
+              />
               {companyName}
             </a>
             {shopDescription.slice(companyName.length)}
@@ -46,9 +53,14 @@ export function SiteFooter() {
           items={[
             {
               href: 'https://www.instagram.com/_skymshop/',
+              icon: '/skym-shop-assets/images/social/instagram.svg',
               label: 'Instagram',
             },
-            { href: 'https://x.com/skymshop', label: 'X' },
+            {
+              href: 'https://x.com/skymshop',
+              icon: '/skym-shop-assets/images/social/x.svg',
+              label: 'X',
+            },
           ]}
           title="SNS"
         />
@@ -62,6 +74,7 @@ export function SiteFooter() {
 
 type FooterLinkItem = {
   href?: string
+  icon?: string
   label: string
   to?: string
 }
@@ -90,6 +103,14 @@ function FooterColumn({
                 rel="noreferrer"
                 target="_blank"
               >
+                {item.icon ? (
+                  <img
+                    alt=""
+                    aria-hidden="true"
+                    className="size-4 opacity-80 invert transition-opacity group-hover:opacity-100"
+                    src={assetUrl(item.icon)}
+                  />
+                ) : null}
                 {item.label}
               </a>
             )}
