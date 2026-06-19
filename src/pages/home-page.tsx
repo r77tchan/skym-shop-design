@@ -6,58 +6,14 @@ import { SiteHeader } from '@/components/site-header'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { assetUrl } from '@/lib/asset-url'
-import { getNewsItemPath, newsItems, shopDescription } from '@/lib/shop-content'
-
-const products = [
-  {
-    name: '〖VELVET ARTS〗フォルテ 2.1g（二代目鱒王）',
-    brand: 'VELVET ARTS',
-    price: 'SOLD OUT',
-    status: 'SOLD OUT',
-    image:
-      '/skym-shop-assets/images/products/009a5cdcca1badfeec38fad4838bbb11.jpg',
-  },
-  {
-    name: '〖VELVET ARTS〗フォルテ 2.1g（キックオンザフェスタ）',
-    brand: 'VELVET ARTS',
-    price: 'SOLD OUT',
-    status: 'SOLD OUT',
-    image:
-      '/skym-shop-assets/images/products/0f3609149d944d478f4f2004dcf8842a.jpg',
-  },
-  {
-    name: '〖VELVET ARTS〗フォルテ 2.1g（シルバー）',
-    brand: 'VELVET ARTS',
-    price: '¥500',
-    status: 'NEW',
-    image:
-      '/skym-shop-assets/images/products/161b25ac6ba3c56743cad57b38ad7ee5.jpg',
-  },
-  {
-    name: '1089工房 さかさにょろ Slim 35FS',
-    brand: '1089工房',
-    price: '¥1,980',
-    status: 'LIMITED',
-    image:
-      '/skym-shop-assets/images/products/02d6f2ac86e6516284eb5680692eabff.jpg',
-  },
-  {
-    name: '〖ValkeIN〗HI BURST 1.6g(UVフラッシュ)',
-    brand: 'ValkeIN',
-    price: '¥400',
-    status: 'RESTOCK',
-    image:
-      '/skym-shop-assets/images/products/01ffb9bb455cb67ba79e0f8049e3c6e0.jpg',
-  },
-  {
-    name: '〖RODIO CRAFT〗ドリフトスピン',
-    brand: 'RODIO CRAFT',
-    price: '¥500',
-    status: 'NEW',
-    image:
-      '/skym-shop-assets/images/products/033805811c6e8f5bae5e02633d66741f.jpg',
-  },
-]
+import {
+  getNewsItemPath,
+  getProductPath,
+  newsItems,
+  products,
+  type Product,
+  shopDescription,
+} from '@/lib/shop-content'
 
 export function HomePage() {
   return (
@@ -101,16 +57,16 @@ export function HomePage() {
               className="h-11 shrink-0 border-primary/25 bg-primary/10 px-4 text-primary hover:bg-primary hover:text-primary-foreground"
               variant="outline"
             >
-              <a href="#all-items">
+              <Link to="/items">
                 全ての商品
                 <ArrowRightIcon data-icon="inline-end" />
-              </a>
+              </Link>
             </Button>
           </div>
 
           <div className="-mx-gutter [scrollbar-width:none] overflow-x-auto px-gutter pb-2 [&::-webkit-scrollbar]:hidden">
             <div className="flex w-max gap-4">
-              {products.map((product) => (
+              {products.slice(0, 6).map((product) => (
                 <ProductRailCard key={product.name} product={product} />
               ))}
             </div>
@@ -166,15 +122,13 @@ export function HomePage() {
   )
 }
 
-type Product = (typeof products)[number]
-
 function ProductRailCard({ product }: { product: Product }) {
   const soldOut = product.status === 'SOLD OUT'
 
   return (
-    <a
+    <Link
       className="group grid w-48 shrink-0 gap-3 rounded-lg border bg-card p-3 hover:border-primary/45 hover:bg-accent/55 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none sm:w-52"
-      href="#all-items"
+      to={getProductPath(product)}
     >
       <div className="relative aspect-[3/4] overflow-hidden rounded-md bg-muted">
         <img
@@ -214,6 +168,6 @@ function ProductRailCard({ product }: { product: Product }) {
           </Badge>
         </div>
       </div>
-    </a>
+    </Link>
   )
 }
