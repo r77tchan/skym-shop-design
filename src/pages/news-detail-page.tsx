@@ -1,8 +1,10 @@
+import { ArrowLeftIcon } from 'lucide-react'
 import { Link, Navigate, useParams } from 'react-router'
 
 import { SiteFooter } from '@/components/site-footer'
 import { SiteHeader } from '@/components/site-header'
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 import { newsItems } from '@/lib/shop-content'
 
 export function NewsDetailPage() {
@@ -45,9 +47,15 @@ export function NewsDetailPage() {
               <span className="text-foreground">詳細</span>
             </nav>
 
-            <div className="max-w-3xl">
-              <p className="text-xs font-semibold text-primary">NEWS</p>
-              <div className="mt-3 flex flex-wrap items-center gap-3">
+            <Button asChild className="w-fit px-3" size="sm" variant="ghost">
+              <Link to="/news">
+                <ArrowLeftIcon data-icon="inline-start" />
+                Back
+              </Link>
+            </Button>
+
+            <div className="max-w-4xl">
+              <div className="flex flex-wrap items-center gap-3">
                 <time
                   className="text-xs font-medium text-muted-foreground"
                   dateTime={item.date.replaceAll('.', '-')}
@@ -66,7 +74,7 @@ export function NewsDetailPage() {
         </section>
 
         <section>
-          <div className="mx-auto grid max-w-3xl gap-5 px-gutter py-10 sm:py-14">
+          <div className="mx-auto grid max-w-4xl gap-5 px-gutter py-10 sm:py-14">
             {item.content.map((paragraph) => (
               <p
                 className="text-sm leading-8 text-foreground/86 sm:text-base"
