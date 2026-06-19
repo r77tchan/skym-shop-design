@@ -73,12 +73,11 @@ export function getNewsItemPath(item: NewsItem) {
 }
 
 export const productCategories = [
-  'すべて',
+  '全て',
   'スプーン',
   'プラグ',
   'ロッド＆リール',
   'フック',
-  'SALE',
 ] as const
 
 export const productBrands = [
@@ -92,10 +91,10 @@ export const productBrands = [
 export const products = [
   {
     id: 'velvet-arts-forte-masuou',
-    name: '〖VELVET ARTS〗フォルテ 2.1g（二代目鱒王）',
+    name: 'フォルテ 2.1g（二代目鱒王）',
     brand: 'VELVET ARTS',
     category: 'スプーン',
-    price: 'SOLD OUT',
+    price: '¥500',
     status: 'SOLD OUT',
     summary:
       '強めの明滅で魚に気づかせやすい、放流直後からサーチまで使いやすい2.1gスプーン。',
@@ -109,16 +108,15 @@ export const products = [
       { label: '推奨ライン', value: 'ナイロン・フロロ 2〜4lb' },
       { label: 'レンジ', value: '表層〜中層' },
     ],
-    tags: ['定番', '2.1g'],
     image:
       '/skym-shop-assets/images/products/009a5cdcca1badfeec38fad4838bbb11.jpg',
   },
   {
     id: 'velvet-arts-forte-kick-on-the-festa',
-    name: '〖VELVET ARTS〗フォルテ 2.1g（キックオンザフェスタ）',
+    name: 'フォルテ 2.1g（キックオンザフェスタ）',
     brand: 'VELVET ARTS',
     category: 'スプーン',
-    price: 'SOLD OUT',
+    price: '¥500',
     status: 'SOLD OUT',
     summary:
       'イベント感のある強めカラー。魚の目線を集めたい朝夕や濁りのある状況に。',
@@ -132,13 +130,12 @@ export const products = [
       { label: '推奨ライン', value: 'ナイロン・フロロ 2〜4lb' },
       { label: 'レンジ', value: '表層〜中層' },
     ],
-    tags: ['限定色', '2.1g'],
     image:
       '/skym-shop-assets/images/products/0f3609149d944d478f4f2004dcf8842a.jpg',
   },
   {
     id: 'velvet-arts-forte-silver',
-    name: '〖VELVET ARTS〗フォルテ 2.1g（シルバー）',
+    name: 'フォルテ 2.1g（シルバー）',
     brand: 'VELVET ARTS',
     category: 'スプーン',
     price: '¥500',
@@ -158,17 +155,16 @@ export const products = [
       },
       { label: 'レンジ', value: '表層〜中層' },
     ],
-    tags: ['新着', '2.1g'],
     image:
       '/skym-shop-assets/images/products/161b25ac6ba3c56743cad57b38ad7ee5.jpg',
   },
   {
     id: '1089-sakasa-nyoro-slim',
-    name: '1089工房 さかさにょろ Slim 35FS',
+    name: 'さかさにょろ Slim 35FS',
     brand: '1089工房',
     category: 'プラグ',
     price: '¥1,980',
-    status: 'LIMITED',
+    status: 'NEW',
     summary:
       'ゆっくり巻いて誘えるニョロ系プラグ。スプーンで追い切らない魚への次の一手に。',
     description: [
@@ -181,17 +177,16 @@ export const products = [
       { label: '推奨ライン', value: 'ナイロン・フロロ 2〜4lb' },
       { label: 'レンジ', value: '表層〜中層' },
     ],
-    tags: ['ニョロ系', '35FS'],
     image:
       '/skym-shop-assets/images/products/02d6f2ac86e6516284eb5680692eabff.jpg',
   },
   {
     id: 'valkein-hi-burst-uv-flash',
-    name: '〖ValkeIN〗HI BURST 1.6g(UVフラッシュ)',
+    name: 'HI BURST 1.6g(UVフラッシュ)',
     brand: 'ValkeIN',
     category: 'スプーン',
     price: '¥400',
-    status: 'RESTOCK',
+    status: 'NEW',
     summary:
       '定番HI BURSTの1.6g。UVフラッシュで魚に気づかせつつ、テンポよくレンジを刻めます。',
     description: [
@@ -204,13 +199,12 @@ export const products = [
       { label: '推奨ライン', value: 'ナイロン・フロロ 2〜4lb' },
       { label: 'レンジ', value: '表層〜中層' },
     ],
-    tags: ['再入荷', '1.6g'],
     image:
       '/skym-shop-assets/images/products/01ffb9bb455cb67ba79e0f8049e3c6e0.jpg',
   },
   {
     id: 'rodio-craft-drift-spin',
-    name: '〖RODIO CRAFT〗ドリフトスピン',
+    name: 'ドリフトスピン',
     brand: 'RODIO CRAFT',
     category: 'プラグ',
     price: '¥500',
@@ -227,13 +221,12 @@ export const products = [
       { label: '推奨ライン', value: 'ナイロン・フロロ 2〜4lb' },
       { label: 'レンジ', value: '中層〜ボトム付近' },
     ],
-    tags: ['新着', 'サーチ'],
     image:
       '/skym-shop-assets/images/products/033805811c6e8f5bae5e02633d66741f.jpg',
   },
   {
     id: 'skym-original-hook-set',
-    name: 'SKYM オリジナル フックセット',
+    name: 'オリジナル フックセット',
     brand: 'SKYM',
     category: 'フック',
     price: '¥880',
@@ -250,7 +243,6 @@ export const products = [
       { label: '用途', value: 'スプーン / 小型プラグ' },
       { label: '状態', value: 'SALE対象' },
     ],
-    tags: ['消耗品', 'セット'],
     image:
       '/skym-shop-assets/images/products/04ac9a0e6908849f3cf8a5d496c1f898.jpg',
   },

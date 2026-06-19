@@ -5,6 +5,11 @@ import { SiteFooter } from '@/components/site-footer'
 import { SiteHeader } from '@/components/site-header'
 import { Badge } from '@/components/ui/badge'
 import { getNewsItemPath, newsItems } from '@/lib/shop-content'
+import {
+  interactiveCardLinkClassName,
+  interactiveCardTitleClassName,
+} from '@/lib/ui-styles'
+import { cn } from '@/lib/utils'
 
 export function NewsPage() {
   return (
@@ -46,7 +51,10 @@ export function NewsPage() {
           {newsItems.map((item) => (
             <Link
               aria-label={`${item.title}の詳細へ`}
-              className="grid gap-3 rounded-lg border bg-card p-5 hover:border-primary/35 hover:bg-accent/45 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none sm:grid-cols-[9rem_minmax(0,1fr)_2rem] sm:items-center sm:gap-5"
+              className={cn(
+                interactiveCardLinkClassName,
+                'grid gap-3 p-5 sm:grid-cols-[9rem_minmax(0,1fr)_2rem] sm:items-center sm:gap-5',
+              )}
               key={item.title}
               to={getNewsItemPath(item)}
             >
@@ -63,14 +71,19 @@ export function NewsPage() {
               </div>
 
               <div className="min-w-0">
-                <h2 className="text-base leading-6 font-semibold">
+                <h2
+                  className={cn(
+                    'text-base leading-6 font-semibold',
+                    interactiveCardTitleClassName,
+                  )}
+                >
                   {item.title}
                 </h2>
               </div>
 
               <ArrowRightIcon
                 aria-hidden="true"
-                className="size-4 text-muted-foreground sm:justify-self-end"
+                className="size-4 text-muted-foreground group-hover:text-primary sm:justify-self-end"
               />
             </Link>
           ))}

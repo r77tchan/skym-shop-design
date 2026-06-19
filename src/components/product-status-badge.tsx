@@ -2,23 +2,25 @@ import { Badge } from '@/components/ui/badge'
 import type { Product } from '@/lib/shop-content'
 
 export function ProductStatusBadge({ status }: { status: Product['status'] }) {
-  if (status === 'SOLD OUT') {
-    return <Badge variant="outline">SOLD</Badge>
+  switch (status) {
+    case 'SOLD OUT':
+      return (
+        <Badge className="bg-muted-foreground text-background">SOLD OUT</Badge>
+      )
+    case 'SALE':
+      return (
+        <Badge className="bg-product-sale text-product-sale-foreground">
+          SALE
+        </Badge>
+      )
+    case 'NEW':
+      return (
+        <Badge className="bg-product-new text-product-new-foreground">
+          NEW
+        </Badge>
+      )
   }
 
-  if (status === 'SALE') {
-    return (
-      <Badge className="bg-product-sale text-product-sale-foreground">
-        SALE
-      </Badge>
-    )
-  }
-
-  if (status === 'NEW') {
-    return (
-      <Badge className="bg-product-new text-product-new-foreground">NEW</Badge>
-    )
-  }
-
-  return <Badge variant="secondary">{status}</Badge>
+  const exhaustiveStatus: never = status
+  return exhaustiveStatus
 }

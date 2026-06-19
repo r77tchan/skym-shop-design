@@ -1,10 +1,9 @@
 import {
   ArrowLeftIcon,
-  HeartIcon,
+  ArrowRightIcon,
   PackageCheckIcon,
-  RotateCcwIcon,
   ShieldCheckIcon,
-  ShoppingBagIcon,
+  ShoppingCartIcon,
   TruckIcon,
 } from 'lucide-react'
 import { Link, Navigate, useParams } from 'react-router'
@@ -16,6 +15,11 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { assetUrl } from '@/lib/asset-url'
 import { getProductPath, products, type Product } from '@/lib/shop-content'
+import {
+  interactiveCardLinkClassName,
+  interactiveCardMutedTextClassName,
+  interactiveCardTitleClassName,
+} from '@/lib/ui-styles'
 import { cn } from '@/lib/utils'
 
 const deliveryOptions = [
@@ -104,11 +108,7 @@ export function ProductDetailPage() {
         <section className="border-y bg-muted/25">
           <div className="mx-auto grid max-w-7xl gap-6 px-gutter py-8 lg:grid-cols-[minmax(0,1fr)_360px] lg:py-10">
             <div className="grid content-start gap-5">
-              <SectionHeading
-                eyebrow="DETAIL"
-                title="商品説明"
-                text="フィールドでの使いどころと、ローテーションに入れる時の判断材料をまとめています。"
-              />
+              <SectionHeading eyebrow="DETAIL" title="商品説明" />
               <div className="grid gap-4">
                 {product.description.map((paragraph) => (
                   <p
@@ -199,15 +199,17 @@ export function ProductDetailPage() {
               <SectionHeading eyebrow="RELATED" title="関連商品" />
               <Button
                 asChild
-                className="shrink-0 px-3"
-                size="sm"
+                className="h-11 shrink-0 border-primary/25 bg-primary/10 px-4 text-primary hover:bg-primary hover:text-primary-foreground"
                 variant="outline"
               >
-                <Link to="/items">一覧を見る</Link>
+                <Link to="/items">
+                  全ての商品
+                  <ArrowRightIcon data-icon="inline-end" />
+                </Link>
               </Button>
             </div>
 
-            <div className="grid grid-cols-2 gap-x-3 gap-y-6 sm:grid-cols-3 lg:grid-cols-4">
+            <div className="grid grid-cols-2 gap-x-4 gap-y-7 sm:grid-cols-3 sm:gap-x-5 sm:gap-y-8 lg:grid-cols-4 xl:gap-x-6">
               {relatedProducts.map((relatedProduct) => (
                 <RelatedProductCard
                   key={relatedProduct.id}
@@ -264,10 +266,12 @@ function ProductPurchasePanel({
       <div className="flex flex-wrap items-center gap-2">
         <ProductStatusBadge status={product.status} />
         <Badge variant="outline">{product.category}</Badge>
-        <Badge variant="secondary">{product.brand}</Badge>
       </div>
 
-      <h1 className="mt-5 font-heading text-2xl leading-tight font-semibold sm:text-3xl">
+      <p className="mt-5 text-sm font-medium text-muted-foreground">
+        {product.brand}
+      </p>
+      <h1 className="mt-1 font-heading text-2xl leading-tight font-semibold sm:text-3xl">
         {product.name}
       </h1>
       <p className="mt-3 text-sm leading-6 text-muted-foreground">
@@ -275,12 +279,7 @@ function ProductPurchasePanel({
       </p>
 
       <div className="mt-6 border-y py-5">
-        <p
-          className={cn(
-            'text-3xl leading-none font-semibold',
-            soldOut ? 'text-muted-foreground' : 'text-foreground',
-          )}
-        >
+        <p className="text-3xl leading-none font-semibold text-foreground">
           {product.price}
         </p>
         <p className="mt-2 text-xs text-muted-foreground">
@@ -292,7 +291,7 @@ function ProductPurchasePanel({
         <label className="grid gap-2">
           <span className="text-sm font-semibold">数量</span>
           <select
-            className="h-11 rounded-lg border bg-background px-3 text-sm outline-none focus:border-ring focus:ring-3 focus:ring-ring/30 disabled:opacity-50"
+            className="h-11 cursor-pointer rounded-lg border bg-background px-3 text-sm outline-none focus:border-ring focus:ring-3 focus:ring-ring/30 disabled:cursor-not-allowed disabled:opacity-50"
             disabled={soldOut}
             defaultValue="1"
           >
@@ -301,38 +300,19 @@ function ProductPurchasePanel({
           </select>
         </label>
 
-        <div className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_3rem]">
-          <Button className="h-12 text-base" disabled={soldOut}>
-            <ShoppingBagIcon data-icon="inline-start" />
-            カートに入れる
-          </Button>
+        <div className="grid gap-2">
           <Button
-            aria-label="お気に入り"
-            className="h-12 sm:size-12"
-            title="お気に入り"
-            variant="outline"
+            className={cn(
+              'h-12 text-base',
+              soldOut &&
+                'disabled:pointer-events-auto disabled:cursor-not-allowed disabled:hover:bg-primary',
+            )}
+            disabled={soldOut}
           >
-            <HeartIcon aria-hidden="true" className="size-4" />
+            <ShoppingCartIcon data-icon="inline-start" />
+            {soldOut ? 'SOLD OUT' : 'カートに入れる'}
           </Button>
         </div>
-
-        {soldOut ? (
-          <Button className="h-11" variant="secondary">
-            <RotateCcwIcon data-icon="inline-start" />
-            再入荷のお知らせ
-          </Button>
-        ) : null}
-      </div>
-
-      <div className="mt-5 flex flex-wrap gap-2">
-        {product.tags.map((tag) => (
-          <span
-            className="rounded-md bg-muted px-2 py-1 text-xs font-medium text-muted-foreground"
-            key={tag}
-          >
-            {tag}
-          </span>
-        ))}
       </div>
     </div>
   )
@@ -364,40 +344,85 @@ function RelatedProductCard({ product }: { product: Product }) {
   const soldOut = product.status === 'SOLD OUT'
 
   return (
-    <Link
-      className="group -m-2 grid min-w-0 gap-3 rounded-lg p-2 hover:bg-accent/35 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none"
-      to={getProductPath(product)}
-    >
-      <div className="relative aspect-[3/4] overflow-hidden rounded-lg border bg-muted group-hover:border-primary/45">
-        <img
-          alt=""
-          className={cn(
-            'size-full object-cover',
-            soldOut ? 'opacity-64' : 'group-hover:opacity-92',
-          )}
-          src={assetUrl(product.image)}
-        />
-        <div className="absolute top-2 left-2">
-          <ProductStatusBadge status={product.status} />
-        </div>
-      </div>
-      <div className="min-w-0">
-        <p className="truncate text-xs font-medium text-muted-foreground">
-          {product.brand}
-        </p>
-        <p className="mt-1 [display:-webkit-box] min-h-10 overflow-hidden text-sm leading-5 font-semibold [-webkit-box-orient:vertical] [-webkit-line-clamp:2] group-hover:text-primary">
-          {product.name}
-        </p>
-        <p
-          className={cn(
-            'mt-2 text-sm font-semibold',
-            soldOut ? 'text-muted-foreground' : 'text-foreground',
-          )}
+    <article className="min-w-0">
+      <div className="relative min-w-0">
+        <Link
+          aria-label={`${product.name}の商品プレビュー`}
+          className={cn(interactiveCardLinkClassName, 'grid min-w-0 gap-3 p-2')}
+          to={getProductPath(product)}
         >
-          {product.price}
-        </p>
+          <div className="relative aspect-[3/4] overflow-hidden rounded-lg border bg-muted group-hover:border-primary/40">
+            <img
+              alt=""
+              className={cn('size-full object-cover', soldOut && 'opacity-64')}
+              src={assetUrl(product.image)}
+            />
+            <div className="absolute top-2 left-2 flex flex-wrap gap-1">
+              <ProductStatusBadge status={product.status} />
+            </div>
+            {soldOut ? (
+              <div className="absolute inset-x-0 bottom-0 bg-card/88 px-3 py-2 text-center text-xs font-semibold text-muted-foreground">
+                SOLD OUT
+              </div>
+            ) : null}
+          </div>
+
+          <div className="grid min-w-0 gap-2">
+            <div>
+              <div className="flex items-center justify-between gap-2">
+                <p
+                  className={cn(
+                    'truncate text-xs font-medium text-muted-foreground',
+                    interactiveCardMutedTextClassName,
+                  )}
+                >
+                  {product.brand}
+                </p>
+                <span className="shrink-0 rounded-md bg-muted px-1.5 py-0.5 text-[0.68rem] leading-4 font-medium text-muted-foreground">
+                  {product.category}
+                </span>
+              </div>
+              <p
+                className={cn(
+                  'mt-1 [display:-webkit-box] min-h-10 overflow-hidden text-sm leading-5 font-semibold [-webkit-box-orient:vertical] [-webkit-line-clamp:2]',
+                  interactiveCardTitleClassName,
+                )}
+              >
+                {product.name}
+              </p>
+            </div>
+
+            <div className="min-w-0 pr-10">
+              <p
+                className={cn(
+                  'text-base leading-none font-semibold',
+                  soldOut ? 'text-muted-foreground' : 'text-foreground',
+                )}
+              >
+                {product.price}
+              </p>
+            </div>
+          </div>
+        </Link>
+
+        <Button
+          aria-label="カートに追加"
+          className={cn(
+            'absolute right-2 bottom-2 size-8',
+            soldOut &&
+              'disabled:pointer-events-auto disabled:cursor-not-allowed disabled:hover:bg-secondary',
+            !soldOut &&
+              'bg-card/92 text-foreground shadow-sm backdrop-blur hover:border-primary/55 hover:bg-primary hover:text-primary-foreground',
+          )}
+          disabled={soldOut}
+          size="icon"
+          title="カートに追加"
+          variant={soldOut ? 'secondary' : 'outline'}
+        >
+          <ShoppingCartIcon aria-hidden="true" className="size-4" />
+        </Button>
       </div>
-    </Link>
+    </article>
   )
 }
 

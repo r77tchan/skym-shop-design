@@ -1,8 +1,7 @@
 import {
   ArrowRightIcon,
-  HeartIcon,
   SearchIcon,
-  ShoppingBagIcon,
+  ShoppingCartIcon,
   SlidersHorizontalIcon,
   StarIcon,
 } from 'lucide-react'
@@ -85,7 +84,7 @@ const categories = [
 
 const products = [
   {
-    name: 'Velvet Arts forte 2.1g',
+    name: 'forte 2.1g',
     category: 'Trout Spoon',
     price: '¥638',
     badge: 'NEW',
@@ -94,16 +93,16 @@ const products = [
       '/skym-shop-assets/images/products/009a5cdcca1badfeec38fad4838bbb11.jpg',
   },
   {
-    name: '1089工房 さかさにょろ Slim 35FS',
+    name: 'さかさにょろ Slim 35FS',
     category: 'Minnow',
     price: '¥1,980',
-    badge: 'LIMITED',
-    badgeClassName: 'bg-primary text-primary-foreground',
+    badge: 'SOLD OUT',
+    badgeClassName: 'bg-muted-foreground text-background',
     image:
       '/skym-shop-assets/images/products/02d6f2ac86e6516284eb5680692eabff.jpg',
   },
   {
-    name: 'SKYM original hook set',
+    name: 'original hook set',
     category: 'Hook',
     price: '¥880',
     badge: 'SALE',
@@ -319,10 +318,6 @@ export function DesignSystemPreview() {
               <Button variant="secondary">Secondary</Button>
               <Button variant="outline">Outline</Button>
               <Button variant="ghost">Ghost</Button>
-              <Button size="icon" variant="outline">
-                <HeartIcon aria-hidden="true" />
-                <span className="sr-only">Favorite</span>
-              </Button>
             </div>
             <div className="flex flex-wrap gap-2">
               <Badge>Default</Badge>
@@ -361,7 +356,7 @@ export function DesignSystemPreview() {
             <CardFooter className="border-white/15 bg-white/10">
               <Button className="w-full bg-white text-slate-950 hover:bg-white/90">
                 Add to cart
-                <ShoppingBagIcon data-icon="inline-end" />
+                <ShoppingCartIcon data-icon="inline-end" />
               </Button>
             </CardFooter>
           </Card>
@@ -404,14 +399,6 @@ function ProductCard({ product }: { product: Product }) {
         <div className="absolute top-3 left-3">
           <Badge className={product.badgeClassName}>{product.badge}</Badge>
         </div>
-        <Button
-          className="absolute top-3 right-3 bg-background/90 backdrop-blur"
-          size="icon-sm"
-          variant="outline"
-        >
-          <HeartIcon aria-hidden="true" />
-          <span className="sr-only">Favorite</span>
-        </Button>
       </div>
       <CardHeader>
         <CardDescription>{product.category}</CardDescription>
@@ -426,7 +413,7 @@ function ProductCard({ product }: { product: Product }) {
       <CardFooter>
         <Button className="w-full">
           Add to cart
-          <ShoppingBagIcon data-icon="inline-end" />
+          <ShoppingCartIcon data-icon="inline-end" />
         </Button>
       </CardFooter>
     </Card>

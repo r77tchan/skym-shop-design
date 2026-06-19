@@ -1,6 +1,7 @@
 import { ArrowRightIcon } from 'lucide-react'
 import { Link } from 'react-router'
 
+import { ProductStatusBadge } from '@/components/product-status-badge'
 import { SiteFooter } from '@/components/site-footer'
 import { SiteHeader } from '@/components/site-header'
 import { Badge } from '@/components/ui/badge'
@@ -14,6 +15,12 @@ import {
   type Product,
   shopDescription,
 } from '@/lib/shop-content'
+import {
+  interactiveCardLinkClassName,
+  interactiveCardMutedTextClassName,
+  interactiveCardTitleClassName,
+} from '@/lib/ui-styles'
+import { cn } from '@/lib/utils'
 
 export function HomePage() {
   return (
@@ -98,7 +105,10 @@ export function HomePage() {
           <div className="grid gap-3">
             {newsItems.slice(0, 3).map((item) => (
               <Link
-                className="grid gap-2 rounded-lg border bg-background p-4 hover:bg-accent sm:grid-cols-[auto_auto_minmax(0,1fr)] sm:items-center"
+                className={cn(
+                  interactiveCardLinkClassName,
+                  'grid gap-2 p-4 sm:grid-cols-[auto_auto_minmax(0,1fr)] sm:items-center',
+                )}
                 key={item.title}
                 to={getNewsItemPath(item)}
               >
@@ -108,7 +118,12 @@ export function HomePage() {
                 <Badge variant={item.label === 'SALE' ? 'default' : 'outline'}>
                   {item.label}
                 </Badge>
-                <span className="min-w-0 text-sm font-medium">
+                <span
+                  className={cn(
+                    'min-w-0 text-sm font-medium',
+                    interactiveCardTitleClassName,
+                  )}
+                >
                   {item.title}
                 </span>
               </Link>
@@ -127,46 +142,55 @@ function ProductRailCard({ product }: { product: Product }) {
 
   return (
     <Link
-      className="group grid w-48 shrink-0 gap-3 rounded-lg border bg-card p-3 hover:border-primary/45 hover:bg-accent/55 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none sm:w-52"
+      className={cn(
+        interactiveCardLinkClassName,
+        'grid w-48 shrink-0 gap-3 p-3 sm:w-52',
+      )}
       to={getProductPath(product)}
     >
       <div className="relative aspect-[3/4] overflow-hidden rounded-md bg-muted">
         <img
           alt=""
-          className="size-full object-cover group-hover:opacity-92"
+          className={cn('size-full object-cover', soldOut && 'opacity-64')}
           src={assetUrl(product.image)}
         />
+        <div className="absolute top-2 left-2 flex flex-wrap gap-1">
+          <ProductStatusBadge status={product.status} />
+        </div>
+        {soldOut ? (
+          <div className="absolute inset-x-0 bottom-0 bg-card/88 px-3 py-2 text-center text-xs font-semibold text-muted-foreground">
+            SOLD OUT
+          </div>
+        ) : null}
       </div>
       <div className="grid min-w-0 gap-2">
         <div className="min-w-0">
-          <p className="truncate text-xs font-medium text-muted-foreground group-hover:text-foreground/72">
+          <p
+            className={cn(
+              'truncate text-xs font-medium text-muted-foreground',
+              interactiveCardMutedTextClassName,
+            )}
+          >
             {product.brand}
           </p>
-          <p className="mt-0.5 [display:-webkit-box] overflow-hidden text-sm leading-5 font-medium [-webkit-box-orient:vertical] [-webkit-line-clamp:2] group-hover:text-primary">
+          <p
+            className={cn(
+              'mt-0.5 [display:-webkit-box] min-h-10 overflow-hidden text-sm leading-5 font-medium [-webkit-box-orient:vertical] [-webkit-line-clamp:2]',
+              interactiveCardTitleClassName,
+            )}
+          >
             {product.name}
           </p>
         </div>
-        <div className="flex items-center justify-between gap-2">
-          <p
-            className={
-              soldOut
-                ? 'text-sm font-semibold text-muted-foreground'
-                : 'text-sm font-semibold'
-            }
-          >
-            {product.price}
-          </p>
-          <Badge
-            className={
-              product.status === 'NEW'
-                ? 'bg-product-new text-product-new-foreground'
-                : undefined
-            }
-            variant={soldOut ? 'outline' : 'secondary'}
-          >
-            {soldOut ? 'SOLD' : product.status}
-          </Badge>
-        </div>
+        <p
+          className={
+            soldOut
+              ? 'text-sm font-semibold text-muted-foreground'
+              : 'text-sm font-semibold'
+          }
+        >
+          {product.price}
+        </p>
       </div>
     </Link>
   )
