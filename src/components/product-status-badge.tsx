@@ -2,6 +2,10 @@ import { Badge } from '@/components/ui/badge'
 import type { Product } from '@/lib/shop-content'
 
 export function ProductStatusBadge({ status }: { status: Product['status'] }) {
+  if (!status) {
+    return null
+  }
+
   switch (status) {
     case 'SOLD OUT':
       return (

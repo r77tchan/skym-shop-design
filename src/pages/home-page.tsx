@@ -154,9 +154,11 @@ function ProductRailCard({ product }: { product: Product }) {
           className={cn('size-full object-cover', soldOut && 'opacity-64')}
           src={assetUrl(product.image)}
         />
-        <div className="absolute top-2 left-2 flex flex-wrap gap-1">
-          <ProductStatusBadge status={product.status} />
-        </div>
+        {product.status ? (
+          <div className="absolute top-2 left-2 flex flex-wrap gap-1">
+            <ProductStatusBadge status={product.status} />
+          </div>
+        ) : null}
         {soldOut ? (
           <div className="absolute inset-x-0 bottom-0 bg-card/88 px-3 py-2 text-center text-xs font-semibold text-muted-foreground">
             SOLD OUT

@@ -88,59 +88,31 @@ export const productBrands = [
   'SKYM',
 ] as const
 
-export const products = [
-  {
-    id: 'velvet-arts-forte-masuou',
-    name: 'フォルテ 2.1g（二代目鱒王）',
-    brand: 'VELVET ARTS',
-    category: 'スプーン',
-    price: '¥500',
-    status: 'SOLD OUT',
-    summary:
-      '強めの明滅で魚に気づかせやすい、放流直後からサーチまで使いやすい2.1gスプーン。',
-    description: [
-      'フォルテ 2.1gは、管理釣り場でのテンポのよいサーチに向いたスプーンです。水をつかみやすいボディで、巻き速度を落としても姿勢が崩れにくく、手前まで丁寧に探れます。',
-      '二代目鱒王は視認性とアピール力のバランスが取りやすいカラーです。魚の反応を見ながら、強い色から食わせ寄りの色へ展開するローテーションの起点に使えます。',
-    ],
-    specs: [
-      { label: 'ウエイト', value: '2.1g' },
-      { label: 'タイプ', value: 'スプーン' },
-      { label: '推奨ライン', value: 'ナイロン・フロロ 2〜4lb' },
-      { label: 'レンジ', value: '表層〜中層' },
-    ],
-    image:
-      '/skym-shop-assets/images/products/009a5cdcca1badfeec38fad4838bbb11.jpg',
-    images: [
-      '/skym-shop-assets/images/products/009a5cdcca1badfeec38fad4838bbb11.jpg',
-      '/skym-shop-assets/images/products/584d25c2afd6e229b5a9e852761016f6.jpg',
-    ],
-  },
-  {
-    id: 'velvet-arts-forte-kick-on-the-festa',
-    name: 'フォルテ 2.1g（キックオンザフェスタ）',
-    brand: 'VELVET ARTS',
-    category: 'スプーン',
-    price: '¥500',
-    status: 'SOLD OUT',
-    summary:
-      'イベント感のある強めカラー。魚の目線を集めたい朝夕や濁りのある状況に。',
-    description: [
-      'フォルテ 2.1gの安定した泳ぎを活かしながら、カラーでしっかり存在感を出せるモデルです。放流直後や魚が散っている時間帯に、広い範囲を手早く探る使い方に向いています。',
-      'キックオンザフェスタは、明るい水色でも暗い水色でも見失いにくい配色です。反応が落ちたら、同じウエイトの落ち着いたカラーへつなげるとローテーションしやすくなります。',
-    ],
-    specs: [
-      { label: 'ウエイト', value: '2.1g' },
-      { label: 'タイプ', value: 'スプーン' },
-      { label: '推奨ライン', value: 'ナイロン・フロロ 2〜4lb' },
-      { label: 'レンジ', value: '表層〜中層' },
-    ],
-    image:
-      '/skym-shop-assets/images/products/0f3609149d944d478f4f2004dcf8842a.jpg',
-    images: [
-      '/skym-shop-assets/images/products/0f3609149d944d478f4f2004dcf8842a.jpg',
-      '/skym-shop-assets/images/products/0646814113c352a6df4a9a1ac9416ddc.jpg',
-    ],
-  },
+export type ProductStatus = 'SOLD OUT' | 'SALE' | 'NEW'
+export type ProductCategory = Exclude<
+  (typeof productCategories)[number],
+  '全て'
+>
+export type ProductBrand = (typeof productBrands)[number]
+
+export type Product = {
+  id: string
+  name: string
+  brand: ProductBrand
+  category: ProductCategory
+  price: string
+  status?: ProductStatus
+  summary: string
+  description: readonly string[]
+  specs: readonly {
+    label: string
+    value: string
+  }[]
+  image: string
+  images: readonly string[]
+}
+
+export const products: readonly Product[] = [
   {
     id: 'velvet-arts-forte-silver',
     name: 'フォルテ 2.1g（シルバー）',
@@ -197,6 +169,32 @@ export const products = [
     ],
   },
   {
+    id: 'velvet-arts-forte-masuou',
+    name: 'フォルテ 2.1g（二代目鱒王）',
+    brand: 'VELVET ARTS',
+    category: 'スプーン',
+    price: '¥500',
+    status: 'SOLD OUT',
+    summary:
+      '強めの明滅で魚に気づかせやすい、放流直後からサーチまで使いやすい2.1gスプーン。',
+    description: [
+      'フォルテ 2.1gは、管理釣り場でのテンポのよいサーチに向いたスプーンです。水をつかみやすいボディで、巻き速度を落としても姿勢が崩れにくく、手前まで丁寧に探れます。',
+      '二代目鱒王は視認性とアピール力のバランスが取りやすいカラーです。魚の反応を見ながら、強い色から食わせ寄りの色へ展開するローテーションの起点に使えます。',
+    ],
+    specs: [
+      { label: 'ウエイト', value: '2.1g' },
+      { label: 'タイプ', value: 'スプーン' },
+      { label: '推奨ライン', value: 'ナイロン・フロロ 2〜4lb' },
+      { label: 'レンジ', value: '表層〜中層' },
+    ],
+    image:
+      '/skym-shop-assets/images/products/009a5cdcca1badfeec38fad4838bbb11.jpg',
+    images: [
+      '/skym-shop-assets/images/products/009a5cdcca1badfeec38fad4838bbb11.jpg',
+      '/skym-shop-assets/images/products/584d25c2afd6e229b5a9e852761016f6.jpg',
+    ],
+  },
+  {
     id: 'valkein-hi-burst-uv-flash',
     name: 'HI BURST 1.6g(UVフラッシュ)',
     brand: 'ValkeIN',
@@ -220,6 +218,32 @@ export const products = [
     images: [
       '/skym-shop-assets/images/products/01ffb9bb455cb67ba79e0f8049e3c6e0.jpg',
       '/skym-shop-assets/images/products/745f95f1b68fd2a62f47f427db72f9b1.jpg',
+    ],
+  },
+  {
+    id: 'velvet-arts-forte-kick-on-the-festa',
+    name: 'フォルテ 2.1g（キックオンザフェスタ）',
+    brand: 'VELVET ARTS',
+    category: 'スプーン',
+    price: '¥500',
+    status: 'SOLD OUT',
+    summary:
+      'イベント感のある強めカラー。魚の目線を集めたい朝夕や濁りのある状況に。',
+    description: [
+      'フォルテ 2.1gの安定した泳ぎを活かしながら、カラーでしっかり存在感を出せるモデルです。放流直後や魚が散っている時間帯に、広い範囲を手早く探る使い方に向いています。',
+      'キックオンザフェスタは、明るい水色でも暗い水色でも見失いにくい配色です。反応が落ちたら、同じウエイトの落ち着いたカラーへつなげるとローテーションしやすくなります。',
+    ],
+    specs: [
+      { label: 'ウエイト', value: '2.1g' },
+      { label: 'タイプ', value: 'スプーン' },
+      { label: '推奨ライン', value: 'ナイロン・フロロ 2〜4lb' },
+      { label: 'レンジ', value: '表層〜中層' },
+    ],
+    image:
+      '/skym-shop-assets/images/products/0f3609149d944d478f4f2004dcf8842a.jpg',
+    images: [
+      '/skym-shop-assets/images/products/0f3609149d944d478f4f2004dcf8842a.jpg',
+      '/skym-shop-assets/images/products/0646814113c352a6df4a9a1ac9416ddc.jpg',
     ],
   },
   {
@@ -249,6 +273,31 @@ export const products = [
     ],
   },
   {
+    id: 'velvet-arts-daisy-muddy-meta-glow',
+    name: 'デイジー 2.5g(027 マッディメタグリグロー)',
+    brand: 'VELVET ARTS',
+    category: 'スプーン',
+    price: '¥500',
+    summary:
+      '軽量2.5gで繊細に誘えるデイジー。警戒心の強い魚にも使いやすい定番スプーン。',
+    description: [
+      'デイジー 2.5gは、軽い巻き感とフォール時のアピールを活かして、スレたトラウトにも入れやすいスプーンです。管理釣り場のクリアな水質や、魚が追い切らない時間帯のローテーションに向いています。',
+      '027 マッディメタグリグローは、視認性と明滅のバランスを取りやすいカラーです。スローリトリーブを基準に、反応が弱い時はフォールを混ぜて魚の目線に合わせられます。',
+    ],
+    specs: [
+      { label: 'ウエイト', value: '2.5g' },
+      { label: 'タイプ', value: 'スプーン' },
+      { label: '推奨ライン', value: 'ナイロン 2〜4lb' },
+      { label: 'フック', value: 'シングルバーブレス' },
+    ],
+    image:
+      '/skym-shop-assets/images/products/c7c55330eb58143c249ffd4119a08195.jpg',
+    images: [
+      '/skym-shop-assets/images/products/c7c55330eb58143c249ffd4119a08195.jpg',
+      '/skym-shop-assets/images/products/b6425b9beb2be5ee9113f1f8b0ff0f5d.jpg',
+    ],
+  },
+  {
     id: 'skym-original-hook-set',
     name: 'オリジナル フックセット',
     brand: 'SKYM',
@@ -274,9 +323,7 @@ export const products = [
       '/skym-shop-assets/images/products/46592f4f09cc5d786f4f5939510113e8.jpg',
     ],
   },
-] as const
-
-export type Product = (typeof products)[number]
+]
 
 export function getProductPath(product: Product) {
   return `/items/${product.id}`
