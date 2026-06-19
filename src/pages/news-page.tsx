@@ -1,9 +1,9 @@
 import { ArrowRightIcon } from 'lucide-react'
 import { Link } from 'react-router'
 
+import { NewsLabelBadge } from '@/components/news-label-badge'
 import { SiteFooter } from '@/components/site-footer'
 import { SiteHeader } from '@/components/site-header'
-import { Badge } from '@/components/ui/badge'
 import { getNewsItemPath, newsItems } from '@/lib/shop-content'
 import {
   interactiveCardLinkClassName,
@@ -65,9 +65,7 @@ export function NewsPage() {
                 >
                   {item.date}
                 </time>
-                <Badge variant={item.label === 'SALE' ? 'default' : 'outline'}>
-                  {item.label}
-                </Badge>
+                <NewsLabelBadge label={item.label} />
               </div>
 
               <div className="min-w-0">

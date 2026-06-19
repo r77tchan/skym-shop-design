@@ -1,9 +1,9 @@
 import { ArrowLeftIcon } from 'lucide-react'
 import { Link, Navigate, useParams } from 'react-router'
 
+import { NewsLabelBadge } from '@/components/news-label-badge'
 import { SiteFooter } from '@/components/site-footer'
 import { SiteHeader } from '@/components/site-header'
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { newsItems } from '@/lib/shop-content'
 
@@ -62,9 +62,7 @@ export function NewsDetailPage() {
                 >
                   {item.date}
                 </time>
-                <Badge variant={item.label === 'SALE' ? 'default' : 'outline'}>
-                  {item.label}
-                </Badge>
+                <NewsLabelBadge label={item.label} />
               </div>
               <h1 className="mt-4 font-heading text-3xl leading-tight font-semibold sm:text-4xl">
                 {item.title}
