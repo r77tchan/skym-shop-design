@@ -1,5 +1,4 @@
 import {
-  ArrowRightIcon,
   ArrowUpDownIcon,
   ChevronDownIcon,
   SearchIcon,
@@ -205,25 +204,10 @@ export function ProductListPage() {
               ))}
             </div>
 
-            <div className="flex flex-col gap-3 border-t pt-6 sm:flex-row sm:items-center sm:justify-between">
+            <div className="border-t pt-6">
               <p className="text-xs text-muted-foreground">
                 表示価格には消費税が含まれています。別途送料がかかります。
               </p>
-              <div className="flex items-center gap-2">
-                <Button className="size-9" size="icon-lg" variant="secondary">
-                  1
-                </Button>
-                <Button className="size-9" size="icon-lg" variant="outline">
-                  2
-                </Button>
-                <Button className="size-9" size="icon-lg" variant="outline">
-                  3
-                </Button>
-                <Button className="h-9 px-3" variant="outline">
-                  次へ
-                  <ArrowRightIcon data-icon="inline-end" />
-                </Button>
-              </div>
             </div>
           </div>
         </div>
