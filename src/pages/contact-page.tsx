@@ -4,6 +4,7 @@ import {
   MailIcon,
   MessageSquareTextIcon,
   PackageCheckIcon,
+  PhoneIcon,
   SendIcon,
 } from 'lucide-react'
 import { Link } from 'react-router'
@@ -171,6 +172,38 @@ export function ContactPage() {
               text="返品、個人情報、販売事業者に関する確認はこちらからできます。"
               title="ご確認ください"
             />
+
+            <div className="rounded-lg border bg-card p-4">
+              <div className="flex items-start gap-3">
+                <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-accent text-accent-foreground">
+                  <PhoneIcon aria-hidden="true" className="size-5" />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold">電話でのお問い合わせ</p>
+                  <div className="mt-1 grid gap-1 text-xs leading-5 text-muted-foreground">
+                    <p>
+                      事務所：
+                      <a
+                        className="underline decoration-foreground/35 underline-offset-4 hover:text-foreground hover:decoration-foreground"
+                        href="tel:0353092175"
+                      >
+                        03-5309-2175
+                      </a>
+                    </p>
+                    <p>
+                      代表携帯：
+                      <a
+                        className="underline decoration-foreground/35 underline-offset-4 hover:text-foreground hover:decoration-foreground"
+                        href="tel:08092172538"
+                      >
+                        080-9217-2538
+                      </a>
+                    </p>
+                    <p>受付時間：平日 10:00〜18:00</p>
+                  </div>
+                </div>
+              </div>
+            </div>
 
             <div className="rounded-lg border bg-card p-4">
               <div className="flex items-start gap-3">
