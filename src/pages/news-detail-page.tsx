@@ -6,6 +6,7 @@ import { SiteFooter } from '@/components/site-footer'
 import { SiteHeader } from '@/components/site-header'
 import { Button } from '@/components/ui/button'
 import { newsItems } from '@/lib/shop-content'
+import { backButtonClassName } from '@/lib/ui-styles'
 
 export function NewsDetailPage() {
   const { newsId } = useParams()
@@ -47,7 +48,7 @@ export function NewsDetailPage() {
               <span className="text-foreground">詳細</span>
             </nav>
 
-            <Button asChild className="w-fit px-3" size="sm" variant="ghost">
+            <Button asChild className={backButtonClassName} variant="ghost">
               <Link to="/news">
                 <ArrowLeftIcon data-icon="inline-start" />
                 Back

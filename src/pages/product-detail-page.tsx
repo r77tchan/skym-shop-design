@@ -20,6 +20,7 @@ import { assetUrl } from '@/lib/asset-url'
 import { getPrimaryProductStatus, isSoldOut } from '@/lib/product-status'
 import { getProductPath, products, type Product } from '@/lib/shop-content'
 import {
+  backButtonClassName,
   interactiveCardLinkClassName,
   interactiveCardMutedTextClassName,
   interactiveCardTitleClassName,
@@ -94,7 +95,7 @@ export function ProductDetailPage() {
               <span className="text-foreground">商品詳細</span>
             </nav>
 
-            <Button asChild className="w-fit px-3" size="sm" variant="ghost">
+            <Button asChild className={backButtonClassName} variant="ghost">
               <Link to="/items">
                 <ArrowLeftIcon data-icon="inline-start" />
                 Back
