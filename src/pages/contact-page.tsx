@@ -15,10 +15,10 @@ import { SiteHeader } from '@/components/site-header'
 import { Button } from '@/components/ui/button'
 
 const fieldClassName =
-  'h-11 rounded-lg border bg-background px-3 text-sm outline-none placeholder:text-muted-foreground focus:border-ring focus:ring-3 focus:ring-ring/30'
+  'h-11 rounded-lg border bg-background px-3 text-base outline-none placeholder:text-muted-foreground focus:border-ring focus:ring-3 focus:ring-ring/30'
 
 const selectFieldClassName =
-  'h-11 w-full cursor-pointer appearance-none rounded-lg border bg-background py-0 pr-12 pl-3 text-sm outline-none focus:border-ring focus:ring-3 focus:ring-ring/30'
+  'h-11 w-full cursor-pointer appearance-none rounded-lg border bg-background py-0 pr-12 pl-3 text-base outline-none focus:border-ring focus:ring-3 focus:ring-ring/30'
 
 const fieldGroupClassName = 'grid items-start gap-4 sm:grid-cols-2'
 
@@ -141,7 +141,7 @@ export function ContactPage() {
             <label className={fieldWrapperClassName}>
               <span className="text-sm font-semibold">お問い合わせ内容</span>
               <textarea
-                className="min-h-40 resize-y rounded-lg border bg-background px-3 py-3 text-sm leading-6 outline-none placeholder:text-muted-foreground focus:border-ring focus:ring-3 focus:ring-ring/30"
+                className="min-h-40 resize-y rounded-lg border bg-background px-3 py-3 text-base leading-6 outline-none placeholder:text-muted-foreground focus:border-ring focus:ring-3 focus:ring-ring/30"
                 placeholder="商品名、カラー、注文番号など、確認に必要な内容をご入力ください。"
               />
             </label>
