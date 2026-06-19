@@ -1,9 +1,8 @@
-import { ShoppingCartIcon } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router'
 
+import { CartDrawer } from '@/components/cart-drawer'
 import { ThemeToggle } from '@/components/theme-toggle'
-import { Button } from '@/components/ui/button'
 import { assetUrl } from '@/lib/asset-url'
 import { cn } from '@/lib/utils'
 
@@ -69,16 +68,7 @@ export function SiteHeader({ transparentOnTop = false }: SiteHeaderProps) {
             buttonClassName="header-control-button"
             className="header-control-group"
           />
-          <Button
-            aria-label="カート"
-            className="header-control-button size-[38px]"
-            size="icon-sm"
-            title="カート"
-            variant="ghost"
-          >
-            <ShoppingCartIcon aria-hidden="true" className="size-3.5" />
-            <span className="sr-only">カート</span>
-          </Button>
+          <CartDrawer buttonClassName="header-control-button size-[38px]" />
         </div>
       </div>
     </header>
