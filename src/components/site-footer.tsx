@@ -12,9 +12,17 @@ export function SiteFooter() {
       <div className="mx-auto grid max-w-7xl gap-section px-gutter py-section md:grid-cols-[minmax(0,1fr)_repeat(3,minmax(140px,180px))]">
         <div>
           <Link
-            className="-mx-1.5 inline-flex min-h-9 items-center rounded-md px-1.5 font-heading text-lg font-semibold hover:bg-white/8 hover:text-footer-muted focus-visible:ring-2 focus-visible:ring-footer-foreground/60 focus-visible:ring-offset-2 focus-visible:ring-offset-footer focus-visible:outline-none"
+            className="-mx-1.5 inline-flex min-h-9 items-center gap-2 rounded-md px-1.5 font-heading text-lg font-semibold hover:bg-white/8 hover:text-footer-muted focus-visible:ring-2 focus-visible:ring-footer-foreground/60 focus-visible:ring-offset-2 focus-visible:ring-offset-footer focus-visible:outline-none"
             to="/"
           >
+            <img
+              alt=""
+              aria-hidden="true"
+              className="size-5 rounded-full"
+              src={assetUrl(
+                '/skym-shop-assets/images/theme/skymshop-favicon.png',
+              )}
+            />
             SKYMSHOP
           </Link>
           <p className="mt-3 max-w-md text-sm leading-6 text-footer-muted">

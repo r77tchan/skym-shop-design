@@ -4,6 +4,7 @@ import { Link } from 'react-router'
 
 import { ThemeToggle } from '@/components/theme-toggle'
 import { Button } from '@/components/ui/button'
+import { assetUrl } from '@/lib/asset-url'
 import { cn } from '@/lib/utils'
 
 type SiteHeaderProps = {
@@ -44,13 +45,21 @@ export function SiteHeader({ transparentOnTop = false }: SiteHeaderProps) {
       <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-gutter py-3">
         <Link
           className={cn(
-            'site-header-logo shrink-0 font-heading text-base font-semibold tracking-normal',
+            'site-header-logo inline-flex shrink-0 items-center gap-2 font-heading text-base font-semibold tracking-normal',
             isHeaderPinned
               ? 'drop-shadow-none'
               : 'drop-shadow-[0_1px_10px_rgba(0,0,0,0.45)]',
           )}
           to="/"
         >
+          <img
+            alt=""
+            aria-hidden="true"
+            className="size-5 rounded-full"
+            src={assetUrl(
+              '/skym-shop-assets/images/theme/skymshop-favicon.png',
+            )}
+          />
           SKYMSHOP
         </Link>
 
