@@ -28,29 +28,40 @@ import { cn } from '@/lib/utils'
 
 export function HomePage() {
   return (
-    <main className="min-h-svh bg-background text-foreground">
-      <SiteHeader transparentOnTop />
+    <main className="min-h-svh bg-background pt-16 text-foreground">
+      <SiteHeader />
 
-      <section className="relative isolate flex min-h-[620px] items-end overflow-hidden lg:min-h-[88svh]">
+      <section className="relative isolate flex aspect-[16/9] min-h-0 items-end overflow-hidden sm:aspect-auto sm:min-h-[620px] lg:min-h-[88svh]">
         <img
           alt=""
           className="absolute inset-0 -z-20 size-full object-cover"
           src={assetUrl('/skym-shop-assets/images/site/skym-hero.jpg')}
         />
-        <div className="absolute inset-0 -z-10 bg-[linear-gradient(180deg,oklch(0.14_0.025_245_/_.02)_0%,oklch(0.14_0.025_245_/_.06)_42%,oklch(0.14_0.025_245_/_.3)_100%)] sm:bg-[linear-gradient(90deg,oklch(0.14_0.025_245_/_.16),oklch(0.14_0.025_245_/_.08)_45%,transparent_72%)]" />
-        <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_22%_78%,oklch(0.11_0.02_245_/_.68)_0%,oklch(0.11_0.02_245_/_.42)_30%,oklch(0.11_0.02_245_/_.16)_52%,transparent_70%)] sm:bg-[radial-gradient(ellipse_at_23%_82%,oklch(0.11_0.02_245_/_.62)_0%,oklch(0.11_0.02_245_/_.36)_30%,oklch(0.11_0.02_245_/_.1)_52%,transparent_68%)]" />
-        <div className="mx-auto w-full max-w-7xl px-gutter py-section text-white">
+        <div className="absolute inset-0 -z-10 bg-[linear-gradient(180deg,oklch(0.14_0.025_245_/_.08)_0%,oklch(0.14_0.025_245_/_.02)_42%,oklch(0.14_0.025_245_/_.22)_100%)] sm:bg-[linear-gradient(90deg,oklch(0.14_0.025_245_/_.16),oklch(0.14_0.025_245_/_.08)_45%,transparent_72%)]" />
+        <div className="absolute inset-0 -z-10 hidden sm:block sm:bg-[radial-gradient(ellipse_at_23%_82%,oklch(0.11_0.02_245_/_.62)_0%,oklch(0.11_0.02_245_/_.36)_30%,oklch(0.11_0.02_245_/_.1)_52%,transparent_68%)]" />
+        <h1 className="sr-only">SKYMSHOP FISHING TACKLE STORE</h1>
+        <div className="mx-auto hidden w-full max-w-7xl px-gutter py-section text-white sm:block">
           <div className="max-w-2xl">
             <div className="mb-5">
               <Badge className="bg-black/32 text-white ring-1 ring-white/20">
                 SKYMSHOP FISHING TACKLE STORE
               </Badge>
             </div>
-            <h1 className="sr-only">SKYMSHOP FISHING TACKLE STORE</h1>
             <p className="max-w-xl text-[0.95rem] leading-8 font-medium text-white drop-shadow-[0_3px_14px_rgba(0,0,0,0.86)] sm:text-lg">
               {shopDescription}
             </p>
           </div>
+        </div>
+      </section>
+
+      <section className="border-b bg-background sm:hidden">
+        <div className="mx-auto grid max-w-7xl gap-3 px-gutter py-5">
+          <Badge className="w-fit bg-secondary text-secondary-foreground">
+            SKYMSHOP FISHING TACKLE STORE
+          </Badge>
+          <p className="text-sm leading-7 font-medium text-foreground/86">
+            {shopDescription}
+          </p>
         </div>
       </section>
 
