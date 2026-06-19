@@ -21,8 +21,8 @@ import { getPrimaryProductStatus, isSoldOut } from '@/lib/product-status'
 import { getProductPath, products, type Product } from '@/lib/shop-content'
 import {
   backButtonClassName,
-  interactiveCardLinkClassName,
   interactiveCardMutedTextClassName,
+  interactiveCardSurfaceClassName,
   interactiveCardTitleClassName,
   sectionActionButtonClassName,
 } from '@/lib/ui-styles'
@@ -370,10 +370,15 @@ function RelatedProductCard({ product }: { product: Product }) {
 
   return (
     <article className="min-w-0">
-      <div className="relative min-w-0">
+      <div
+        className={cn(
+          interactiveCardSurfaceClassName,
+          'grid min-w-0 gap-3 p-3',
+        )}
+      >
         <Link
           aria-label={`${product.name}の商品プレビュー`}
-          className={cn(interactiveCardLinkClassName, 'grid min-w-0 gap-3 p-3')}
+          className="grid min-w-0 gap-3 rounded-md focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none"
           to={getProductPath(product)}
         >
           <div className="relative aspect-[3/4] overflow-hidden rounded-lg border bg-muted group-hover:border-primary/40">
@@ -394,55 +399,51 @@ function RelatedProductCard({ product }: { product: Product }) {
             ) : null}
           </div>
 
-          <div className="grid min-w-0 gap-2">
-            <div>
-              <div className="flex items-center justify-between gap-2">
-                <p
-                  className={cn(
-                    'truncate text-xs font-medium text-muted-foreground',
-                    interactiveCardMutedTextClassName,
-                  )}
-                >
-                  {product.brand}
-                </p>
-                <span className="shrink-0 rounded-md bg-muted px-1.5 py-0.5 text-[0.68rem] leading-4 font-medium text-muted-foreground">
-                  {product.category}
-                </span>
-              </div>
+          <div className="min-w-0">
+            <div className="flex items-center justify-between gap-2">
               <p
                 className={cn(
-                  'mt-1 [display:-webkit-box] min-h-10 overflow-hidden text-sm leading-5 font-semibold [-webkit-box-orient:vertical] [-webkit-line-clamp:2]',
-                  interactiveCardTitleClassName,
+                  'truncate text-xs font-medium text-muted-foreground',
+                  interactiveCardMutedTextClassName,
                 )}
               >
-                {product.name}
+                {product.brand}
               </p>
+              <span className="shrink-0 rounded-md bg-muted px-1.5 py-0.5 text-[0.68rem] leading-4 font-medium text-muted-foreground">
+                {product.category}
+              </span>
             </div>
-
-            <ProductPrice
-              className="min-w-0 pr-11"
-              muted={soldOut}
-              product={product}
-            />
+            <p
+              className={cn(
+                'mt-1 [display:-webkit-box] min-h-10 overflow-hidden text-sm leading-5 font-semibold [-webkit-box-orient:vertical] [-webkit-line-clamp:2]',
+                interactiveCardTitleClassName,
+              )}
+            >
+              {product.name}
+            </p>
           </div>
         </Link>
 
-        <Button
-          aria-label="カートに追加"
-          className={cn(
-            'absolute right-3 bottom-3 size-8',
-            soldOut &&
-              'disabled:pointer-events-auto disabled:cursor-not-allowed disabled:hover:bg-secondary',
-            !soldOut &&
-              'bg-card/92 text-foreground shadow-sm backdrop-blur hover:border-primary/55 hover:bg-primary hover:text-primary-foreground',
-          )}
-          disabled={soldOut}
-          size="icon"
-          title="カートに追加"
-          variant={soldOut ? 'secondary' : 'outline'}
-        >
-          <ShoppingCartIcon aria-hidden="true" className="size-4" />
-        </Button>
+        <div className="flex min-w-0 items-center justify-between gap-3">
+          <ProductPrice className="min-w-0" muted={soldOut} product={product} />
+
+          <Button
+            aria-label="カートに追加"
+            className={cn(
+              'size-8 shrink-0',
+              soldOut &&
+                'disabled:pointer-events-auto disabled:cursor-not-allowed disabled:hover:bg-secondary',
+              !soldOut &&
+                'bg-card/92 text-foreground shadow-sm backdrop-blur hover:border-primary/55 hover:bg-primary hover:text-primary-foreground',
+            )}
+            disabled={soldOut}
+            size="icon"
+            title="カートに追加"
+            variant={soldOut ? 'secondary' : 'outline'}
+          >
+            <ShoppingCartIcon aria-hidden="true" className="size-4" />
+          </Button>
+        </div>
       </div>
     </article>
   )
