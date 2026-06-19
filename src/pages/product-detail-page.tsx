@@ -372,7 +372,7 @@ function RelatedProductCard({ product }: { product: Product }) {
       <div className="relative min-w-0">
         <Link
           aria-label={`${product.name}の商品プレビュー`}
-          className={cn(interactiveCardLinkClassName, 'grid min-w-0 gap-3 p-2')}
+          className={cn(interactiveCardLinkClassName, 'grid min-w-0 gap-3 p-3')}
           to={getProductPath(product)}
         >
           <div className="relative aspect-[3/4] overflow-hidden rounded-lg border bg-muted group-hover:border-primary/40">
@@ -416,7 +416,7 @@ function RelatedProductCard({ product }: { product: Product }) {
               </p>
             </div>
 
-            <div className="min-w-0 pr-10">
+            <div className="min-w-0 pr-11">
               <p
                 className={cn(
                   'text-base leading-none font-semibold',
@@ -432,7 +432,7 @@ function RelatedProductCard({ product }: { product: Product }) {
         <Button
           aria-label="カートに追加"
           className={cn(
-            'absolute right-2 bottom-2 size-8',
+            'absolute right-3 bottom-3 size-8',
             soldOut &&
               'disabled:pointer-events-auto disabled:cursor-not-allowed disabled:hover:bg-secondary',
             !soldOut &&
