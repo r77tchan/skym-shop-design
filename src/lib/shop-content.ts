@@ -85,6 +85,10 @@ export const productBrands = [
   'ValkeIN',
   'RODIO CRAFT',
   '1089工房',
+  'YARIE',
+  'sauribu',
+  'JACKALL',
+  'DAYSPROUT',
   'SKYM',
 ] as const
 
@@ -447,6 +451,276 @@ export const products: readonly Product[] = [
     images: [
       '/skym-shop-assets/images/products/04ac9a0e6908849f3cf8a5d496c1f898.jpg',
       '/skym-shop-assets/images/products/46592f4f09cc5d786f4f5939510113e8.jpg',
+    ],
+  },
+  {
+    id: 'valkein-astrar-ppo',
+    name: 'ASTRAR 2.4g（P.P.O）',
+    brand: 'ValkeIN',
+    category: 'スプーン',
+    price: '¥500',
+    summary:
+      '強めの波動で広く探れる2.4gスプーン。放流後や魚の位置を早く見つけたい場面に。',
+    description: [
+      'ASTRAR 2.4gは、しっかり水を押しながらテンポよくサーチできるスプーンです。魚のレンジが絞り切れていない時間帯でも、巻き速度を変えながら反応を確認しやすいモデルです。',
+      'P.P.Oは視認性と明滅を両立しやすいカラーです。放流直後の強い反応から、少し落ち着いたタイミングのフォローまで幅広く使えます。',
+    ],
+    specs: [
+      { label: 'ウエイト', value: '2.4g' },
+      { label: 'タイプ', value: 'スプーン' },
+      { label: 'カラー', value: 'P.P.O' },
+      { label: '用途', value: 'サーチ / 放流後' },
+    ],
+    image: '/skym-shop-assets/images/products/valkein-astrar-2-4g-front.jpg',
+    images: [
+      '/skym-shop-assets/images/products/valkein-astrar-2-4g-front.jpg',
+      '/skym-shop-assets/images/products/valkein-astrar-2-4g-back.jpg',
+    ],
+  },
+  {
+    id: 'valkein-servant-spear-golden-brown',
+    name: 'Servant Spear 1.1g（074 ゴールデンブラウン）',
+    brand: 'ValkeIN',
+    category: 'スプーン',
+    price: '¥400',
+    summary:
+      '軽量1.1gでスローに誘えるスプーン。食い渋りのタイミングでも丁寧に通しやすい一枚。',
+    description: [
+      'Servant Spear 1.1gは、軽量スプーンらしい繊細な誘いを入れやすく、表層から中層をゆっくり引きたい時に使いやすいモデルです。',
+      '074 ゴールデンブラウンは派手すぎない明滅で、クリアな水質やプレッシャーの高い状況にも合わせやすいカラーです。',
+    ],
+    specs: [
+      { label: 'ウエイト', value: '1.1g' },
+      { label: 'タイプ', value: 'スプーン' },
+      { label: 'カラー', value: '074 ゴールデンブラウン' },
+      { label: 'レンジ', value: '表層〜中層' },
+    ],
+    image:
+      '/skym-shop-assets/images/products/valkein-servant-spear-1-1g-front.jpg',
+    images: [
+      '/skym-shop-assets/images/products/valkein-servant-spear-1-1g-front.jpg',
+      '/skym-shop-assets/images/products/valkein-servant-spear-1-1g-back.jpg',
+    ],
+  },
+  {
+    id: 'valkein-black-blast-zubrocka-green',
+    name: 'Black Blast 1.8g（ズブロッカグリーン）',
+    brand: 'ValkeIN',
+    category: 'スプーン',
+    price: '¥400',
+    summary:
+      '1.8gの扱いやすいサーチ系スプーン。カラーの強さで魚の反応を探りたい時に。',
+    description: [
+      'Black Blast 1.8gは、放流後から通常ローテーションまで使いやすいウエイト感のスプーンです。テンポよく巻いて魚の反応を見たい場面に向いています。',
+      'ズブロッカグリーンは視認性のあるグリーン系カラーです。濁りやローライト時にも存在感を出しやすく、サーチの起点に使えます。',
+    ],
+    specs: [
+      { label: 'ウエイト', value: '1.8g' },
+      { label: 'タイプ', value: 'スプーン' },
+      { label: 'カラー', value: 'ズブロッカグリーン' },
+      { label: '用途', value: 'サーチ / ローテーション' },
+    ],
+    image:
+      '/skym-shop-assets/images/products/valkein-black-blast-1-8g-front.jpg',
+    images: [
+      '/skym-shop-assets/images/products/valkein-black-blast-1-8g-front.jpg',
+      '/skym-shop-assets/images/products/valkein-black-blast-1-8g-back.jpg',
+    ],
+  },
+  {
+    id: 'rodio-craft-jekyll-l-yasuzuka-request',
+    name: 'JEKYLL-L 0.6g（安塚リクエスト）',
+    brand: 'RODIO CRAFT',
+    category: 'スプーン',
+    price: '¥400',
+    summary:
+      'マイクロスプーンで丁寧に食わせる0.6g。スロー展開や表層攻略に入れやすい一枚。',
+    description: [
+      'JEKYLL-L 0.6gは、軽量スプーンならではの弱い波動で、プレッシャーの高い魚に口を使わせたい時に向いています。',
+      '安塚リクエストは落ち着いたトーンで、派手なカラーへの反応が落ちた後のフォローにも使いやすいカラーです。',
+    ],
+    specs: [
+      { label: 'ウエイト', value: '0.6g' },
+      { label: 'タイプ', value: 'スプーン' },
+      { label: 'カラー', value: '安塚リクエスト' },
+      { label: 'レンジ', value: '表層〜中層' },
+    ],
+    image: '/skym-shop-assets/images/products/rodio-jekyll-l-0-6g-front.jpg',
+    images: [
+      '/skym-shop-assets/images/products/rodio-jekyll-l-0-6g-front.jpg',
+      '/skym-shop-assets/images/products/rodio-jekyll-l-0-6g-back.jpg',
+    ],
+  },
+  {
+    id: 'rodio-craft-noa-b-nobu-color',
+    name: 'NOA-B 2.2g（2014ノブカラー）',
+    brand: 'RODIO CRAFT',
+    category: 'スプーン',
+    price: '¥500',
+    summary:
+      'しっかり投げて広範囲を探れる2.2g。放流後や深めのレンジ確認にも使いやすいモデル。',
+    description: [
+      'NOA-B 2.2gは、飛距離を出しながらレンジを刻みやすいスプーンです。魚の位置が遠い時や、風のある状況でもテンポよく探れます。',
+      '2014ノブカラーはアピールと食わせのバランスを取りやすく、反応の強弱を見ながらローテーションに組み込みやすいカラーです。',
+    ],
+    specs: [
+      { label: 'ウエイト', value: '2.2g' },
+      { label: 'タイプ', value: 'スプーン' },
+      { label: 'カラー', value: '2014ノブカラー' },
+      { label: '用途', value: 'サーチ / 遠投' },
+    ],
+    image: '/skym-shop-assets/images/products/rodio-noa-b-2-2g-front.jpg',
+    images: [
+      '/skym-shop-assets/images/products/rodio-noa-b-2-2g-front.jpg',
+      '/skym-shop-assets/images/products/rodio-noa-b-2-2g-back.jpg',
+    ],
+  },
+  {
+    id: 'rodio-craft-drift-spin-37-chart-glow',
+    name: 'RCドリフトスピン37 2.0g（092 透過チャート/裏グロー）',
+    brand: 'RODIO CRAFT',
+    category: 'プラグ',
+    price: '¥500',
+    summary:
+      '透過チャートと裏グローで存在感を出せるドリフトスピン。スプーン後のフォローにも。',
+    description: [
+      'RCドリフトスピン37 2.0gは、スプーンと違う波動で魚に見せたい時に使いやすいアイテムです。一定層を丁寧に通しながら反応を探れます。',
+      '092 透過チャート/裏グローは、ローライトや濁りのある状況でも魚に気づかせやすいカラーです。',
+    ],
+    specs: [
+      { label: 'ウエイト', value: '2.0g' },
+      { label: 'タイプ', value: 'プラグ' },
+      { label: 'カラー', value: '092 透過チャート/裏グロー' },
+      { label: '用途', value: 'サーチ / フォロー' },
+    ],
+    image:
+      '/skym-shop-assets/images/products/rodio-drift-spin-37-chart-front.jpg',
+    images: [
+      '/skym-shop-assets/images/products/rodio-drift-spin-37-chart-front.jpg',
+      '/skym-shop-assets/images/products/rodio-drift-spin-37-chart-back.jpg',
+    ],
+  },
+  {
+    id: 'yarie-t-fresh-evo-split-orange',
+    name: 'T-Fresh EVO 1.1g（スプリットオレンジ）',
+    brand: 'YARIE',
+    category: 'スプーン',
+    price: '¥350',
+    summary:
+      '軽量1.1gで表層を丁寧に探れるスプーン。弱めの展開で魚に口を使わせたい時に。',
+    description: [
+      'T-Fresh EVO 1.1gは、軽い巻き感で表層から中層をスローに通しやすいスプーンです。魚が浮いている時や、強いアピールに反応しない場面に入れやすいモデルです。',
+      'スプリットオレンジは視認性がありながら強すぎないカラーです。ローテーションの中盤から終盤に、魚の追い方を見ながら投入できます。',
+    ],
+    specs: [
+      { label: 'ウエイト', value: '1.1g' },
+      { label: 'タイプ', value: 'スプーン' },
+      { label: 'カラー', value: 'スプリットオレンジ' },
+      { label: 'レンジ', value: '表層〜中層' },
+    ],
+    image: '/skym-shop-assets/images/products/yarie-t-fresh-evo-1-1g-front.jpg',
+    images: [
+      '/skym-shop-assets/images/products/yarie-t-fresh-evo-1-1g-front.jpg',
+      '/skym-shop-assets/images/products/yarie-t-fresh-evo-1-1g-back.jpg',
+    ],
+  },
+  {
+    id: 'sauribu-shaath-saimu-dango-gold',
+    name: 'Shaath 2.3g（サイムダンゴールド）',
+    brand: 'sauribu',
+    category: 'スプーン',
+    price: '¥400',
+    summary:
+      '2.3gでレンジを刻みやすいスプーン。オリカラらしい配色で反応を変えたい時に。',
+    description: [
+      'Shaath 2.3gは、巻きでレンジを合わせながら広く探れるスプーンです。放流後の強い反応が落ち着いた後にも、カラー変化で魚の目線を変えられます。',
+      'サイムダンゴールドは、ゴールド系の明滅を活かして魚に気づかせやすいカラーです。水質や光量を見ながら、食わせ寄りの色と使い分けできます。',
+    ],
+    specs: [
+      { label: 'ウエイト', value: '2.3g' },
+      { label: 'タイプ', value: 'スプーン' },
+      { label: 'カラー', value: 'サイムダンゴールド' },
+      { label: '用途', value: 'サーチ / ローテーション' },
+    ],
+    image: '/skym-shop-assets/images/products/sauribu-shaath-2-3g-front.jpg',
+    images: [
+      '/skym-shop-assets/images/products/sauribu-shaath-2-3g-front.jpg',
+      '/skym-shop-assets/images/products/sauribu-shaath-2-3g-alt.jpg',
+    ],
+  },
+  {
+    id: 'jackall-tapdancer-daigo-cheer-seed',
+    name: 'TAPDANCER 3.7g（ダイゴチアシード）',
+    brand: 'JACKALL',
+    category: 'プラグ',
+    price: '¥900',
+    summary:
+      'ボトム攻略に使いやすいタップダンサー。スプーンで反応が出にくい魚への切り替えに。',
+    description: [
+      'TAPDANCER 3.7gは、ボトム付近の魚に見せやすいプラグです。スプーンの巻きで反応が薄い時に、誘い方を変えるための選択肢になります。',
+      'ダイゴチアシードは視認性のあるカラーで、ボトムでの位置確認もしやすい配色です。小さなアクションを入れながら反応を見てください。',
+    ],
+    specs: [
+      { label: 'ウエイト', value: '3.7g' },
+      { label: 'タイプ', value: 'プラグ' },
+      { label: 'カラー', value: 'ダイゴチアシード' },
+      { label: 'レンジ', value: 'ボトム' },
+    ],
+    image:
+      '/skym-shop-assets/images/products/jackall-tapdancer-daigo-front.jpg',
+    images: [
+      '/skym-shop-assets/images/products/jackall-tapdancer-daigo-front.jpg',
+      '/skym-shop-assets/images/products/jackall-tapdancer-daigo-back.jpg',
+    ],
+  },
+  {
+    id: 'jackall-tapdancer-hojicha-latte',
+    name: 'TAPDANCER 3.7g（ショボクレほうじ茶ラテ）',
+    brand: 'JACKALL',
+    category: 'プラグ',
+    price: '¥900',
+    summary:
+      '落ち着いた色味でボトムを丁寧に探れるプラグ。食わせ寄りの展開に合わせやすいカラー。',
+    description: [
+      'TAPDANCER 3.7gは、ボトムでの細かな誘いを入れやすいプラグです。巻きの釣りから反応を変えたい時に、ルアーの存在感を抑えて見せられます。',
+      'ショボクレほうじ茶ラテは派手すぎないトーンで、プレッシャーの高い魚にも合わせやすいカラーです。',
+    ],
+    specs: [
+      { label: 'ウエイト', value: '3.7g' },
+      { label: 'タイプ', value: 'プラグ' },
+      { label: 'カラー', value: 'ショボクレほうじ茶ラテ' },
+      { label: 'レンジ', value: 'ボトム' },
+    ],
+    image:
+      '/skym-shop-assets/images/products/jackall-tapdancer-hojicha-front.jpg',
+    images: [
+      '/skym-shop-assets/images/products/jackall-tapdancer-hojicha-front.jpg',
+      '/skym-shop-assets/images/products/jackall-tapdancer-hojicha-back.jpg',
+    ],
+  },
+  {
+    id: 'daysprout-pico-chatakura-md-ss-turnover-gold',
+    name: 'ピコ・チャタクラMD-SS 2.4g（ターンオーバーゴールド）',
+    brand: 'DAYSPROUT',
+    category: 'プラグ',
+    price: '¥1,100',
+    summary:
+      '中層を丁寧に探れるクランク系プラグ。スローに見せたい場面のローテーションに。',
+    description: [
+      'ピコ・チャタクラMD-SS 2.4gは、スローに巻きながらレンジを合わせやすいプラグです。魚の追いが弱い時や、一定層に反応が集中する場面で使いやすいモデルです。',
+      'ターンオーバーゴールドは明滅で気づかせながら、強すぎない見せ方をしやすいカラーです。スプーンからプラグへ展開する時のつなぎにも向いています。',
+    ],
+    specs: [
+      { label: 'ウエイト', value: '2.4g' },
+      { label: 'タイプ', value: 'プラグ' },
+      { label: 'カラー', value: 'ターンオーバーゴールド' },
+      { label: 'レンジ', value: '中層' },
+    ],
+    image:
+      '/skym-shop-assets/images/products/daysprout-pico-chatakura-md-ss-front.jpg',
+    images: [
+      '/skym-shop-assets/images/products/daysprout-pico-chatakura-md-ss-front.jpg',
+      '/skym-shop-assets/images/products/daysprout-pico-chatakura-md-ss-back.jpg',
     ],
   },
 ]
