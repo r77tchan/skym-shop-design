@@ -44,9 +44,11 @@ export function SiteFooter() {
         />
         <FooterColumn
           items={[
-            { href: '#', label: 'Instagram' },
-            { href: '#', label: 'X' },
-            { href: '#', label: 'LINE' },
+            {
+              href: 'https://www.instagram.com/_skymshop/',
+              label: 'Instagram',
+            },
+            { href: 'https://x.com/skymshop', label: 'X' },
           ]}
           title="SNS"
         />
@@ -82,7 +84,12 @@ function FooterColumn({
                 {item.label}
               </Link>
             ) : (
-              <a className={footerLinkClassName} href={item.href}>
+              <a
+                className={footerLinkClassName}
+                href={item.href}
+                rel="noreferrer"
+                target="_blank"
+              >
                 {item.label}
               </a>
             )}
