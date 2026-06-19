@@ -1,5 +1,6 @@
 import { Navigate, Route, Routes } from 'react-router'
 
+import { CommercialTransactionsPage } from '@/pages/commercial-transactions-page'
 import { ContactPage } from '@/pages/contact-page'
 import { DesignSystemPreview } from '@/pages/design-system-preview'
 import { HomePage } from '@/pages/home-page'
@@ -17,6 +18,7 @@ export function App() {
       <Route element={<NewsPage />} path="/news" />
       <Route element={<NewsDetailPage />} path="/news/:newsId" />
       <Route element={<ContactPage />} path="/contact" />
+      <Route element={<CommercialTransactionsPage />} path="/law" />
       <Route element={<DesignSystemPreview />} path="/design-system" />
       <Route element={<Navigate replace to="/" />} path="*" />
     </Routes>

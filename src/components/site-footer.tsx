@@ -37,7 +37,7 @@ export function SiteFooter() {
         <FooterColumn
           items={[
             { label: 'お問い合わせ', to: '/contact' },
-            { href: '#', label: '特定商取引法' },
+            { label: '特定商取引法に基づく表記', to: '/law' },
             { href: '#', label: 'プライバシーポリシー' },
           ]}
           title="GUIDE"
