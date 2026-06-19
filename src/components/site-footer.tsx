@@ -36,7 +36,7 @@ export function SiteFooter() {
         />
         <FooterColumn
           items={[
-            { href: '#', label: 'お問い合わせ' },
+            { label: 'お問い合わせ', to: '/contact' },
             { href: '#', label: '特定商取引法' },
             { href: '#', label: 'プライバシーポリシー' },
           ]}

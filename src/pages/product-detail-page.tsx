@@ -1,6 +1,7 @@
 import {
   ArrowLeftIcon,
   ArrowRightIcon,
+  ChevronDownIcon,
   PackageCheckIcon,
   ShieldCheckIcon,
   ShoppingCartIcon,
@@ -290,14 +291,20 @@ function ProductPurchasePanel({
       <div className="mt-5 grid gap-4">
         <label className="grid gap-2">
           <span className="text-sm font-semibold">数量</span>
-          <select
-            className="h-11 cursor-pointer rounded-lg border bg-background px-3 text-sm outline-none focus:border-ring focus:ring-3 focus:ring-ring/30 disabled:cursor-not-allowed disabled:opacity-50"
-            disabled={soldOut}
-            defaultValue="1"
-          >
-            <option value="1">1</option>
-            <option value="2">2</option>
-          </select>
+          <div className="relative">
+            <select
+              className="h-11 w-full cursor-pointer appearance-none rounded-lg border bg-background py-0 pr-12 pl-3 text-sm outline-none focus:border-ring focus:ring-3 focus:ring-ring/30 disabled:cursor-not-allowed disabled:opacity-50"
+              disabled={soldOut}
+              defaultValue="1"
+            >
+              <option value="1">1</option>
+              <option value="2">2</option>
+            </select>
+            <ChevronDownIcon
+              aria-hidden="true"
+              className="pointer-events-none absolute top-1/2 right-4 size-4 -translate-y-1/2 text-foreground"
+            />
+          </div>
         </label>
 
         <div className="grid gap-2">
