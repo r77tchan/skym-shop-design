@@ -307,11 +307,11 @@ function ProductCard({ product }: { product: Product }) {
   const soldOut = product.status === 'SOLD OUT'
 
   return (
-    <article className="group grid min-w-0 gap-3">
+    <article className="group -m-2 grid min-w-0 gap-3 rounded-lg p-2 hover:bg-accent/35">
       <div className="relative">
         <Link
           aria-label={`${product.name}の商品プレビュー`}
-          className="block aspect-[3/4] overflow-hidden rounded-lg border bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none"
+          className="block aspect-[3/4] overflow-hidden rounded-lg border bg-muted group-hover:border-primary/45 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none"
           to={getProductPath(product)}
         >
           <img

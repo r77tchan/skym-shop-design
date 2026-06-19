@@ -1,5 +1,7 @@
-export const shopDescription =
-  '株式会社SKYM が運営するフィッシングタックル オンラインストア。トラウトを中心に、フィールドを愛するアングラーへ確かな道具をお届けします。'
+export const companyName = '株式会社SKYM'
+export const companyUrl = 'https://skym.co.jp/'
+
+export const shopDescription = `${companyName} が運営するフィッシングタックル オンラインストア。トラウトを中心に、フィールドを愛するアングラーへ確かな道具をお届けします。`
 
 export const newsItems = [
   {

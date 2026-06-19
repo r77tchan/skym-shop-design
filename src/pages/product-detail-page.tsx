@@ -88,7 +88,7 @@ export function ProductDetailPage() {
             <Button asChild className="w-fit px-3" size="sm" variant="ghost">
               <Link to="/items">
                 <ArrowLeftIcon data-icon="inline-start" />
-                商品一覧へ戻る
+                Back
               </Link>
             </Button>
           </div>
@@ -365,10 +365,10 @@ function RelatedProductCard({ product }: { product: Product }) {
 
   return (
     <Link
-      className="group grid min-w-0 gap-3 rounded-lg focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none"
+      className="group -m-2 grid min-w-0 gap-3 rounded-lg p-2 hover:bg-accent/35 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none"
       to={getProductPath(product)}
     >
-      <div className="relative aspect-[3/4] overflow-hidden rounded-lg border bg-muted">
+      <div className="relative aspect-[3/4] overflow-hidden rounded-lg border bg-muted group-hover:border-primary/45">
         <img
           alt=""
           className={cn(
