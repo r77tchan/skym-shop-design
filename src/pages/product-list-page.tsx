@@ -9,12 +9,18 @@ import {
 import { useId, useState } from 'react'
 import { Link } from 'react-router'
 
+import { ProductPrice } from '@/components/product-price'
+import { ProductStatusBadge } from '@/components/product-status-badge'
 import { SiteFooter } from '@/components/site-footer'
 import { SiteHeader } from '@/components/site-header'
-import { ProductStatusBadge } from '@/components/product-status-badge'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { assetUrl } from '@/lib/asset-url'
+import {
+  getPrimaryProductStatus,
+  isOnSale,
+  isSoldOut,
+} from '@/lib/product-status'
 import {
   getProductPath,
   productBrands,
@@ -31,6 +37,10 @@ import { cn } from '@/lib/utils'
 
 const allFilterLabel = '全て'
 
+function getProductPriceNumber(product: Product) {
+  return Number(product.price.replace(/[^\d]/g, ''))
+}
+
 const quickFilters = [
   {
     label: allFilterLabel,
@@ -39,19 +49,33 @@ const quickFilters = [
   },
   {
     label: '在庫あり',
-    count: products.filter((product) => product.status !== 'SOLD OUT').length,
+    count: products.filter((product) => !isSoldOut(product)).length,
   },
   {
     label: 'セール中',
-    count: products.filter((product) => product.status === 'SALE').length,
+    count: products.filter((product) => isOnSale(product)).length,
   },
 ]
 
 const priceRanges = [
   { label: allFilterLabel, count: products.length },
-  { label: '〜 ¥500', count: 5 },
-  { label: '¥501 〜 ¥1,000', count: 1 },
-  { label: '¥1,001 〜', count: 1 },
+  {
+    label: '〜 ¥500',
+    count: products.filter((product) => getProductPriceNumber(product) <= 500)
+      .length,
+  },
+  {
+    label: '¥501 〜 ¥1,000',
+    count: products.filter((product) => {
+      const price = getProductPriceNumber(product)
+      return price >= 501 && price <= 1000
+    }).length,
+  },
+  {
+    label: '¥1,001 〜',
+    count: products.filter((product) => getProductPriceNumber(product) >= 1001)
+      .length,
+  },
 ]
 
 type FilterItem = {
@@ -306,7 +330,8 @@ function FilterGroup({
 }
 
 function ProductCard({ product }: { product: Product }) {
-  const soldOut = product.status === 'SOLD OUT'
+  const soldOut = isSoldOut(product)
+  const primaryStatus = getPrimaryProductStatus(product)
 
   return (
     <article className="min-w-0">
@@ -322,9 +347,9 @@ function ProductCard({ product }: { product: Product }) {
               className={cn('size-full object-cover', soldOut && 'opacity-64')}
               src={assetUrl(product.image)}
             />
-            {product.status ? (
+            {primaryStatus ? (
               <div className="absolute top-2 left-2 flex flex-wrap gap-1">
-                <ProductStatusBadge status={product.status} />
+                <ProductStatusBadge status={primaryStatus} />
               </div>
             ) : null}
             {soldOut ? (
@@ -359,16 +384,11 @@ function ProductCard({ product }: { product: Product }) {
               </h2>
             </div>
 
-            <div className="min-w-0 pr-11">
-              <p
-                className={cn(
-                  'text-base leading-none font-semibold',
-                  soldOut ? 'text-muted-foreground' : 'text-foreground',
-                )}
-              >
-                {product.price}
-              </p>
-            </div>
+            <ProductPrice
+              className="min-w-0 pr-11"
+              muted={soldOut}
+              product={product}
+            />
           </div>
         </Link>
 

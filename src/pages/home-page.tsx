@@ -2,12 +2,14 @@ import { ArrowRightIcon } from 'lucide-react'
 import { Link } from 'react-router'
 
 import { NewsLabelBadge } from '@/components/news-label-badge'
+import { ProductPrice } from '@/components/product-price'
 import { ProductStatusBadge } from '@/components/product-status-badge'
 import { SiteFooter } from '@/components/site-footer'
 import { SiteHeader } from '@/components/site-header'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { assetUrl } from '@/lib/asset-url'
+import { getPrimaryProductStatus, isSoldOut } from '@/lib/product-status'
 import {
   getNewsItemPath,
   getProductPath,
@@ -137,7 +139,8 @@ export function HomePage() {
 }
 
 function ProductRailCard({ product }: { product: Product }) {
-  const soldOut = product.status === 'SOLD OUT'
+  const soldOut = isSoldOut(product)
+  const primaryStatus = getPrimaryProductStatus(product)
 
   return (
     <Link
@@ -153,9 +156,9 @@ function ProductRailCard({ product }: { product: Product }) {
           className={cn('size-full object-cover', soldOut && 'opacity-64')}
           src={assetUrl(product.image)}
         />
-        {product.status ? (
+        {primaryStatus ? (
           <div className="absolute top-2 left-2 flex flex-wrap gap-1">
-            <ProductStatusBadge status={product.status} />
+            <ProductStatusBadge status={primaryStatus} />
           </div>
         ) : null}
         {soldOut ? (
@@ -183,15 +186,7 @@ function ProductRailCard({ product }: { product: Product }) {
             {product.name}
           </p>
         </div>
-        <p
-          className={
-            soldOut
-              ? 'text-sm font-semibold text-muted-foreground'
-              : 'text-sm font-semibold'
-          }
-        >
-          {product.price}
-        </p>
+        <ProductPrice muted={soldOut} product={product} variant="rail" />
       </div>
     </Link>
   )

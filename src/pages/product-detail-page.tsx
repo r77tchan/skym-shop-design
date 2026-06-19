@@ -10,12 +10,14 @@ import {
 import { useState } from 'react'
 import { Link, Navigate, useParams } from 'react-router'
 
+import { ProductPrice } from '@/components/product-price'
 import { ProductStatusBadge } from '@/components/product-status-badge'
 import { SiteFooter } from '@/components/site-footer'
 import { SiteHeader } from '@/components/site-header'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { assetUrl } from '@/lib/asset-url'
+import { getPrimaryProductStatus, isSoldOut } from '@/lib/product-status'
 import { getProductPath, products, type Product } from '@/lib/shop-content'
 import {
   interactiveCardLinkClassName,
@@ -56,7 +58,7 @@ export function ProductDetailPage() {
     return <Navigate replace to="/items" />
   }
 
-  const soldOut = product.status === 'SOLD OUT'
+  const soldOut = isSoldOut(product)
   const relatedProducts = getRelatedProducts(product)
 
   return (
@@ -279,10 +281,12 @@ function ProductPurchasePanel({
   product: Product
   soldOut: boolean
 }) {
+  const primaryStatus = getPrimaryProductStatus(product)
+
   return (
     <div className="h-fit rounded-lg border bg-card p-5 lg:sticky lg:top-20">
       <div className="flex flex-wrap items-center gap-2">
-        <ProductStatusBadge status={product.status} />
+        <ProductStatusBadge status={primaryStatus} />
         <Badge variant="outline">{product.category}</Badge>
       </div>
 
@@ -297,9 +301,7 @@ function ProductPurchasePanel({
       </p>
 
       <div className="mt-6 border-y py-5">
-        <p className="text-3xl leading-none font-semibold text-foreground">
-          {product.price}
-        </p>
+        <ProductPrice product={product} variant="detail" />
         <p className="mt-2 text-xs text-muted-foreground">
           表示価格には消費税が含まれています。別途送料がかかります。
         </p>
@@ -365,7 +367,8 @@ function SectionHeading({
 }
 
 function RelatedProductCard({ product }: { product: Product }) {
-  const soldOut = product.status === 'SOLD OUT'
+  const soldOut = isSoldOut(product)
+  const primaryStatus = getPrimaryProductStatus(product)
 
   return (
     <article className="min-w-0">
@@ -381,9 +384,9 @@ function RelatedProductCard({ product }: { product: Product }) {
               className={cn('size-full object-cover', soldOut && 'opacity-64')}
               src={assetUrl(product.image)}
             />
-            {product.status ? (
+            {primaryStatus ? (
               <div className="absolute top-2 left-2 flex flex-wrap gap-1">
-                <ProductStatusBadge status={product.status} />
+                <ProductStatusBadge status={primaryStatus} />
               </div>
             ) : null}
             {soldOut ? (
@@ -418,16 +421,11 @@ function RelatedProductCard({ product }: { product: Product }) {
               </p>
             </div>
 
-            <div className="min-w-0 pr-11">
-              <p
-                className={cn(
-                  'text-base leading-none font-semibold',
-                  soldOut ? 'text-muted-foreground' : 'text-foreground',
-                )}
-              >
-                {product.price}
-              </p>
-            </div>
+            <ProductPrice
+              className="min-w-0 pr-11"
+              muted={soldOut}
+              product={product}
+            />
           </div>
         </Link>
 

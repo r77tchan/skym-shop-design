@@ -95,13 +95,19 @@ export type ProductCategory = Exclude<
 >
 export type ProductBrand = (typeof productBrands)[number]
 
+export type ProductSale = {
+  originalPrice: string
+  discountRate: string
+}
+
 export type Product = {
   id: string
   name: string
   brand: ProductBrand
   category: ProductCategory
   price: string
-  status?: ProductStatus
+  statuses?: readonly ProductStatus[]
+  sale?: ProductSale
   summary: string
   description: readonly string[]
   specs: readonly {
@@ -119,7 +125,7 @@ export const products: readonly Product[] = [
     brand: 'VELVET ARTS',
     category: 'スプーン',
     price: '¥500',
-    status: 'NEW',
+    statuses: ['NEW'],
     summary:
       'クリアウォーターで使いやすいシルバー。自然なフラッシングでスレたトラウトにも合わせやすい一枚。',
     description: [
@@ -148,7 +154,7 @@ export const products: readonly Product[] = [
     brand: '1089工房',
     category: 'プラグ',
     price: '¥1,980',
-    status: 'NEW',
+    statuses: ['NEW'],
     summary:
       'ゆっくり巻いて誘えるニョロ系プラグ。スプーンで追い切らない魚への次の一手に。',
     description: [
@@ -169,12 +175,98 @@ export const products: readonly Product[] = [
     ],
   },
   {
+    id: 'velvet-arts-forte-limited-glow',
+    name: 'フォルテ 2.1g（リミテッドグロー）',
+    brand: 'VELVET ARTS',
+    category: 'スプーン',
+    price: '¥500',
+    statuses: ['SOLD OUT', 'NEW'],
+    summary:
+      'グローを効かせた限定カラー。朝夕や濁りのある水質で魚に気づかせたい時に使いやすい一枚。',
+    description: [
+      'フォルテ 2.1gの扱いやすさはそのままに、視認性と明滅を足した限定カラーです。短時間で魚の反応を見たい場面や、放流後のサーチに向いています。',
+      '数量限定入荷分は完売しました。再入荷がある場合は、お知らせや商品一覧で案内します。',
+    ],
+    specs: [
+      { label: 'ウエイト', value: '2.1g' },
+      { label: 'タイプ', value: 'スプーン' },
+      { label: '推奨ライン', value: 'ナイロン・フロロ 2〜4lb' },
+      { label: 'レンジ', value: '表層〜中層' },
+    ],
+    image:
+      '/skym-shop-assets/images/products/161b25ac6ba3c56743cad57b38ad7ee5.jpg',
+    images: [
+      '/skym-shop-assets/images/products/161b25ac6ba3c56743cad57b38ad7ee5.jpg',
+      '/skym-shop-assets/images/products/69a73427456d41f2899fbc9a0d38e7af.jpg',
+    ],
+  },
+  {
+    id: 'rodio-craft-drift-spin-limited-sale',
+    name: 'ドリフトスピン 限定カラー',
+    brand: 'RODIO CRAFT',
+    category: 'プラグ',
+    price: '¥400',
+    statuses: ['NEW', 'SALE'],
+    sale: {
+      originalPrice: '¥500',
+      discountRate: '20%',
+    },
+    summary:
+      'スローに誘えるサーチ系プラグの限定カラー。新着対象をセール価格で選べる一つです。',
+    description: [
+      'ドリフトスピンは、スプーンで追い切らない魚に対して別軸の波動で探りを入れやすいアイテムです。限定カラーは視認性が高く、レンジ調整の確認にも使いやすい配色です。',
+      '新着商品のセール対象です。通常価格から割引した価格で表示しています。',
+    ],
+    specs: [
+      { label: 'タイプ', value: 'プラグ' },
+      { label: '用途', value: 'サーチ / フォロー' },
+      { label: '推奨ライン', value: 'ナイロン・フロロ 2〜4lb' },
+      { label: '状態', value: 'NEW / SALE対象' },
+    ],
+    image:
+      '/skym-shop-assets/images/products/033805811c6e8f5bae5e02633d66741f.jpg',
+    images: [
+      '/skym-shop-assets/images/products/033805811c6e8f5bae5e02633d66741f.jpg',
+      '/skym-shop-assets/images/products/19e666848cfebbab385005605c629181.jpg',
+    ],
+  },
+  {
+    id: 'skym-hook-trial-pack',
+    name: 'オリジナル フック トライアルパック',
+    brand: 'SKYM',
+    category: 'フック',
+    price: '¥700',
+    statuses: ['SOLD OUT', 'SALE', 'NEW'],
+    sale: {
+      originalPrice: '¥880',
+      discountRate: '20%',
+    },
+    summary:
+      'よく使うサイズを試しやすくまとめた新着トライアルパック。セール対象分は完売しました。',
+    description: [
+      '日々の交換用に使いやすいサイズを組み合わせたトライアルパックです。針先の状態を保ちやすく、スプーンや小型プラグの補修用として持っておきやすい内容です。',
+      '新着のセール対象として用意した在庫は完売しました。再販売の予定がある場合は、改めて案内します。',
+    ],
+    specs: [
+      { label: 'タイプ', value: '交換フック' },
+      { label: '内容', value: '複数サイズセット' },
+      { label: '用途', value: 'スプーン / 小型プラグ' },
+      { label: '状態', value: 'SOLD OUT / SALE / NEW' },
+    ],
+    image:
+      '/skym-shop-assets/images/products/04ac9a0e6908849f3cf8a5d496c1f898.jpg',
+    images: [
+      '/skym-shop-assets/images/products/04ac9a0e6908849f3cf8a5d496c1f898.jpg',
+      '/skym-shop-assets/images/products/46592f4f09cc5d786f4f5939510113e8.jpg',
+    ],
+  },
+  {
     id: 'velvet-arts-forte-masuou',
     name: 'フォルテ 2.1g（二代目鱒王）',
     brand: 'VELVET ARTS',
     category: 'スプーン',
     price: '¥500',
-    status: 'SOLD OUT',
+    statuses: ['SOLD OUT'],
     summary:
       '強めの明滅で魚に気づかせやすい、放流直後からサーチまで使いやすい2.1gスプーン。',
     description: [
@@ -200,7 +292,7 @@ export const products: readonly Product[] = [
     brand: 'ValkeIN',
     category: 'スプーン',
     price: '¥400',
-    status: 'NEW',
+    statuses: ['NEW'],
     summary:
       '定番HI BURSTの1.6g。UVフラッシュで魚に気づかせつつ、テンポよくレンジを刻めます。',
     description: [
@@ -226,7 +318,7 @@ export const products: readonly Product[] = [
     brand: 'VELVET ARTS',
     category: 'スプーン',
     price: '¥500',
-    status: 'SOLD OUT',
+    statuses: ['SOLD OUT'],
     summary:
       'イベント感のある強めカラー。魚の目線を集めたい朝夕や濁りのある状況に。',
     description: [
@@ -252,7 +344,7 @@ export const products: readonly Product[] = [
     brand: 'RODIO CRAFT',
     category: 'プラグ',
     price: '¥500',
-    status: 'NEW',
+    statuses: ['NEW'],
     summary:
       'スプーンで届かない魚に入れやすいサーチ系プラグ。レンジ変化をつけたい時に。',
     description: [
@@ -270,6 +362,36 @@ export const products: readonly Product[] = [
     images: [
       '/skym-shop-assets/images/products/033805811c6e8f5bae5e02633d66741f.jpg',
       '/skym-shop-assets/images/products/19e666848cfebbab385005605c629181.jpg',
+    ],
+  },
+  {
+    id: 'valkein-hi-burst-sale-sold-out',
+    name: 'HI BURST 1.6g セールカラー',
+    brand: 'ValkeIN',
+    category: 'スプーン',
+    price: '¥320',
+    statuses: ['SOLD OUT', 'SALE'],
+    sale: {
+      originalPrice: '¥400',
+      discountRate: '20%',
+    },
+    summary:
+      '定番HI BURSTのセール対象カラー。使いやすい1.6gですが、対象在庫は完売しています。',
+    description: [
+      'HI BURST 1.6gは、巻き速度の調整がしやすく、表層から中層までテンポよく探れるスプーンです。セール対象カラーとして用意した在庫は完売しました。',
+      '通常価格から割引したセール価格を表示しています。再入荷時の価格は変更となる場合があります。',
+    ],
+    specs: [
+      { label: 'ウエイト', value: '1.6g' },
+      { label: 'タイプ', value: 'スプーン' },
+      { label: '推奨ライン', value: 'ナイロン・フロロ 2〜4lb' },
+      { label: '状態', value: 'SOLD OUT / SALE対象' },
+    ],
+    image:
+      '/skym-shop-assets/images/products/01ffb9bb455cb67ba79e0f8049e3c6e0.jpg',
+    images: [
+      '/skym-shop-assets/images/products/01ffb9bb455cb67ba79e0f8049e3c6e0.jpg',
+      '/skym-shop-assets/images/products/745f95f1b68fd2a62f47f427db72f9b1.jpg',
     ],
   },
   {
@@ -303,7 +425,11 @@ export const products: readonly Product[] = [
     brand: 'SKYM',
     category: 'フック',
     price: '¥880',
-    status: 'SALE',
+    statuses: ['SALE'],
+    sale: {
+      originalPrice: '¥1,100',
+      discountRate: '20%',
+    },
     summary:
       '日々の交換用にストックしやすいフックセット。針先の管理をしやすい消耗品パック。',
     description: [
