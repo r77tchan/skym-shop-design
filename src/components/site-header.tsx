@@ -8,18 +8,60 @@ import { cn } from '@/lib/utils'
 
 type SiteHeaderProps = {
   transparentOnTop?: boolean
+  transparentOnTopFrom?: 'sm'
 }
 
-export function SiteHeader({ transparentOnTop = false }: SiteHeaderProps) {
+const transparentOnTopMediaQueries = {
+  sm: '(min-width: 40rem)',
+} as const
+
+function isTransparentOnTopViewport(
+  from: SiteHeaderProps['transparentOnTopFrom'],
+) {
+  if (!from || typeof window === 'undefined') {
+    return true
+  }
+
+  return window.matchMedia(transparentOnTopMediaQueries[from]).matches
+}
+
+export function SiteHeader({
+  transparentOnTop = false,
+  transparentOnTopFrom,
+}: SiteHeaderProps) {
+  const [isTransparentViewport, setIsTransparentViewport] = useState(() =>
+    isTransparentOnTopViewport(transparentOnTopFrom),
+  )
+  const canUseTransparentOnTop = transparentOnTop && isTransparentViewport
   const [isPastTop, setIsPastTop] = useState(() =>
-    transparentOnTop && typeof window !== 'undefined'
+    canUseTransparentOnTop && typeof window !== 'undefined'
       ? window.scrollY > 24
       : false,
   )
-  const isHeaderPinned = !transparentOnTop || isPastTop
+  const isHeaderPinned = !canUseTransparentOnTop || isPastTop
 
   useEffect(() => {
-    if (!transparentOnTop) {
+    if (!transparentOnTop || !transparentOnTopFrom) {
+      return
+    }
+
+    const mediaQueryList = window.matchMedia(
+      transparentOnTopMediaQueries[transparentOnTopFrom],
+    )
+    const updateTransparentViewport = () => {
+      setIsTransparentViewport(mediaQueryList.matches)
+    }
+
+    updateTransparentViewport()
+    mediaQueryList.addEventListener('change', updateTransparentViewport)
+
+    return () => {
+      mediaQueryList.removeEventListener('change', updateTransparentViewport)
+    }
+  }, [transparentOnTop, transparentOnTopFrom])
+
+  useEffect(() => {
+    if (!canUseTransparentOnTop) {
       return
     }
 
@@ -27,12 +69,13 @@ export function SiteHeader({ transparentOnTop = false }: SiteHeaderProps) {
       setIsPastTop(window.scrollY > 24)
     }
 
+    updateHeaderState()
     window.addEventListener('scroll', updateHeaderState, { passive: true })
 
     return () => {
       window.removeEventListener('scroll', updateHeaderState)
     }
-  }, [transparentOnTop])
+  }, [canUseTransparentOnTop])
 
   return (
     <header

@@ -28,8 +28,8 @@ import { cn } from '@/lib/utils'
 
 export function HomePage() {
   return (
-    <main className="min-h-svh bg-background pt-16 text-foreground">
-      <SiteHeader />
+    <main className="min-h-svh bg-background pt-[calc(4rem+1px)] text-foreground sm:pt-0">
+      <SiteHeader transparentOnTop transparentOnTopFrom="sm" />
 
       <section className="relative isolate flex aspect-[16/9] min-h-0 items-end overflow-hidden sm:aspect-auto sm:min-h-[620px] lg:min-h-[88svh]">
         <img

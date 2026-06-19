@@ -237,7 +237,7 @@ function ProductMedia({ product }: { product: Product }) {
       <div className="overflow-hidden rounded-lg border bg-muted">
         <img
           alt=""
-          className="aspect-square size-full object-cover lg:aspect-[5/6]"
+          className="h-auto w-full object-contain"
           src={assetUrl(selectedImage)}
         />
       </div>
