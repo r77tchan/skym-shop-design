@@ -210,6 +210,21 @@ body[data-scroll-locked] .site-header {
   margin-inline-end: var(--removed-body-scroll-bar-size, 0px);
 }
 
+.admin-layout-header-row {
+  min-height: 4.5rem;
+}
+
+@media (min-width: 64rem) {
+  .admin-layout-header-row {
+    height: 4.5rem;
+  }
+
+  .admin-layout-topbar-inner {
+    height: 100%;
+    padding-block: 0;
+  }
+}
+
 .site-header--top {
   --site-header-foreground: oklch(1 0 0);
   --site-header-control-bg: oklch(0 0 0 / 10%);
