@@ -13,16 +13,15 @@ import { RelatedGuideLinks } from '@/components/related-guide-links'
 import { SiteFooter } from '@/components/site-footer'
 import { SiteHeader } from '@/components/site-header'
 import { Button } from '@/components/ui/button'
-
-const fieldClassName =
-  'h-11 rounded-lg border bg-background px-3 text-base outline-none placeholder:text-muted-foreground focus:border-ring focus:ring-3 focus:ring-ring/30'
+import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
 
 const selectFieldClassName =
-  'h-11 w-full cursor-pointer appearance-none rounded-lg border bg-background py-0 pr-12 pl-3 text-base outline-none focus:border-ring focus:ring-3 focus:ring-ring/30'
+  'h-11 w-full min-w-0 cursor-pointer appearance-none rounded-lg border border-input bg-background py-0 pr-12 pl-3 text-base outline-none focus:border-ring focus:ring-3 focus:ring-ring/30 md:text-sm'
 
-const fieldGroupClassName = 'grid items-start gap-4 sm:grid-cols-2'
+const fieldGroupClassName = 'grid min-w-0 items-start gap-4 sm:grid-cols-2'
 
-const fieldWrapperClassName = 'grid content-start gap-2'
+const fieldWrapperClassName = 'grid min-w-0 content-start gap-2'
 
 const contactTopics = [
   {
@@ -79,13 +78,12 @@ export function ContactPage() {
 
       <section>
         <div className="mx-auto grid max-w-7xl gap-6 px-gutter py-8 lg:grid-cols-[minmax(0,1fr)_360px] lg:py-10">
-          <form className="grid gap-5 rounded-lg border bg-card p-5">
+          <form className="grid min-w-0 gap-5 rounded-lg border bg-card p-5">
             <div className={fieldGroupClassName}>
               <label className={fieldWrapperClassName}>
                 <span className="text-sm font-semibold">お名前</span>
-                <input
+                <Input
                   autoComplete="name"
-                  className={fieldClassName}
                   placeholder="山田 太郎"
                   type="text"
                 />
@@ -93,9 +91,8 @@ export function ContactPage() {
 
               <label className={fieldWrapperClassName}>
                 <span className="text-sm font-semibold">メールアドレス</span>
-                <input
+                <Input
                   autoComplete="email"
-                  className={fieldClassName}
                   placeholder="sample@example.com"
                   type="email"
                 />
@@ -121,29 +118,18 @@ export function ContactPage() {
 
               <label className={fieldWrapperClassName}>
                 <span className="text-sm font-semibold">注文番号</span>
-                <input
-                  className={fieldClassName}
-                  placeholder="任意"
-                  type="text"
-                />
+                <Input placeholder="任意" type="text" />
               </label>
             </div>
 
             <label className={fieldWrapperClassName}>
               <span className="text-sm font-semibold">件名</span>
-              <input
-                className={fieldClassName}
-                placeholder="お問い合わせの件名"
-                type="text"
-              />
+              <Input placeholder="お問い合わせの件名" type="text" />
             </label>
 
             <label className={fieldWrapperClassName}>
               <span className="text-sm font-semibold">お問い合わせ内容</span>
-              <textarea
-                className="min-h-40 resize-y rounded-lg border bg-background px-3 py-3 text-base leading-6 outline-none placeholder:text-muted-foreground focus:border-ring focus:ring-3 focus:ring-ring/30"
-                placeholder="商品名、カラー、注文番号など、確認に必要な内容をご入力ください。"
-              />
+              <Textarea placeholder="商品名、カラー、注文番号など、確認に必要な内容をご入力ください。" />
             </label>
 
             <div className="flex justify-end border-t pt-5">
@@ -154,14 +140,17 @@ export function ContactPage() {
             </div>
           </form>
 
-          <aside className="grid content-start gap-3">
+          <aside className="grid min-w-0 content-start gap-3">
             {contactTopics.map((topic) => (
-              <div className="rounded-lg border bg-card p-4" key={topic.title}>
+              <div
+                className="min-w-0 rounded-lg border bg-card p-4"
+                key={topic.title}
+              >
                 <div className="flex items-start gap-3">
                   <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-accent text-accent-foreground">
                     <topic.icon aria-hidden="true" className="size-5" />
                   </div>
-                  <div>
+                  <div className="min-w-0">
                     <p className="text-sm font-semibold">{topic.title}</p>
                     <p className="mt-1 text-xs leading-5 text-muted-foreground">
                       {topic.text}
@@ -177,12 +166,12 @@ export function ContactPage() {
               title="ご確認ください"
             />
 
-            <div className="rounded-lg border bg-card p-4">
+            <div className="min-w-0 rounded-lg border bg-card p-4">
               <div className="flex items-start gap-3">
                 <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-accent text-accent-foreground">
                   <PhoneIcon aria-hidden="true" className="size-5" />
                 </div>
-                <div>
+                <div className="min-w-0">
                   <p className="text-sm font-semibold">電話でのお問い合わせ</p>
                   <div className="mt-1 grid gap-1 text-xs leading-5 text-muted-foreground">
                     <p>
@@ -209,12 +198,12 @@ export function ContactPage() {
               </div>
             </div>
 
-            <div className="rounded-lg border bg-card p-4">
+            <div className="min-w-0 rounded-lg border bg-card p-4">
               <div className="flex items-start gap-3">
                 <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-accent text-accent-foreground">
                   <MailIcon aria-hidden="true" className="size-5" />
                 </div>
-                <div>
+                <div className="min-w-0">
                   <p className="text-sm font-semibold">メール受信設定</p>
                   <p className="mt-1 text-xs leading-5 text-muted-foreground">
                     返信が届かない場合は、迷惑メールフォルダや受信設定をご確認ください。

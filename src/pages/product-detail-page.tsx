@@ -310,7 +310,7 @@ function ProductPurchasePanel({
           <span className="text-sm font-semibold">数量</span>
           <div className="relative">
             <select
-              className="h-11 w-full cursor-pointer appearance-none rounded-lg border bg-background py-0 pr-12 pl-3 text-sm outline-none focus:border-ring focus:ring-3 focus:ring-ring/30 disabled:cursor-not-allowed disabled:opacity-50"
+              className="h-11 w-full min-w-0 cursor-pointer appearance-none rounded-lg border border-input bg-background py-0 pr-12 pl-3 text-base outline-none focus:border-ring focus:ring-3 focus:ring-ring/30 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
               disabled={soldOut}
               defaultValue="1"
             >

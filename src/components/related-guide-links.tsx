@@ -57,7 +57,7 @@ export function RelatedGuideLinks({
   const links = guideLinks.filter((link) => link.id !== current)
 
   return (
-    <div className={cn('rounded-lg border bg-card p-4', className)}>
+    <div className={cn('min-w-0 rounded-lg border bg-card p-4', className)}>
       <p className="text-sm font-semibold">{title}</p>
       <p className="mt-1 text-xs leading-5 text-muted-foreground">{text}</p>
 
@@ -68,7 +68,7 @@ export function RelatedGuideLinks({
             key={link.id}
             to={link.to}
           >
-            <span className="flex size-8 items-center justify-center rounded-md bg-accent text-accent-foreground">
+            <span className="flex size-8 shrink-0 items-center justify-center rounded-md bg-accent text-accent-foreground">
               <link.icon aria-hidden="true" className="size-4" />
             </span>
             <span className="min-w-0">

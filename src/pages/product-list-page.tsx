@@ -14,6 +14,7 @@ import { SiteFooter } from '@/components/site-footer'
 import { SiteHeader } from '@/components/site-header'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 import { assetUrl } from '@/lib/asset-url'
 import {
   getPrimaryProductStatus,
@@ -120,14 +121,14 @@ export function ProductListPage() {
       <section className="border-b bg-background">
         <div className="mx-auto grid max-w-7xl gap-4 px-gutter py-4">
           <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_auto]">
-            <label className="relative block">
+            <label className="relative block min-w-0">
               <SearchIcon
                 aria-hidden="true"
                 className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground"
               />
-              <input
+              <Input
                 aria-label="商品検索"
-                className="h-11 w-full rounded-lg border bg-card pr-3 pl-10 text-sm outline-none placeholder:text-muted-foreground focus:border-ring focus:ring-3 focus:ring-ring/30"
+                className="bg-card pr-3 pl-10"
                 placeholder="商品名・ブランドで探す"
                 type="search"
               />
