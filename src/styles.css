@@ -206,6 +206,10 @@
   color: var(--site-header-foreground);
 }
 
+body[data-scroll-locked] .site-header {
+  margin-inline-end: var(--removed-body-scroll-bar-size, 0px);
+}
+
 .site-header--top {
   --site-header-foreground: oklch(1 0 0);
   --site-header-control-bg: oklch(0 0 0 / 10%);
