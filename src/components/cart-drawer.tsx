@@ -81,7 +81,7 @@ export function CartDrawer({ buttonClassName }: CartDrawerProps) {
 
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 z-[70] bg-black/45" />
-        <Dialog.Content className="cart-drawer-panel fixed inset-y-0 right-0 z-[80] flex w-[calc(100vw-var(--gutter))] max-w-[28rem] flex-col border-l bg-background shadow-2xl outline-none">
+        <Dialog.Content className="cart-drawer-panel fixed inset-y-0 right-0 z-[80] flex flex-col border-l bg-background shadow-2xl outline-none">
           <div className="flex items-start justify-between gap-4 border-b px-4 py-4 sm:px-5">
             <div>
               <Dialog.Title className="font-heading text-xl font-semibold">

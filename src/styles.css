@@ -285,10 +285,12 @@
 }
 
 .cart-drawer-panel {
+  --cart-drawer-edge-gap: max(2rem, var(--gutter));
   --cart-drawer-enter-duration: 160ms;
   --cart-drawer-exit-duration: 120ms;
   transform: translateX(0);
   will-change: transform;
+  width: min(28rem, calc(100vw - var(--cart-drawer-edge-gap)));
 }
 
 .cart-drawer-panel[data-state='open'] {
