@@ -81,7 +81,7 @@ export function CartDrawer({ buttonClassName }: CartDrawerProps) {
 
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 z-[70] bg-black/45" />
-        <Dialog.Content className="fixed inset-y-0 right-0 z-[80] flex w-full max-w-[28rem] flex-col border-l bg-background shadow-2xl outline-none">
+        <Dialog.Content className="cart-drawer-panel fixed inset-y-0 right-0 z-[80] flex w-[calc(100vw-var(--gutter))] max-w-[28rem] flex-col border-l bg-background shadow-2xl outline-none">
           <div className="flex items-start justify-between gap-4 border-b px-4 py-4 sm:px-5">
             <div>
               <Dialog.Title className="font-heading text-xl font-semibold">
@@ -104,20 +104,7 @@ export function CartDrawer({ buttonClassName }: CartDrawerProps) {
 
           {cartLines.length > 0 ? (
             <>
-              <div className="min-h-0 flex-1 overflow-y-auto px-4 py-2 sm:px-5">
-                <ul className="divide-y">
-                  {cartLines.map((line) => (
-                    <CartLineItem
-                      key={line.product.id}
-                      line={line}
-                      onRemove={removeItem}
-                      onUpdateQuantity={updateQuantity}
-                    />
-                  ))}
-                </ul>
-              </div>
-
-              <div className="border-t bg-card px-4 py-4 sm:px-5">
+              <div className="border-b bg-card px-4 py-4 sm:px-5">
                 <dl className="grid gap-2 text-sm">
                   <div className="flex items-center justify-between gap-4">
                     <dt className="text-muted-foreground">商品小計</dt>
@@ -137,6 +124,19 @@ export function CartDrawer({ buttonClassName }: CartDrawerProps) {
                   <CreditCardIcon data-icon="inline-start" />
                   レジに進む
                 </Button>
+              </div>
+
+              <div className="min-h-0 flex-1 overflow-y-auto px-4 py-2 sm:px-5">
+                <ul className="divide-y">
+                  {cartLines.map((line) => (
+                    <CartLineItem
+                      key={line.product.id}
+                      line={line}
+                      onRemove={removeItem}
+                      onUpdateQuantity={updateQuantity}
+                    />
+                  ))}
+                </ul>
               </div>
             </>
           ) : (
