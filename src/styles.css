@@ -285,7 +285,7 @@
 }
 
 .cart-drawer-panel {
-  --cart-drawer-edge-gap: max(2rem, var(--gutter));
+  --cart-drawer-edge-gap: max(3rem, var(--gutter));
   --cart-drawer-enter-duration: 160ms;
   --cart-drawer-exit-duration: 120ms;
   transform: translateX(0);
