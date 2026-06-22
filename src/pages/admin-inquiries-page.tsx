@@ -76,7 +76,7 @@ const adminInquiries: AdminInquiry[] = [
     topic: '返品・交換について',
     subject: '返金処理の進行状況',
     summary:
-      '返金処理中の注文について、Stripe側の返金反映予定日と管理者確認の状況を知りたい。',
+      '返金処理中の注文について、Stripe側の返金反映予定日と担当者確認の状況を知りたい。',
     orderId: '#SKYM-1024',
     status: '未対応',
     priority: '要確認',
@@ -222,7 +222,7 @@ export function AdminInquiriesPage() {
       <InquiriesPageHeader />
 
       <section
-        aria-label="問い合わせ管理の主要指標"
+        aria-label="お問い合わせの主要指標"
         className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4"
       >
         {inquiryStats.map((stat) => {
@@ -328,7 +328,7 @@ function InquiriesPageHeader() {
     <section className="flex flex-col gap-4 border-b pb-5 sm:flex-row sm:items-end sm:justify-between">
       <div className="min-w-0">
         <h1 className="font-heading text-2xl font-semibold tracking-normal sm:text-3xl">
-          お問い合わせ管理
+          お問い合わせ
         </h1>
       </div>
 

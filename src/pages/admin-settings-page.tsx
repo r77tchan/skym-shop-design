@@ -41,7 +41,7 @@ const settingStats = [
     colorClassName: 'bg-primary/10 text-primary',
   },
   {
-    label: '管理者認証',
+    label: '認証',
     value: 'Google',
     detail: 'Gmail許可リスト',
     icon: ShieldCheckIcon,
@@ -60,7 +60,7 @@ const storeSettings: SettingRow[] = [
   {
     label: 'ストア名',
     value: 'SKYMSHOP',
-    detail: 'ヘッダー、管理画面、通知メールで使用',
+    detail: 'ヘッダー、通知メールで使用',
     state: '有効',
   },
   {
@@ -102,19 +102,19 @@ const authSettings: SettingRow[] = [
   {
     label: '認証方式',
     value: 'Supabase Auth / Google',
-    detail: '許可されたGmailアカウントのみ管理画面に入れる想定',
+    detail: '許可されたGmailアカウントのみ入れる想定',
     state: '有効',
   },
   {
     label: 'オーナー',
     value: 'owner.skym@gmail.com',
-    detail: '全設定を変更できる管理者',
+    detail: '全設定を変更できる権限',
     state: '有効',
   },
   {
-    label: '運用管理',
+    label: '運用',
     value: 'manager.skym@gmail.com',
-    detail: '商品、注文、問い合わせを操作できる管理者',
+    detail: '商品、注文、問い合わせを操作できる権限',
     state: '下書き',
   },
 ]
@@ -242,7 +242,7 @@ function StoreSettingsPanel() {
   return (
     <SettingsPanel
       action="基本情報を編集"
-      description="公開ストアと管理画面で共通して使う情報"
+      description="公開ストアと通知メールで共通して使う情報"
       icon={StoreIcon}
       rows={storeSettings}
       title="ストア基本情報"
@@ -280,11 +280,11 @@ function PaymentSettingsPanel() {
 function AuthSettingsPanel() {
   return (
     <SettingsPanel
-      action="管理者を追加"
+      action="ユーザーを追加"
       description="Googleログインを許可するGmailアカウント"
       icon={KeyRoundIcon}
       rows={authSettings}
-      title="管理者認証"
+      title="認証"
     >
       <div className="grid gap-3 rounded-lg border bg-muted/35 p-3">
         <div className="flex items-start gap-3">
@@ -294,7 +294,7 @@ function AuthSettingsPanel() {
           <div className="min-w-0">
             <p className="text-sm font-semibold">Googleアカウントでログイン</p>
             <p className="mt-1 text-xs leading-5 text-muted-foreground">
-              管理者として追加したGmailだけを許可する想定です。
+              許可リストに追加したGmailだけを許可する想定です。
             </p>
           </div>
         </div>
@@ -322,7 +322,7 @@ function NotificationSettingsPanel() {
               問い合わせはDB保存 + メール通知
             </p>
             <p className="mt-1 text-xs leading-5 text-muted-foreground">
-              管理画面で履歴を残しつつ、店舗用メールにも通知する想定です。
+              この画面で履歴を残しつつ、店舗用メールにも通知する想定です。
             </p>
           </div>
         </div>
@@ -406,7 +406,7 @@ function SettingsGuidePanel() {
             公開前チェック
           </h2>
           <p className="mt-1 text-xs leading-5 text-muted-foreground">
-            本番公開前に、ドメイン、Stripe本番環境、通知メール、管理者アカウントを確認します。
+            本番公開前に、ドメイン、Stripe本番環境、通知メール、認証アカウントを確認します。
           </p>
         </div>
       </div>

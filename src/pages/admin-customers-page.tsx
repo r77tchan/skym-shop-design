@@ -7,8 +7,8 @@ import {
   DownloadIcon,
   MailIcon,
   MoreHorizontalIcon,
-  ReceiptTextIcon,
   SearchIcon,
+  ShoppingCartIcon,
   SlidersHorizontalIcon,
   UserPlusIcon,
   UsersIcon,
@@ -238,7 +238,7 @@ export function AdminCustomersPage() {
       <CustomersPageHeader />
 
       <section
-        aria-label="顧客管理の主要指標"
+        aria-label="顧客の主要指標"
         className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4"
       >
         {customerStats.map((stat) => {
@@ -344,7 +344,7 @@ function CustomersPageHeader() {
     <section className="flex flex-col gap-4 border-b pb-5 sm:flex-row sm:items-end sm:justify-between">
       <div className="min-w-0">
         <h1 className="font-heading text-2xl font-semibold tracking-normal sm:text-3xl">
-          顧客管理
+          顧客
         </h1>
       </div>
 
@@ -504,7 +504,7 @@ function CustomerMobileCard({ customer }: { customer: AdminCustomer }) {
 
       <div className="flex flex-wrap gap-2">
         <Button className="h-9 px-3" variant="outline">
-          <ReceiptTextIcon data-icon="inline-start" />
+          <ShoppingCartIcon data-icon="inline-start" />
           注文
         </Button>
         <Button className="h-9 px-3" variant="outline">

@@ -37,10 +37,6 @@ import { cn } from '@/lib/utils'
 
 const allFilterLabel = '全て'
 
-function getProductPriceNumber(product: Product) {
-  return Number(product.price.replace(/[^\d]/g, ''))
-}
-
 const quickFilters = [
   {
     label: allFilterLabel,
@@ -54,27 +50,6 @@ const quickFilters = [
   {
     label: 'セール中',
     count: products.filter((product) => isOnSale(product)).length,
-  },
-]
-
-const priceRanges = [
-  { label: allFilterLabel, count: products.length },
-  {
-    label: '〜 ¥500',
-    count: products.filter((product) => getProductPriceNumber(product) <= 500)
-      .length,
-  },
-  {
-    label: '¥501 〜 ¥1,000',
-    count: products.filter((product) => {
-      const price = getProductPriceNumber(product)
-      return price >= 501 && price <= 1000
-    }).length,
-  },
-  {
-    label: '¥1,001 〜',
-    count: products.filter((product) => getProductPriceNumber(product) >= 1001)
-      .length,
   },
 ]
 
@@ -252,7 +227,6 @@ function FilterPanel() {
       <div className="mt-4 grid gap-3">
         <FilterGroup defaultOpen items={categoryItems} title="カテゴリー" />
         <FilterGroup items={brandItems} title="ブランド" />
-        <FilterGroup items={priceRanges} title="価格帯" />
       </div>
     </aside>
   )

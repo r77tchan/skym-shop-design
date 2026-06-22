@@ -7,8 +7,8 @@ import {
   MailIcon,
   MoreHorizontalIcon,
   PackageCheckIcon,
-  ReceiptTextIcon,
   SearchIcon,
+  ShoppingCartIcon,
   SlidersHorizontalIcon,
   TruckIcon,
 } from 'lucide-react'
@@ -102,7 +102,7 @@ const adminOrders: AdminOrder[] = [
     fulfillmentStatus: '確認待ち',
     paymentMethod: 'Stripe',
     delivery: '宅急便',
-    dueLabel: '管理者確認',
+    dueLabel: '担当者確認',
   },
   {
     id: '#SKYM-1023',
@@ -125,7 +125,7 @@ const orderStats = [
     label: '本日の注文',
     value: '12件',
     detail: 'Stripe決済 12件',
-    icon: ReceiptTextIcon,
+    icon: ShoppingCartIcon,
     colorClassName: 'bg-primary/10 text-primary',
   },
   {
@@ -215,7 +215,7 @@ export function AdminOrdersPage() {
       <OrdersPageHeader />
 
       <section
-        aria-label="注文管理の主要指標"
+        aria-label="注文の主要指標"
         className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4"
       >
         {orderStats.map((stat) => {
@@ -321,7 +321,7 @@ function OrdersPageHeader() {
     <section className="flex flex-col gap-4 border-b pb-5 sm:flex-row sm:items-end sm:justify-between">
       <div className="min-w-0">
         <h1 className="font-heading text-2xl font-semibold tracking-normal sm:text-3xl">
-          注文管理
+          注文
         </h1>
       </div>
 
@@ -480,7 +480,7 @@ function OrderMobileCard({ order }: { order: AdminOrder }) {
 
       <div className="flex flex-wrap gap-2">
         <Button className="h-9 px-3" variant="outline">
-          <ReceiptTextIcon data-icon="inline-start" />
+          <ShoppingCartIcon data-icon="inline-start" />
           詳細
         </Button>
         <Button className="h-9 px-3" variant="outline">

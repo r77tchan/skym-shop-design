@@ -2,7 +2,6 @@ import {
   ArrowUpDownIcon,
   ChevronDownIcon,
   EyeIcon,
-  FileDownIcon,
   MoreHorizontalIcon,
   PencilIcon,
   PlusIcon,
@@ -24,8 +23,6 @@ import {
 } from '@/lib/product-status'
 import {
   getProductPath,
-  productBrands,
-  productCategories,
   products,
   type Product,
 } from '@/lib/shop-content'
@@ -45,29 +42,6 @@ const adminProductRows = products.map((product, index) => {
   }
 })
 
-const productStats = [
-  {
-    label: '登録商品',
-    value: `${products.length}件`,
-    detail: `${productCategories.length - 1}カテゴリ / ${productBrands.length}ブランド`,
-  },
-  {
-    label: '公開中',
-    value: `${products.filter((product) => !isSoldOut(product)).length}件`,
-    detail: 'ストアに表示中',
-  },
-  {
-    label: '在庫注意',
-    value: `${adminProductRows.filter((row) => row.stock > 0 && row.stock <= 5).length}件`,
-    detail: '残り5点以下',
-  },
-  {
-    label: 'セール',
-    value: `${products.filter((product) => isOnSale(product)).length}件`,
-    detail: '割引価格を表示中',
-  },
-]
-
 const quickFilters = [
   {
     label: '全て',
@@ -75,21 +49,20 @@ const quickFilters = [
     active: true,
   },
   {
-    label: '公開中',
+    label: '在庫あり',
     count: products.filter((product) => !isSoldOut(product)).length,
   },
   {
-    label: '在庫注意',
-    count: adminProductRows.filter((row) => row.stock > 0 && row.stock <= 5)
-      .length,
+    label: 'セール中',
+    count: products.filter((product) => isOnSale(product)).length,
   },
   {
     label: 'SOLD OUT',
     count: products.filter((product) => isSoldOut(product)).length,
   },
   {
-    label: 'SALE',
-    count: products.filter((product) => isOnSale(product)).length,
+    label: '非公開',
+    count: 0,
   },
 ]
 
@@ -117,28 +90,6 @@ export function AdminProductsPage() {
   return (
     <>
       <ProductsPageHeader />
-
-      <section
-        aria-label="商品管理の主要指標"
-        className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4"
-      >
-        {productStats.map((stat) => (
-          <article
-            className="min-w-0 rounded-lg border bg-card p-4"
-            key={stat.label}
-          >
-            <p className="truncate text-xs font-medium text-muted-foreground">
-              {stat.label}
-            </p>
-            <p className="mt-2 font-heading text-2xl font-semibold">
-              {stat.value}
-            </p>
-            <p className="mt-3 truncate text-xs text-muted-foreground">
-              {stat.detail}
-            </p>
-          </article>
-        ))}
-      </section>
 
       <section className="grid gap-4 rounded-lg border bg-card p-4">
         <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_auto]">
@@ -209,15 +160,11 @@ function ProductsPageHeader() {
     <section className="flex flex-col gap-4 border-b pb-5 sm:flex-row sm:items-end sm:justify-between">
       <div className="min-w-0">
         <h1 className="font-heading text-2xl font-semibold tracking-normal sm:text-3xl">
-          商品管理
+          商品
         </h1>
       </div>
 
       <div className="flex flex-wrap items-center gap-2">
-        <Button className="h-10 px-3" variant="outline">
-          <FileDownIcon data-icon="inline-start" />
-          CSV
-        </Button>
         <Button className="h-10 px-3">
           <PlusIcon data-icon="inline-start" />
           商品登録

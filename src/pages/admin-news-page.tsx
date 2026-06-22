@@ -152,7 +152,7 @@ export function AdminNewsPage() {
       <NewsPageHeader />
 
       <section
-        aria-label="お知らせ管理の主要指標"
+        aria-label="お知らせの主要指標"
         className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4"
       >
         {newsStats.map((stat) => {
@@ -258,7 +258,7 @@ function NewsPageHeader() {
     <section className="flex flex-col gap-4 border-b pb-5 sm:flex-row sm:items-end sm:justify-between">
       <div className="min-w-0">
         <h1 className="font-heading text-2xl font-semibold tracking-normal sm:text-3xl">
-          お知らせ管理
+          お知らせ
         </h1>
       </div>
 

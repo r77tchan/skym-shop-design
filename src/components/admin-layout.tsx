@@ -1,6 +1,6 @@
 import {
   CheckCircle2Icon,
-  LayoutDashboardIcon,
+  HouseIcon,
   LogOutIcon,
   MailIcon,
   NewspaperIcon,
@@ -9,10 +9,10 @@ import {
   PanelLeftOpenIcon,
   PinIcon,
   PinOffIcon,
-  ReceiptTextIcon,
   SearchIcon,
   SettingsIcon,
   ShieldCheckIcon,
+  ShoppingCartIcon,
   StoreIcon,
   UsersIcon,
 } from 'lucide-react'
@@ -27,21 +27,22 @@ import { cn } from '@/lib/utils'
 
 const adminNavItems = [
   {
-    label: 'ダッシュボード',
+    label: 'ホーム',
     path: '/admin',
-    icon: LayoutDashboardIcon,
+    icon: HouseIcon,
     enabled: true,
   },
   {
-    label: '商品管理',
+    label: '商品',
     path: '/admin/products',
     icon: PackageIcon,
     enabled: true,
   },
   {
-    label: '注文管理',
+    label: '注文',
     path: '/admin/orders',
-    icon: ReceiptTextIcon,
+    icon: ShoppingCartIcon,
+    badgeCount: 2,
     enabled: true,
   },
   {
@@ -142,7 +143,7 @@ function AdminSidebar() {
 
         <div className="min-w-0 lg:flex lg:min-h-0 lg:flex-1 lg:flex-col lg:overflow-y-auto lg:overscroll-contain">
           <nav
-            aria-label="管理画面"
+            aria-label="メニュー"
             className="flex min-w-0 [scrollbar-width:none] gap-2 overflow-x-auto px-gutter py-3 lg:grid lg:gap-1 lg:overflow-visible lg:px-3 lg:py-4 [&::-webkit-scrollbar]:hidden"
           >
             {adminNavItems.map((item) => {
@@ -165,7 +166,19 @@ function AdminSidebar() {
                 return (
                   <Link className={className} key={item.path} to={item.path}>
                     <Icon aria-hidden="true" className="size-4" />
-                    {item.label}
+                    <span className="min-w-0 truncate">{item.label}</span>
+                    {item.badgeCount ? (
+                      <span
+                        className={cn(
+                          'ml-auto inline-flex h-5 min-w-5 shrink-0 items-center justify-center rounded-full px-1.5 text-xs leading-none font-semibold',
+                          isActive
+                            ? 'bg-primary-foreground/20 text-primary-foreground'
+                            : 'bg-primary/10 text-primary',
+                        )}
+                      >
+                        {item.badgeCount}
+                      </span>
+                    ) : null}
                   </Link>
                 )
               }
@@ -173,7 +186,19 @@ function AdminSidebar() {
               return (
                 <button className={className} key={item.path} type="button">
                   <Icon aria-hidden="true" className="size-4" />
-                  {item.label}
+                  <span className="min-w-0 truncate">{item.label}</span>
+                  {item.badgeCount ? (
+                    <span
+                      className={cn(
+                        'ml-auto inline-flex h-5 min-w-5 shrink-0 items-center justify-center rounded-full px-1.5 text-xs leading-none font-semibold',
+                        isActive
+                          ? 'bg-primary-foreground/20 text-primary-foreground'
+                          : 'bg-primary/10 text-primary',
+                      )}
+                    >
+                      {item.badgeCount}
+                    </span>
+                  ) : null}
                 </button>
               )
             })}
@@ -186,7 +211,7 @@ function AdminSidebar() {
                   <ShieldCheckIcon aria-hidden="true" className="size-4" />
                 </span>
                 <div className="min-w-0">
-                  <p className="truncate text-sm font-semibold">管理者認証</p>
+                  <p className="truncate text-sm font-semibold">認証</p>
                   <p className="truncate text-xs text-muted-foreground">
                     Supabase Auth / Google
                   </p>
@@ -242,7 +267,7 @@ function AdminTopbar({
             className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground"
           />
           <Input
-            aria-label="管理画面検索"
+            aria-label="検索"
             className="bg-card pr-3 pl-10"
             placeholder="注文番号・商品名・顧客名で検索"
             type="search"
