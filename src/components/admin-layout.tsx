@@ -1,7 +1,5 @@
 import {
-  CheckCircle2Icon,
   HouseIcon,
-  LogOutIcon,
   MailIcon,
   NewspaperIcon,
   PackageIcon,
@@ -11,12 +9,11 @@ import {
   PinOffIcon,
   SearchIcon,
   SettingsIcon,
-  ShieldCheckIcon,
   ShoppingCartIcon,
   StoreIcon,
   UsersIcon,
 } from 'lucide-react'
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link, Outlet, useLocation } from 'react-router'
 
 import { ThemeToggle } from '@/components/theme-toggle'
@@ -126,7 +123,7 @@ function AdminSidebar() {
       <div className="flex h-full min-h-0 flex-col">
         <div className="admin-layout-header-row flex items-center justify-between gap-3 border-b px-gutter py-4 lg:px-4 lg:py-0">
           <Link
-            className="inline-flex min-w-0 items-center gap-2 rounded-lg font-heading text-sm font-semibold focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none"
+            className="inline-flex min-w-0 cursor-pointer items-center gap-2 rounded-lg px-2 py-1.5 font-heading text-sm font-semibold hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none"
             to="/admin"
           >
             <img
@@ -203,29 +200,6 @@ function AdminSidebar() {
               )
             })}
           </nav>
-
-          <div className="mt-auto hidden border-t p-4 lg:block">
-            <div className="rounded-lg border bg-muted/35 p-3">
-              <div className="flex items-center gap-2">
-                <span className="grid size-8 place-items-center rounded-lg bg-primary/10 text-primary">
-                  <ShieldCheckIcon aria-hidden="true" className="size-4" />
-                </span>
-                <div className="min-w-0">
-                  <p className="truncate text-sm font-semibold">認証</p>
-                  <p className="truncate text-xs text-muted-foreground">
-                    Supabase Auth / Google
-                  </p>
-                </div>
-              </div>
-              <div className="mt-3 flex items-center gap-2 text-xs text-muted-foreground">
-                <CheckCircle2Icon
-                  aria-hidden="true"
-                  className="size-3.5 text-chart-3"
-                />
-                owner.skym@gmail.com
-              </div>
-            </div>
-          </div>
         </div>
       </div>
     </aside>
@@ -247,6 +221,31 @@ function AdminTopbar({
     ? PanelLeftCloseIcon
     : PanelLeftOpenIcon
   const TopbarToggleIcon = isTopbarPinned ? PinOffIcon : PinIcon
+  const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false)
+  const profileMenuRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!isProfileMenuOpen) {
+      return
+    }
+
+    const handlePointerDown = (event: PointerEvent) => {
+      if (
+        event.target instanceof Node &&
+        profileMenuRef.current?.contains(event.target)
+      ) {
+        return
+      }
+
+      setIsProfileMenuOpen(false)
+    }
+
+    document.addEventListener('pointerdown', handlePointerDown)
+
+    return () => {
+      document.removeEventListener('pointerdown', handlePointerDown)
+    }
+  }, [isProfileMenuOpen])
 
   return (
     <header
@@ -274,8 +273,8 @@ function AdminTopbar({
           />
         </label>
 
-        <div className="flex items-center justify-between gap-2 sm:justify-end">
-          <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center justify-between gap-2 sm:flex-nowrap sm:justify-end">
+          <div className="flex shrink-0 items-center gap-2">
             <Button
               aria-label={
                 isSidebarVisible ? 'サイドバーを非表示' : 'サイドバーを表示'
@@ -311,23 +310,44 @@ function AdminTopbar({
               </Link>
             </Button>
             <ThemeToggle className="bg-card" />
-            <Button aria-label="ログアウト" size="icon" variant="outline">
-              <LogOutIcon aria-hidden="true" />
-            </Button>
           </div>
 
-          <div className="hidden min-w-0 items-center gap-2 rounded-lg border bg-card px-2.5 py-1.5 sm:flex">
-            <span className="grid size-7 shrink-0 place-items-center rounded-lg bg-primary text-xs font-semibold text-primary-foreground">
-              SK
-            </span>
-            <div className="min-w-0">
-              <p className="truncate text-xs font-semibold">
-                owner.skym@gmail.com
-              </p>
-              <p className="truncate text-[0.7rem] text-muted-foreground">
-                オーナー
-              </p>
-            </div>
+          <div
+            className="relative min-w-40 flex-1 sm:flex-none"
+            ref={profileMenuRef}
+          >
+            <button
+              aria-expanded={isProfileMenuOpen}
+              aria-haspopup="menu"
+              className="flex w-full cursor-pointer items-center gap-2 rounded-lg border bg-card px-2.5 py-1.5 text-left outline-none hover:bg-accent/55 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              onClick={() => setIsProfileMenuOpen((current) => !current)}
+              type="button"
+            >
+              <span className="grid size-7 shrink-0 place-items-center rounded-lg bg-primary text-xs font-semibold text-primary-foreground">
+                SK
+              </span>
+              <span className="min-w-0">
+                <span className="block truncate text-xs font-semibold">
+                  owner.skym@gmail.com
+                </span>
+              </span>
+            </button>
+
+            {isProfileMenuOpen ? (
+              <div
+                className="absolute right-0 z-50 mt-2 w-40 rounded-lg border bg-card p-1 shadow-sm"
+                role="menu"
+              >
+                <button
+                  className="flex h-9 w-full cursor-pointer items-center rounded-md px-3 text-sm font-medium text-foreground outline-none hover:bg-accent/55 focus-visible:ring-2 focus-visible:ring-ring"
+                  onClick={() => setIsProfileMenuOpen(false)}
+                  role="menuitem"
+                  type="button"
+                >
+                  ログアウト
+                </button>
+              </div>
+            ) : null}
           </div>
         </div>
       </div>

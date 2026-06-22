@@ -54,7 +54,7 @@ const serviceNotes = [
 
 export function ProductDetailPage() {
   const { productId } = useParams()
-  const product = products.find((item) => item.id === productId)
+  const product = products.find((item) => item.id === Number(productId))
 
   if (!product) {
     return <Navigate replace to="/items" />

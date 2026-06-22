@@ -10,7 +10,7 @@ import { backButtonClassName } from '@/lib/ui-styles'
 
 export function NewsDetailPage() {
   const { newsId } = useParams()
-  const item = newsItems.find((newsItem) => newsItem.slug === newsId)
+  const item = newsItems.find((newsItem) => newsItem.id === Number(newsId))
 
   if (!item) {
     return <Navigate replace to="/news" />

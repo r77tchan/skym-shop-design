@@ -5,7 +5,7 @@ export const shopDescription = `${companyName} が運営するフィッシング
 
 export const newsItems = [
   {
-    slug: 'valkein-spoon-restock',
+    id: 6,
     date: '2026.06.01',
     label: '入荷',
     title: 'ValkeINスプーン 入荷しました',
@@ -15,7 +15,7 @@ export const newsItems = [
     ],
   },
   {
-    slug: 'rodio-craft-drift-spin-arrival',
+    id: 5,
     date: '2026.05.28',
     label: '入荷',
     title: 'ロデオクラフト ドリフトスピン 入荷しました',
@@ -25,7 +25,7 @@ export const newsItems = [
     ],
   },
   {
-    slug: 'summer-sale-2026',
+    id: 4,
     date: '2026.05.25',
     label: 'SALE',
     title: 'サマーセール開催中',
@@ -35,7 +35,7 @@ export const newsItems = [
     ],
   },
   {
-    slug: 'shipping-schedule-notice',
+    id: 3,
     date: '2026.05.18',
     label: 'お知らせ',
     title: '発送スケジュールについて',
@@ -45,7 +45,7 @@ export const newsItems = [
     ],
   },
   {
-    slug: 'original-color-release',
+    id: 2,
     date: '2026.05.10',
     label: 'NEW',
     title: 'オリジナルカラー販売開始',
@@ -55,7 +55,7 @@ export const newsItems = [
     ],
   },
   {
-    slug: 'skym-trout-cup-2026-entry',
+    id: 1,
     date: '2026.04.30',
     label: 'EVENT',
     title: 'SKYM トラウトカップ 2026 受付開始',
@@ -69,7 +69,7 @@ export const newsItems = [
 export type NewsItem = (typeof newsItems)[number]
 
 export function getNewsItemPath(item: NewsItem) {
-  return `/news/${item.slug}`
+  return `/news/${item.id}`
 }
 
 export const productCategories = [
@@ -105,7 +105,7 @@ export type ProductSale = {
 }
 
 export type Product = {
-  id: string
+  id: number
   name: string
   brand: ProductBrand
   category: ProductCategory
@@ -124,7 +124,7 @@ export type Product = {
 
 export const products: readonly Product[] = [
   {
-    id: 'velvet-arts-forte-silver',
+    id: 23,
     name: 'フォルテ 2.1g（シルバー）',
     brand: 'VELVET ARTS',
     category: 'スプーン',
@@ -153,7 +153,7 @@ export const products: readonly Product[] = [
     ],
   },
   {
-    id: '1089-sakasa-nyoro-slim',
+    id: 22,
     name: 'さかさにょろ Slim 35FS',
     brand: '1089工房',
     category: 'プラグ',
@@ -179,7 +179,7 @@ export const products: readonly Product[] = [
     ],
   },
   {
-    id: 'velvet-arts-forte-limited-glow',
+    id: 21,
     name: 'フォルテ 2.1g（リミテッドグロー）',
     brand: 'VELVET ARTS',
     category: 'スプーン',
@@ -205,7 +205,7 @@ export const products: readonly Product[] = [
     ],
   },
   {
-    id: 'rodio-craft-drift-spin-limited-sale',
+    id: 20,
     name: 'ドリフトスピン 限定カラー',
     brand: 'RODIO CRAFT',
     category: 'プラグ',
@@ -235,7 +235,7 @@ export const products: readonly Product[] = [
     ],
   },
   {
-    id: 'skym-hook-trial-pack',
+    id: 19,
     name: 'オリジナル フック トライアルパック',
     brand: 'SKYM',
     category: 'フック',
@@ -265,7 +265,7 @@ export const products: readonly Product[] = [
     ],
   },
   {
-    id: 'velvet-arts-forte-masuou',
+    id: 18,
     name: 'フォルテ 2.1g（二代目鱒王）',
     brand: 'VELVET ARTS',
     category: 'スプーン',
@@ -291,7 +291,7 @@ export const products: readonly Product[] = [
     ],
   },
   {
-    id: 'valkein-hi-burst-uv-flash',
+    id: 17,
     name: 'HI BURST 1.6g(UVフラッシュ)',
     brand: 'ValkeIN',
     category: 'スプーン',
@@ -317,7 +317,7 @@ export const products: readonly Product[] = [
     ],
   },
   {
-    id: 'velvet-arts-forte-kick-on-the-festa',
+    id: 16,
     name: 'フォルテ 2.1g（キックオンザフェスタ）',
     brand: 'VELVET ARTS',
     category: 'スプーン',
@@ -343,7 +343,7 @@ export const products: readonly Product[] = [
     ],
   },
   {
-    id: 'rodio-craft-drift-spin',
+    id: 15,
     name: 'ドリフトスピン',
     brand: 'RODIO CRAFT',
     category: 'プラグ',
@@ -369,7 +369,7 @@ export const products: readonly Product[] = [
     ],
   },
   {
-    id: 'valkein-hi-burst-sale-sold-out',
+    id: 14,
     name: 'HI BURST 1.6g セールカラー',
     brand: 'ValkeIN',
     category: 'スプーン',
@@ -399,7 +399,7 @@ export const products: readonly Product[] = [
     ],
   },
   {
-    id: 'velvet-arts-daisy-muddy-meta-glow',
+    id: 13,
     name: 'デイジー 2.5g(027 マッディメタグリグロー)',
     brand: 'VELVET ARTS',
     category: 'スプーン',
@@ -424,7 +424,7 @@ export const products: readonly Product[] = [
     ],
   },
   {
-    id: 'skym-original-hook-set',
+    id: 12,
     name: 'オリジナル フックセット',
     brand: 'SKYM',
     category: 'フック',
@@ -454,7 +454,7 @@ export const products: readonly Product[] = [
     ],
   },
   {
-    id: 'valkein-astrar-ppo',
+    id: 11,
     name: 'ASTRAR 2.4g（P.P.O）',
     brand: 'ValkeIN',
     category: 'スプーン',
@@ -478,7 +478,7 @@ export const products: readonly Product[] = [
     ],
   },
   {
-    id: 'valkein-servant-spear-golden-brown',
+    id: 10,
     name: 'Servant Spear 1.1g（074 ゴールデンブラウン）',
     brand: 'ValkeIN',
     category: 'スプーン',
@@ -503,7 +503,7 @@ export const products: readonly Product[] = [
     ],
   },
   {
-    id: 'valkein-black-blast-zubrocka-green',
+    id: 9,
     name: 'Black Blast 1.8g（ズブロッカグリーン）',
     brand: 'ValkeIN',
     category: 'スプーン',
@@ -528,7 +528,7 @@ export const products: readonly Product[] = [
     ],
   },
   {
-    id: 'rodio-craft-jekyll-l-yasuzuka-request',
+    id: 8,
     name: 'JEKYLL-L 0.6g（安塚リクエスト）',
     brand: 'RODIO CRAFT',
     category: 'スプーン',
@@ -552,7 +552,7 @@ export const products: readonly Product[] = [
     ],
   },
   {
-    id: 'rodio-craft-noa-b-nobu-color',
+    id: 7,
     name: 'NOA-B 2.2g（2014ノブカラー）',
     brand: 'RODIO CRAFT',
     category: 'スプーン',
@@ -576,7 +576,7 @@ export const products: readonly Product[] = [
     ],
   },
   {
-    id: 'rodio-craft-drift-spin-37-chart-glow',
+    id: 6,
     name: 'RCドリフトスピン37 2.0g（092 透過チャート/裏グロー）',
     brand: 'RODIO CRAFT',
     category: 'プラグ',
@@ -601,7 +601,7 @@ export const products: readonly Product[] = [
     ],
   },
   {
-    id: 'yarie-t-fresh-evo-split-orange',
+    id: 5,
     name: 'T-Fresh EVO 1.1g（スプリットオレンジ）',
     brand: 'YARIE',
     category: 'スプーン',
@@ -625,7 +625,7 @@ export const products: readonly Product[] = [
     ],
   },
   {
-    id: 'sauribu-shaath-saimu-dango-gold',
+    id: 4,
     name: 'Shaath 2.3g（サイムダンゴールド）',
     brand: 'sauribu',
     category: 'スプーン',
@@ -649,7 +649,7 @@ export const products: readonly Product[] = [
     ],
   },
   {
-    id: 'jackall-tapdancer-daigo-cheer-seed',
+    id: 3,
     name: 'TAPDANCER 3.7g（ダイゴチアシード）',
     brand: 'JACKALL',
     category: 'プラグ',
@@ -674,7 +674,7 @@ export const products: readonly Product[] = [
     ],
   },
   {
-    id: 'jackall-tapdancer-hojicha-latte',
+    id: 2,
     name: 'TAPDANCER 3.7g（ショボクレほうじ茶ラテ）',
     brand: 'JACKALL',
     category: 'プラグ',
@@ -699,7 +699,7 @@ export const products: readonly Product[] = [
     ],
   },
   {
-    id: 'daysprout-pico-chatakura-md-ss-turnover-gold',
+    id: 1,
     name: 'ピコ・チャタクラMD-SS 2.4g（ターンオーバーゴールド）',
     brand: 'DAYSPROUT',
     category: 'プラグ',

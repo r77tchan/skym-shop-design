@@ -177,7 +177,7 @@ export function ProductListPage() {
               <Input
                 aria-label="商品検索"
                 className="bg-card pr-3 pl-10"
-                placeholder="商品名・ブランドで探す"
+                placeholder="商品名・ブランドで検索"
                 type="search"
               />
             </label>
@@ -294,7 +294,7 @@ function FilterSelect({
       <span className="relative">
         <select
           aria-label={label}
-          className="h-10 w-full appearance-none rounded-lg border bg-card px-3 pr-9 text-sm font-medium outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+          className="h-10 w-full cursor-pointer appearance-none rounded-lg border bg-card px-3 pr-9 text-sm font-medium outline-none hover:bg-accent/55 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
         >
           {items.map((item) => (
             <option key={item.label}>
@@ -327,7 +327,7 @@ function SortSelect({
       />
       <select
         aria-label="並び替え"
-        className="h-11 w-full appearance-none rounded-lg border bg-card pr-9 pl-10 text-sm font-medium outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+        className="h-11 w-full cursor-pointer appearance-none rounded-lg border bg-card pr-9 pl-10 text-sm font-medium outline-none hover:bg-accent/55 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
         onChange={(event) => onChange(event.target.value as SortValue)}
         value={value}
       >

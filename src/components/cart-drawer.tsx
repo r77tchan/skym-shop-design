@@ -26,9 +26,9 @@ type CartLine = {
 }
 
 const demoCartLineDefinitions = [
-  { productId: 'valkein-astrar-ppo', quantity: 1 },
-  { productId: '1089-sakasa-nyoro-slim', quantity: 1 },
-  { productId: 'skym-original-hook-set', quantity: 2 },
+  { productId: 11, quantity: 1 },
+  { productId: 22, quantity: 1 },
+  { productId: 12, quantity: 2 },
 ] as const
 
 export function CartDrawer({ buttonClassName }: CartDrawerProps) {
@@ -40,7 +40,7 @@ export function CartDrawer({ buttonClassName }: CartDrawerProps) {
     0,
   )
 
-  const updateQuantity = (productId: string, quantity: number) => {
+  const updateQuantity = (productId: number, quantity: number) => {
     setCartLines((lines) =>
       lines.map((line) =>
         line.product.id === productId
@@ -50,7 +50,7 @@ export function CartDrawer({ buttonClassName }: CartDrawerProps) {
     )
   }
 
-  const removeItem = (productId: string) => {
+  const removeItem = (productId: number) => {
     setCartLines((lines) =>
       lines.filter((line) => line.product.id !== productId),
     )
@@ -166,8 +166,8 @@ function CartLineItem({
   onUpdateQuantity,
 }: {
   line: CartLine
-  onRemove: (productId: string) => void
-  onUpdateQuantity: (productId: string, quantity: number) => void
+  onRemove: (productId: number) => void
+  onUpdateQuantity: (productId: number, quantity: number) => void
 }) {
   const { product, quantity } = line
   const productPath = getProductPath(product)
