@@ -1,18 +1,18 @@
 import {
   ArrowUpDownIcon,
   ChevronDownIcon,
+  RotateCcwIcon,
   SearchIcon,
   ShoppingCartIcon,
   SlidersHorizontalIcon,
 } from 'lucide-react'
-import { useId, useState } from 'react'
+import { useState } from 'react'
 import { Link } from 'react-router'
 
 import { ProductPrice } from '@/components/product-price'
 import { ProductStatusBadge } from '@/components/product-status-badge'
 import { SiteFooter } from '@/components/site-footer'
 import { SiteHeader } from '@/components/site-header'
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { assetUrl } from '@/lib/asset-url'
@@ -36,29 +36,102 @@ import {
 import { cn } from '@/lib/utils'
 
 const allFilterLabel = '全て'
+const purchasableProducts = products.filter((product) => !isSoldOut(product))
 
-const quickFilters = [
+const statusFilters = [
   {
     label: allFilterLabel,
-    count: products.length,
+    count: purchasableProducts.length,
     active: true,
   },
   {
-    label: '在庫あり',
-    count: products.filter((product) => !isSoldOut(product)).length,
-  },
-  {
     label: 'セール中',
-    count: products.filter((product) => isOnSale(product)).length,
+    count: purchasableProducts.filter((product) => isOnSale(product)).length,
   },
 ]
 
-type FilterItem = {
-  label: string
-  count: number
+const categoryFilterItems = productCategories.map((category) => ({
+  label: category,
+  count:
+    category === allFilterLabel
+      ? purchasableProducts.length
+      : purchasableProducts.filter((product) => product.category === category)
+          .length,
+}))
+
+const brandFilterItems = [
+  { label: allFilterLabel, count: purchasableProducts.length },
+  ...productBrands.map((brand) => ({
+    label: brand,
+    count: purchasableProducts.filter((product) => product.brand === brand)
+      .length,
+  })),
+]
+
+type SortValue = 'new' | 'price-asc' | 'price-desc'
+
+const sortOptions: Array<{ label: string; value: SortValue }> = [
+  { label: '新着順', value: 'new' },
+  { label: '価格の安い順', value: 'price-asc' },
+  { label: '価格の高い順', value: 'price-desc' },
+]
+
+const productOrderIndexes = new Map(
+  products.map((product, index) => [product.id, index]),
+)
+
+function getProductPriceNumber(product: Product) {
+  return Number(product.price.replace(/[^\d]/g, ''))
+}
+
+function compareOriginalOrder(a: Product, b: Product) {
+  return (
+    (productOrderIndexes.get(a.id) ?? 0) - (productOrderIndexes.get(b.id) ?? 0)
+  )
+}
+
+function compareProducts(a: Product, b: Product, sortValue: SortValue) {
+  const aSoldOut = isSoldOut(a)
+  const bSoldOut = isSoldOut(b)
+
+  if (aSoldOut !== bSoldOut) {
+    return aSoldOut ? 1 : -1
+  }
+
+  if (sortValue === 'price-asc') {
+    return (
+      getProductPriceNumber(a) - getProductPriceNumber(b) ||
+      compareOriginalOrder(a, b)
+    )
+  }
+
+  if (sortValue === 'price-desc') {
+    return (
+      getProductPriceNumber(b) - getProductPriceNumber(a) ||
+      compareOriginalOrder(a, b)
+    )
+  }
+
+  return compareOriginalOrder(a, b)
+}
+
+function getSortedProducts(sortValue: SortValue) {
+  return [...products].sort((a, b) => compareProducts(a, b, sortValue))
 }
 
 export function ProductListPage() {
+  const [sortValue, setSortValue] = useState<SortValue>('new')
+  const sortedProducts = getSortedProducts(sortValue)
+  const purchasableProductCount = sortedProducts.filter(
+    (product) => !isSoldOut(product),
+  ).length
+  const soldOutProductCount = sortedProducts.filter((product) =>
+    isSoldOut(product),
+  ).length
+  const handleResetFilters = () => {
+    setSortValue('new')
+  }
+
   return (
     <main className="min-h-svh bg-background text-foreground">
       <SiteHeader />
@@ -87,7 +160,7 @@ export function ProductListPage() {
               商品一覧
             </h1>
             <p className="mt-3 text-sm leading-6 text-muted-foreground">
-              エリアトラウトを中心に、カラー・ウェイト・在庫状態を見比べながら選べる商品リストです。
+              表示価格には消費税が含まれています。別途送料がかかります。
             </p>
           </div>
         </div>
@@ -109,73 +182,87 @@ export function ProductListPage() {
               />
             </label>
 
-            <div className="flex items-center gap-2">
-              <Button
-                className="h-11 flex-1 justify-start px-3 lg:hidden"
-                variant="outline"
-              >
-                <SlidersHorizontalIcon data-icon="inline-start" />
-                絞り込み
-              </Button>
-              <Button className="h-11 px-3" variant="outline">
-                <ArrowUpDownIcon data-icon="inline-start" />
-                新着順
-                <ChevronDownIcon data-icon="inline-end" />
-              </Button>
-            </div>
+            <SortSelect onChange={setSortValue} value={sortValue} />
           </div>
 
-          <div className="-mx-gutter [scrollbar-width:none] overflow-x-auto px-gutter [&::-webkit-scrollbar]:hidden">
-            <div className="flex w-max gap-2">
-              {quickFilters.map((filter) => (
-                <button
-                  aria-pressed={filter.active ? 'true' : 'false'}
-                  className={cn(
-                    'inline-flex h-9 items-center gap-2 rounded-lg border px-3 text-sm font-medium whitespace-nowrap',
-                    filter.active
-                      ? 'border-primary bg-primary text-primary-foreground'
-                      : 'border-border bg-card hover:bg-accent/55',
-                  )}
-                  key={filter.label}
-                  type="button"
-                >
-                  <span>{filter.label}</span>
-                  <span
-                    className={cn(
-                      'text-xs',
-                      filter.active
-                        ? 'text-primary-foreground/75'
-                        : 'text-muted-foreground',
-                    )}
-                  >
-                    {filter.count}
-                  </span>
-                </button>
-              ))}
+          <div className="grid gap-3">
+            <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(320px,420px)] lg:items-end">
+              <div className="min-w-0">
+                <div className="mb-2 flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-2 text-xs font-semibold text-muted-foreground">
+                    <SlidersHorizontalIcon
+                      aria-hidden="true"
+                      className="size-4"
+                    />
+                    絞り込み
+                  </div>
+                </div>
+                <div className="-mx-gutter [scrollbar-width:none] overflow-x-auto px-gutter [&::-webkit-scrollbar]:hidden">
+                  <div className="flex w-max gap-2">
+                    {statusFilters.map((filter) => (
+                      <button
+                        aria-pressed={filter.active ? 'true' : 'false'}
+                        className={cn(
+                          'inline-flex h-9 items-center gap-2 rounded-lg border px-3 text-sm font-medium whitespace-nowrap',
+                          filter.active
+                            ? 'border-primary bg-primary text-primary-foreground'
+                            : 'border-border bg-card hover:bg-accent/55',
+                        )}
+                        key={filter.label}
+                        type="button"
+                      >
+                        <span>{filter.label}</span>
+                        <span
+                          className={cn(
+                            'text-xs',
+                            filter.active
+                              ? 'text-primary-foreground/75'
+                              : 'text-muted-foreground',
+                          )}
+                        >
+                          {filter.count}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid gap-2 sm:grid-cols-2">
+                <FilterSelect items={categoryFilterItems} label="カテゴリー" />
+                <FilterSelect items={brandFilterItems} label="ブランド" />
+              </div>
+            </div>
+            <div className="flex justify-end">
+              <Button
+                onClick={handleResetFilters}
+                size="sm"
+                type="button"
+                variant="outline"
+              >
+                <RotateCcwIcon data-icon="inline-start" />
+                リセット
+              </Button>
             </div>
           </div>
         </div>
       </section>
 
       <section id="items">
-        <div className="mx-auto grid max-w-7xl gap-6 px-gutter py-8 lg:grid-cols-[250px_minmax(0,1fr)] lg:py-10">
-          <FilterPanel />
-
+        <div className="mx-auto grid max-w-7xl gap-6 px-gutter py-8 lg:py-10">
           <div className="grid content-start gap-5">
             <div className="flex flex-col gap-3 border-b pb-4 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <p className="text-sm font-semibold">全ての商品</p>
                 <p className="mt-1 text-xs text-muted-foreground">
-                  {products.length}件中 {products.length}件を表示
+                  購入可能な商品 {purchasableProductCount}件 / SOLD OUT{' '}
+                  {soldOutProductCount}件
                 </p>
-              </div>
-              <div className="flex flex-wrap items-center gap-2">
-                <Badge variant="secondary">新着順</Badge>
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-x-4 gap-y-7 sm:gap-x-5 sm:gap-y-8 md:grid-cols-3 xl:grid-cols-4 xl:gap-x-6">
-              {products.map((product) => (
+            <div className="grid grid-cols-2 gap-x-4 gap-y-7 sm:grid-cols-3 sm:gap-x-5 sm:gap-y-8 lg:grid-cols-4 xl:grid-cols-5 xl:gap-x-6">
+              {sortedProducts.map((product) => (
                 <ProductCard key={product.id} product={product} />
               ))}
             </div>
@@ -194,97 +281,67 @@ export function ProductListPage() {
   )
 }
 
-function FilterPanel() {
-  const categoryItems = productCategories.map((category) => ({
-    label: category,
-    count:
-      category === allFilterLabel
-        ? products.length
-        : products.filter((product) => product.category === category).length,
-  }))
-
-  const brandItems = [
-    { label: allFilterLabel, count: products.length },
-    ...productBrands.map((brand) => ({
-      label: brand,
-      count: products.filter((product) => product.brand === brand).length,
-    })),
-  ]
-
+function FilterSelect({
+  items,
+  label,
+}: {
+  items: Array<{ label: string; count: number }>
+  label: string
+}) {
   return (
-    <aside
-      aria-label="商品フィルター"
-      className="hidden h-fit rounded-lg border bg-card p-4 lg:sticky lg:top-20 lg:block"
-    >
-      <div className="flex items-center justify-between gap-3">
-        <p className="text-sm font-semibold">絞り込み</p>
-        <SlidersHorizontalIcon
+    <label className="grid min-w-0 gap-1.5">
+      <span className="text-xs font-medium text-muted-foreground">{label}</span>
+      <span className="relative">
+        <select
+          aria-label={label}
+          className="h-10 w-full appearance-none rounded-lg border bg-card px-3 pr-9 text-sm font-medium outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+        >
+          {items.map((item) => (
+            <option key={item.label}>
+              {item.label}（{item.count}）
+            </option>
+          ))}
+        </select>
+        <ChevronDownIcon
           aria-hidden="true"
-          className="size-4 text-muted-foreground"
+          className="pointer-events-none absolute top-1/2 right-3 size-4 -translate-y-1/2 text-muted-foreground"
         />
-      </div>
-
-      <div className="mt-4 grid gap-3">
-        <FilterGroup defaultOpen items={categoryItems} title="カテゴリー" />
-        <FilterGroup items={brandItems} title="ブランド" />
-      </div>
-    </aside>
+      </span>
+    </label>
   )
 }
 
-function FilterGroup({
-  defaultOpen = false,
-  items,
-  title,
+function SortSelect({
+  onChange,
+  value,
 }: {
-  defaultOpen?: boolean
-  items: FilterItem[]
-  title: string
+  onChange: (value: SortValue) => void
+  value: SortValue
 }) {
-  const [open, setOpen] = useState(defaultOpen)
-  const contentId = useId()
-  const selectedItem = items[0]
-
   return (
-    <section className="border-t pt-3 first:border-t-0 first:pt-0">
-      <button
-        aria-controls={contentId}
-        aria-expanded={open}
-        className="flex h-8 w-full items-center justify-between gap-3 rounded-lg px-2 text-left hover:bg-muted"
-        onClick={() => setOpen((isOpen) => !isOpen)}
-        type="button"
+    <label className="relative block min-w-0 lg:w-44">
+      <span className="sr-only">並び替え</span>
+      <ArrowUpDownIcon
+        aria-hidden="true"
+        className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground"
+      />
+      <select
+        aria-label="並び替え"
+        className="h-11 w-full appearance-none rounded-lg border bg-card pr-9 pl-10 text-sm font-medium outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+        onChange={(event) => onChange(event.target.value as SortValue)}
+        value={value}
       >
-        <span className="text-xs font-semibold text-muted-foreground">
-          {title}
-        </span>
-        <span className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
-          {selectedItem.label}
-          <ChevronDownIcon
-            aria-hidden="true"
-            className={cn('size-3.5', open && 'rotate-180')}
-          />
-        </span>
-      </button>
-
-      <div className={cn('mt-2 grid gap-1', !open && 'hidden')} id={contentId}>
-        {items.map((item, index) => (
-          <button
-            aria-pressed={index === 0 ? 'true' : 'false'}
-            className={cn(
-              'flex h-8 items-center justify-between gap-3 rounded-lg px-2.5 text-sm font-medium',
-              index === 0
-                ? 'bg-accent text-accent-foreground'
-                : 'text-muted-foreground hover:bg-muted hover:text-foreground',
-            )}
-            key={item.label}
-            type="button"
-          >
-            <span>{item.label}</span>
-            <span className="text-xs">{item.count}</span>
-          </button>
+        {sortOptions.map((option) => (
+          <option key={option.value} value={option.value}>
+            {option.label}
+          </option>
         ))}
-      </div>
-    </section>
+      </select>
+      <ChevronDownIcon
+        aria-hidden="true"
+        className="pointer-events-none absolute top-1/2 right-3 size-4 -translate-y-1/2 text-muted-foreground"
+      />
+    </label>
   )
 }
 

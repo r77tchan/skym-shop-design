@@ -17,7 +17,7 @@ export function NewsPage() {
       <SiteHeader />
 
       <section className="border-b bg-muted/35 pt-20">
-        <div className="mx-auto grid max-w-7xl gap-5 px-gutter py-10 sm:py-12">
+        <div className="mx-auto grid max-w-7xl gap-6 px-gutter py-10 sm:py-12">
           <nav
             aria-label="パンくず"
             className="flex items-center gap-2 text-xs font-medium text-muted-foreground"
@@ -34,7 +34,7 @@ export function NewsPage() {
             <span className="text-foreground">お知らせ</span>
           </nav>
 
-          <div className="max-w-2xl">
+          <div className="max-w-3xl">
             <p className="text-xs font-semibold text-primary">NEWS</p>
             <h1 className="mt-2 font-heading text-3xl font-semibold sm:text-4xl">
               お知らせ

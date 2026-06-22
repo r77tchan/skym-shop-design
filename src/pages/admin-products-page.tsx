@@ -21,11 +21,7 @@ import {
   isOnSale,
   isSoldOut,
 } from '@/lib/product-status'
-import {
-  getProductPath,
-  products,
-  type Product,
-} from '@/lib/shop-content'
+import { getProductPath, products, type Product } from '@/lib/shop-content'
 import { cn } from '@/lib/utils'
 
 const stockLevels = [18, 9, 0, 7, 0, 14, 4, 6, 21, 11, 3, 5] as const
@@ -101,7 +97,7 @@ export function AdminProductsPage() {
             <Input
               aria-label="商品検索"
               className="bg-background pr-3 pl-10"
-              placeholder="商品名・ブランド・SKUで検索"
+              placeholder="商品名・ブランドで検索"
               type="search"
             />
           </label>
@@ -254,7 +250,7 @@ function ProductTableRow({
             <ProductStatusBadge status={primaryStatus} />
           </div>
           <p className="mt-1 truncate text-xs text-muted-foreground">
-            {product.brand} / {product.id}
+            {product.brand}
           </p>
         </div>
       </div>
@@ -332,10 +328,6 @@ function ProductMobileCard({
         <div>
           <p className="text-xs text-muted-foreground">更新日</p>
           <p className="mt-1 font-medium">{updatedAt}</p>
-        </div>
-        <div>
-          <p className="text-xs text-muted-foreground">商品ID</p>
-          <p className="mt-1 truncate font-medium">{product.id}</p>
         </div>
       </div>
 

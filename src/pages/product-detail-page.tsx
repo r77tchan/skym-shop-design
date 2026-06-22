@@ -43,7 +43,7 @@ const serviceNotes = [
   {
     icon: TruckIcon,
     title: '配送方法を選択',
-    text: '商品サイズに合わせて購入時に配送方法を選べます。',
+    text: '送料・配送方法は購入手続き時に選択してください。',
   },
   {
     icon: ShieldCheckIcon,
@@ -69,7 +69,7 @@ export function ProductDetailPage() {
 
       <article>
         <section className="border-b bg-muted/35 pt-20">
-          <div className="mx-auto grid max-w-7xl gap-3 px-gutter py-5 sm:gap-5 sm:py-10">
+          <div className="mx-auto grid max-w-7xl gap-6 px-gutter py-10 sm:py-12">
             <nav
               aria-label="パンくず"
               className="flex flex-wrap items-center gap-2 text-xs font-medium text-muted-foreground"
@@ -158,7 +158,7 @@ export function ProductDetailPage() {
               <SectionHeading
                 eyebrow="SHIPPING"
                 title="送料・配送"
-                text="配送方法は購入時に選択できます。商品サイズや同梱内容によって適した方法が変わります。"
+                text="購入手続き時に送料・配送方法を選択してください。複数の商品はまとめて注文できますが、別々に注文された場合は注文ごとに送料がかかります。選択された配送方法で発送できない場合は、確認のためご連絡します。"
               />
               <div className="grid gap-3 sm:grid-cols-3">
                 {deliveryOptions.map((option) => (
