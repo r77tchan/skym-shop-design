@@ -11,7 +11,10 @@ import { useState } from 'react'
 import { Link, Navigate, useParams } from 'react-router'
 
 import { ProductPrice } from '@/components/product-price'
-import { ProductStatusBadge } from '@/components/product-status-badge'
+import {
+  ProductStatusBadge,
+  ProductStatusBadges,
+} from '@/components/product-status-badge'
 import { SiteFooter } from '@/components/site-footer'
 import { SiteHeader } from '@/components/site-header'
 import { Badge } from '@/components/ui/badge'
@@ -279,12 +282,10 @@ function ProductPurchasePanel({
   product: Product
   soldOut: boolean
 }) {
-  const primaryStatus = getPrimaryProductStatus(product)
-
   return (
     <div className="h-fit rounded-lg border bg-card p-5 lg:sticky lg:top-20">
       <div className="flex flex-wrap items-center gap-2">
-        <ProductStatusBadge status={primaryStatus} />
+        <ProductStatusBadges statuses={product.statuses} />
         <Badge variant="outline">{product.category}</Badge>
       </div>
 
@@ -365,7 +366,6 @@ function SectionHeading({
 }
 
 function RelatedProductCard({ product }: { product: Product }) {
-  const soldOut = isSoldOut(product)
   const primaryStatus = getPrimaryProductStatus(product)
 
   return (
@@ -384,17 +384,12 @@ function RelatedProductCard({ product }: { product: Product }) {
           <div className="relative aspect-[3/4] overflow-hidden rounded-lg border bg-muted group-hover:border-primary/40">
             <img
               alt=""
-              className={cn('size-full object-cover', soldOut && 'opacity-64')}
+              className="size-full object-cover"
               src={assetUrl(product.image)}
             />
             {primaryStatus ? (
               <div className="absolute top-2 left-2 flex flex-wrap gap-1">
                 <ProductStatusBadge status={primaryStatus} />
-              </div>
-            ) : null}
-            {soldOut ? (
-              <div className="absolute inset-x-0 bottom-0 bg-card/88 px-3 py-2 text-center text-xs font-semibold text-muted-foreground">
-                SOLD OUT
               </div>
             ) : null}
           </div>
@@ -425,21 +420,17 @@ function RelatedProductCard({ product }: { product: Product }) {
         </Link>
 
         <div className="flex min-w-0 items-center justify-between gap-3">
-          <ProductPrice className="min-w-0" muted={soldOut} product={product} />
+          <ProductPrice className="min-w-0" product={product} />
 
           <Button
             aria-label="カートに追加"
             className={cn(
               'size-8 shrink-0',
-              soldOut &&
-                'disabled:pointer-events-auto disabled:cursor-not-allowed disabled:hover:bg-secondary',
-              !soldOut &&
-                'bg-card/92 text-foreground shadow-sm backdrop-blur hover:border-primary/55 hover:bg-primary hover:text-primary-foreground',
+              'bg-card/92 text-foreground shadow-sm backdrop-blur hover:border-primary/55 hover:bg-primary hover:text-primary-foreground',
             )}
-            disabled={soldOut}
             size="icon"
             title="カートに追加"
-            variant={soldOut ? 'secondary' : 'outline'}
+            variant="outline"
           >
             <ShoppingCartIcon aria-hidden="true" className="size-4" />
           </Button>
@@ -452,10 +443,16 @@ function RelatedProductCard({ product }: { product: Product }) {
 function getRelatedProducts(product: Product) {
   return [
     ...products.filter(
-      (item) => item.id !== product.id && item.category === product.category,
+      (item) =>
+        item.id !== product.id &&
+        item.category === product.category &&
+        !isSoldOut(item),
     ),
     ...products.filter(
-      (item) => item.id !== product.id && item.category !== product.category,
+      (item) =>
+        item.id !== product.id &&
+        item.category !== product.category &&
+        !isSoldOut(item),
     ),
   ].slice(0, 4)
 }

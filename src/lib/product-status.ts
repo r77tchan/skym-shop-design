@@ -23,3 +23,13 @@ export function getPrimaryProductStatus(product: Product) {
     hasProductStatus(product, status),
   )
 }
+
+export function sortProductStatusesByPriority(
+  statuses?: readonly ProductStatus[],
+) {
+  if (!statuses?.length) {
+    return []
+  }
+
+  return productStatusPriority.filter((status) => statuses.includes(status))
+}

@@ -104,7 +104,7 @@ export function AdminLayout() {
         >
           <div
             className={cn(
-              'mx-auto grid gap-5 px-gutter py-5 sm:gap-6 sm:py-6',
+              'mx-auto grid w-full min-w-0 gap-5 px-gutter py-5 sm:gap-6 sm:py-6',
               isSidebarVisible ? 'max-w-[1440px]' : 'max-w-[1760px]',
             )}
           >

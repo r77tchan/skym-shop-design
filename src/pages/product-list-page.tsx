@@ -36,37 +36,10 @@ import {
 import { cn } from '@/lib/utils'
 
 const allFilterLabel = '全て'
-const purchasableProducts = products.filter((product) => !isSoldOut(product))
 
-const statusFilters = [
-  {
-    label: allFilterLabel,
-    count: purchasableProducts.length,
-    active: true,
-  },
-  {
-    label: 'セール中',
-    count: purchasableProducts.filter((product) => isOnSale(product)).length,
-  },
-]
-
-const categoryFilterItems = productCategories.map((category) => ({
-  label: category,
-  count:
-    category === allFilterLabel
-      ? purchasableProducts.length
-      : purchasableProducts.filter((product) => product.category === category)
-          .length,
-}))
-
-const brandFilterItems = [
-  { label: allFilterLabel, count: purchasableProducts.length },
-  ...productBrands.map((brand) => ({
-    label: brand,
-    count: purchasableProducts.filter((product) => product.brand === brand)
-      .length,
-  })),
-]
+type StatusFilterValue = 'all' | 'sale'
+type CategoryFilterValue = (typeof productCategories)[number]
+type BrandFilterValue = typeof allFilterLabel | (typeof productBrands)[number]
 
 type SortValue = 'new' | 'price-asc' | 'price-desc'
 
@@ -115,21 +88,119 @@ function compareProducts(a: Product, b: Product, sortValue: SortValue) {
   return compareOriginalOrder(a, b)
 }
 
-function getSortedProducts(sortValue: SortValue) {
-  return [...products].sort((a, b) => compareProducts(a, b, sortValue))
+type ShopProductFilterState = {
+  brandFilter: BrandFilterValue
+  categoryFilter: CategoryFilterValue
+  statusFilterValue: StatusFilterValue
+}
+
+function matchesShopProductFilters(
+  product: Product,
+  filters: ShopProductFilterState,
+) {
+  if (
+    filters.categoryFilter !== allFilterLabel &&
+    product.category !== filters.categoryFilter
+  ) {
+    return false
+  }
+
+  if (
+    filters.brandFilter !== allFilterLabel &&
+    product.brand !== filters.brandFilter
+  ) {
+    return false
+  }
+
+  if (filters.statusFilterValue === 'sale' && !isOnSale(product)) {
+    return false
+  }
+
+  return true
+}
+
+function getFilteredProducts(filters: ShopProductFilterState) {
+  return products.filter((product) =>
+    matchesShopProductFilters(product, filters),
+  )
+}
+
+function getVisibleProducts(
+  filters: ShopProductFilterState,
+  sortValue: SortValue,
+) {
+  const filteredProducts = getFilteredProducts(filters)
+  return [...filteredProducts].sort((a, b) => compareProducts(a, b, sortValue))
 }
 
 export function ProductListPage() {
+  const [brandFilter, setBrandFilter] =
+    useState<BrandFilterValue>(allFilterLabel)
+  const [categoryFilter, setCategoryFilter] =
+    useState<CategoryFilterValue>(allFilterLabel)
   const [sortValue, setSortValue] = useState<SortValue>('new')
-  const sortedProducts = getSortedProducts(sortValue)
-  const purchasableProductCount = sortedProducts.filter(
+  const [statusFilterValue, setStatusFilterValue] =
+    useState<StatusFilterValue>('all')
+  const currentFilters = {
+    brandFilter,
+    categoryFilter,
+    statusFilterValue,
+  } satisfies ShopProductFilterState
+  const getFilterCount = (filters: Partial<ShopProductFilterState> = {}) =>
+    getFilteredProducts({ ...currentFilters, ...filters }).length
+  const statusFilterOptions = [
+    {
+      label: allFilterLabel,
+      value: 'all',
+      count: getFilterCount({ statusFilterValue: 'all' }),
+    },
+    {
+      label: 'セール中',
+      value: 'sale',
+      count: getFilterCount({ statusFilterValue: 'sale' }),
+    },
+  ] as const satisfies ReadonlyArray<{
+    label: string
+    value: StatusFilterValue
+    count: number
+  }>
+  const categoryFilterItems = productCategories.map((category) => ({
+    label: category,
+    value: category,
+    count: getFilterCount({ categoryFilter: category }),
+  })) satisfies ReadonlyArray<{
+    label: string
+    value: CategoryFilterValue
+    count: number
+  }>
+  const brandFilterItems = [
+    {
+      label: allFilterLabel,
+      value: allFilterLabel,
+      count: getFilterCount({ brandFilter: allFilterLabel }),
+    },
+    ...productBrands.map((brand) => ({
+      label: brand,
+      value: brand,
+      count: getFilterCount({ brandFilter: brand }),
+    })),
+  ] satisfies ReadonlyArray<{
+    label: string
+    value: BrandFilterValue
+    count: number
+  }>
+  const visibleProducts = getVisibleProducts(currentFilters, sortValue)
+  const purchasableProductCount = visibleProducts.filter(
     (product) => !isSoldOut(product),
   ).length
-  const soldOutProductCount = sortedProducts.filter((product) =>
+  const soldOutProductCount = visibleProducts.filter((product) =>
     isSoldOut(product),
   ).length
   const handleResetFilters = () => {
+    setBrandFilter(allFilterLabel)
+    setCategoryFilter(allFilterLabel)
     setSortValue('new')
+    setStatusFilterValue('all')
   }
 
   return (
@@ -188,49 +259,26 @@ export function ProductListPage() {
           <div className="grid gap-3">
             <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(320px,420px)] lg:items-end">
               <div className="min-w-0">
-                <div className="mb-2 flex items-center justify-between gap-3">
-                  <div className="flex items-center gap-2 text-xs font-semibold text-muted-foreground">
-                    <SlidersHorizontalIcon
-                      aria-hidden="true"
-                      className="size-4"
-                    />
-                    絞り込み
-                  </div>
-                </div>
-                <div className="-mx-gutter [scrollbar-width:none] overflow-x-auto px-gutter [&::-webkit-scrollbar]:hidden">
-                  <div className="flex w-max gap-2">
-                    {statusFilters.map((filter) => (
-                      <button
-                        aria-pressed={filter.active ? 'true' : 'false'}
-                        className={cn(
-                          'inline-flex h-9 items-center gap-2 rounded-lg border px-3 text-sm font-medium whitespace-nowrap',
-                          filter.active
-                            ? 'border-primary bg-primary text-primary-foreground'
-                            : 'border-border bg-card hover:bg-accent/55',
-                        )}
-                        key={filter.label}
-                        type="button"
-                      >
-                        <span>{filter.label}</span>
-                        <span
-                          className={cn(
-                            'text-xs',
-                            filter.active
-                              ? 'text-primary-foreground/75'
-                              : 'text-muted-foreground',
-                          )}
-                        >
-                          {filter.count}
-                        </span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
+                <ProductStatusFilter
+                  options={statusFilterOptions}
+                  onChange={setStatusFilterValue}
+                  value={statusFilterValue}
+                />
               </div>
 
               <div className="grid gap-2 sm:grid-cols-2">
-                <FilterSelect items={categoryFilterItems} label="カテゴリー" />
-                <FilterSelect items={brandFilterItems} label="ブランド" />
+                <FilterSelect
+                  items={categoryFilterItems}
+                  label="カテゴリー"
+                  onChange={setCategoryFilter}
+                  value={categoryFilter}
+                />
+                <FilterSelect
+                  items={brandFilterItems}
+                  label="ブランド"
+                  onChange={setBrandFilter}
+                  value={brandFilter}
+                />
               </div>
             </div>
             <div className="flex justify-end">
@@ -261,11 +309,22 @@ export function ProductListPage() {
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-x-4 gap-y-7 sm:grid-cols-3 sm:gap-x-5 sm:gap-y-8 lg:grid-cols-4 xl:grid-cols-5 xl:gap-x-6">
-              {sortedProducts.map((product) => (
-                <ProductCard key={product.id} product={product} />
-              ))}
-            </div>
+            {visibleProducts.length > 0 ? (
+              <div className="grid grid-cols-2 gap-x-4 gap-y-7 sm:grid-cols-3 sm:gap-x-5 sm:gap-y-8 lg:grid-cols-4 xl:grid-cols-5 xl:gap-x-6">
+                {visibleProducts.map((product) => (
+                  <ProductCard key={product.id} product={product} />
+                ))}
+              </div>
+            ) : (
+              <div className="rounded-lg border bg-card px-4 py-10 text-center">
+                <p className="text-sm font-medium">
+                  条件に一致する商品がありません。
+                </p>
+                <p className="mt-2 text-xs text-muted-foreground">
+                  絞り込み条件を変更してください。
+                </p>
+              </div>
+            )}
 
             <div className="border-t pt-6">
               <p className="text-xs text-muted-foreground">
@@ -281,12 +340,75 @@ export function ProductListPage() {
   )
 }
 
-function FilterSelect({
+function ProductStatusFilter({
+  onChange,
+  options,
+  value,
+}: {
+  onChange: (value: StatusFilterValue) => void
+  options: ReadonlyArray<{
+    label: string
+    value: StatusFilterValue
+    count: number
+  }>
+  value: StatusFilterValue
+}) {
+  return (
+    <div className="grid min-w-0 gap-1.5">
+      <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
+        <SlidersHorizontalIcon aria-hidden="true" className="size-4" />
+        絞り込み
+      </div>
+      <div
+        aria-label="絞り込み"
+        className="flex w-fit max-w-full rounded-lg border bg-card p-1"
+        role="group"
+      >
+        {options.map((option) => {
+          const active = option.value === value
+
+          return (
+            <button
+              aria-pressed={active ? 'true' : 'false'}
+              className={cn(
+                'inline-flex h-7 min-w-16 items-center justify-center gap-1 rounded-md px-2 text-xs font-medium whitespace-nowrap',
+                active
+                  ? 'bg-primary text-primary-foreground'
+                  : 'text-muted-foreground hover:bg-accent/55 hover:text-foreground',
+              )}
+              key={option.value}
+              onClick={() => onChange(option.value)}
+              type="button"
+            >
+              <span className="truncate">{option.label}</span>
+              <span
+                className={cn(
+                  'inline-block w-[3ch] shrink-0 text-right text-[0.68rem] tabular-nums',
+                  active
+                    ? 'text-primary-foreground/75'
+                    : 'text-muted-foreground',
+                )}
+              >
+                {option.count}
+              </span>
+            </button>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
+function FilterSelect<TValue extends string>({
   items,
   label,
+  onChange,
+  value,
 }: {
-  items: Array<{ label: string; count: number }>
+  items: ReadonlyArray<{ label: string; value: TValue; count: number }>
   label: string
+  onChange: (value: TValue) => void
+  value: TValue
 }) {
   return (
     <label className="grid min-w-0 gap-1.5">
@@ -295,9 +417,11 @@ function FilterSelect({
         <select
           aria-label={label}
           className="h-10 w-full cursor-pointer appearance-none rounded-lg border bg-card px-3 pr-9 text-sm font-medium outline-none hover:bg-accent/55 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+          onChange={(event) => onChange(event.target.value as TValue)}
+          value={value}
         >
           {items.map((item) => (
-            <option key={item.label}>
+            <option key={item.value} value={item.value}>
               {item.label}（{item.count}）
             </option>
           ))}

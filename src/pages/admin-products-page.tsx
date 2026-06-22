@@ -1,5 +1,6 @@
 import {
   ArrowUpDownIcon,
+  CheckIcon,
   ChevronDownIcon,
   PencilIcon,
   PlusIcon,
@@ -54,32 +55,6 @@ const productOrderIndexes = new Map(
   adminProductRows.map((row, index) => [row.product.id, index]),
 )
 
-const adminCategoryFilterItems = productCategories.map((category) => ({
-  label: category,
-  value: category,
-  count:
-    category === allFilterLabel
-      ? products.length
-      : products.filter((product) => product.category === category).length,
-})) satisfies ReadonlyArray<{
-  label: string
-  value: CategoryFilterValue
-  count: number
-}>
-
-const adminBrandFilterItems = [
-  { label: allFilterLabel, value: allFilterLabel, count: products.length },
-  ...productBrands.map((brand) => ({
-    label: brand,
-    value: brand,
-    count: products.filter((product) => product.brand === brand).length,
-  })),
-] satisfies ReadonlyArray<{
-  label: string
-  value: BrandFilterValue
-  count: number
-}>
-
 const sortOptions: Array<{ label: string; value: SortValue }> = [
   { label: '新着順', value: 'new' },
   { label: '価格の安い順', value: 'price-asc' },
@@ -119,41 +94,71 @@ function compareAdminProductRows(
   return compareOriginalRowOrder(a, b)
 }
 
-const inventoryFilterOptions = [
-  { label: '全て', value: 'all', count: adminProductRows.length },
-  {
-    label: '在庫あり',
-    value: 'in-stock',
-    count: adminProductRows.filter((row) => row.stock > 0).length,
-  },
-  {
-    label: '在庫なし',
-    value: 'out-of-stock',
-    count: adminProductRows.filter((row) => row.stock === 0).length,
-  },
-] as const satisfies ReadonlyArray<{
-  label: string
-  value: InventoryFilterValue
-  count: number
-}>
+type AdminProductFilterState = {
+  brandFilter: BrandFilterValue
+  categoryFilter: CategoryFilterValue
+  inventoryFilter: InventoryFilterValue
+  publishedProductIds: ReadonlySet<number>
+  saleFilter: SaleFilterValue
+  visibilityFilter: VisibilityFilterValue
+}
 
-const saleFilterOptions = [
-  { label: '全て', value: 'all', count: adminProductRows.length },
-  {
-    label: 'セール中',
-    value: 'on-sale',
-    count: adminProductRows.filter((row) => isOnSale(row.product)).length,
-  },
-  {
-    label: 'セールなし',
-    value: 'not-sale',
-    count: adminProductRows.filter((row) => !isOnSale(row.product)).length,
-  },
-] as const satisfies ReadonlyArray<{
-  label: string
-  value: SaleFilterValue
-  count: number
-}>
+function matchesAdminProductFilters(
+  row: AdminProductRow,
+  filters: AdminProductFilterState,
+) {
+  if (
+    filters.categoryFilter !== allFilterLabel &&
+    row.product.category !== filters.categoryFilter
+  ) {
+    return false
+  }
+
+  if (
+    filters.brandFilter !== allFilterLabel &&
+    row.product.brand !== filters.brandFilter
+  ) {
+    return false
+  }
+
+  if (filters.inventoryFilter === 'in-stock' && row.stock === 0) {
+    return false
+  }
+
+  if (filters.inventoryFilter === 'out-of-stock' && row.stock > 0) {
+    return false
+  }
+
+  if (filters.saleFilter === 'on-sale' && !isOnSale(row.product)) {
+    return false
+  }
+
+  if (filters.saleFilter === 'not-sale' && isOnSale(row.product)) {
+    return false
+  }
+
+  if (
+    filters.visibilityFilter === 'published' &&
+    !filters.publishedProductIds.has(row.product.id)
+  ) {
+    return false
+  }
+
+  if (
+    filters.visibilityFilter === 'unpublished' &&
+    filters.publishedProductIds.has(row.product.id)
+  ) {
+    return false
+  }
+
+  return true
+}
+
+function getFilteredAdminProductRows(filters: AdminProductFilterState) {
+  return adminProductRows.filter((row) =>
+    matchesAdminProductFilters(row, filters),
+  )
+}
 
 export function AdminProductsPage() {
   const [publishedProductIds, setPublishedProductIds] = useState<
@@ -169,72 +174,106 @@ export function AdminProductsPage() {
   const [sortValue, setSortValue] = useState<SortValue>('new')
   const [visibilityFilter, setVisibilityFilter] =
     useState<VisibilityFilterValue>('all')
+  const currentFilters = {
+    brandFilter,
+    categoryFilter,
+    inventoryFilter,
+    publishedProductIds,
+    saleFilter,
+    visibilityFilter,
+  } satisfies AdminProductFilterState
+  const getFilterCount = (
+    filters: Partial<Omit<AdminProductFilterState, 'publishedProductIds'>> = {},
+  ) => getFilteredAdminProductRows({ ...currentFilters, ...filters }).length
+  const adminCategoryFilterItems = productCategories.map((category) => ({
+    label: category,
+    value: category,
+    count: getFilterCount({ categoryFilter: category }),
+  })) satisfies ReadonlyArray<{
+    label: string
+    value: CategoryFilterValue
+    count: number
+  }>
+  const adminBrandFilterItems = [
+    {
+      label: allFilterLabel,
+      value: allFilterLabel,
+      count: getFilterCount({ brandFilter: allFilterLabel }),
+    },
+    ...productBrands.map((brand) => ({
+      label: brand,
+      value: brand,
+      count: getFilterCount({ brandFilter: brand }),
+    })),
+  ] satisfies ReadonlyArray<{
+    label: string
+    value: BrandFilterValue
+    count: number
+  }>
+  const inventoryFilterOptions = [
+    {
+      label: '全て',
+      value: 'all',
+      count: getFilterCount({ inventoryFilter: 'all' }),
+    },
+    {
+      label: '在庫あり',
+      value: 'in-stock',
+      count: getFilterCount({ inventoryFilter: 'in-stock' }),
+    },
+    {
+      label: '在庫なし',
+      value: 'out-of-stock',
+      count: getFilterCount({ inventoryFilter: 'out-of-stock' }),
+    },
+  ] as const satisfies ReadonlyArray<{
+    label: string
+    value: InventoryFilterValue
+    count: number
+  }>
+  const saleFilterOptions = [
+    {
+      label: '全て',
+      value: 'all',
+      count: getFilterCount({ saleFilter: 'all' }),
+    },
+    {
+      label: 'セール中',
+      value: 'on-sale',
+      count: getFilterCount({ saleFilter: 'on-sale' }),
+    },
+    {
+      label: 'セールなし',
+      value: 'not-sale',
+      count: getFilterCount({ saleFilter: 'not-sale' }),
+    },
+  ] as const satisfies ReadonlyArray<{
+    label: string
+    value: SaleFilterValue
+    count: number
+  }>
   const visibilityFilterOptions = [
-    { label: '全て', value: 'all', count: adminProductRows.length },
+    {
+      label: '全て',
+      value: 'all',
+      count: getFilterCount({ visibilityFilter: 'all' }),
+    },
     {
       label: '公開',
       value: 'published',
-      count: adminProductRows.filter((row) =>
-        publishedProductIds.has(row.product.id),
-      ).length,
+      count: getFilterCount({ visibilityFilter: 'published' }),
     },
     {
       label: '非公開',
       value: 'unpublished',
-      count: adminProductRows.filter(
-        (row) => !publishedProductIds.has(row.product.id),
-      ).length,
+      count: getFilterCount({ visibilityFilter: 'unpublished' }),
     },
   ] as const satisfies ReadonlyArray<{
     label: string
     value: VisibilityFilterValue
     count: number
   }>
-  const filteredProductRows = adminProductRows
-    .filter((row) => {
-      if (
-        categoryFilter !== allFilterLabel &&
-        row.product.category !== categoryFilter
-      ) {
-        return false
-      }
-
-      if (brandFilter !== allFilterLabel && row.product.brand !== brandFilter) {
-        return false
-      }
-
-      if (inventoryFilter === 'in-stock' && row.stock === 0) {
-        return false
-      }
-
-      if (inventoryFilter === 'out-of-stock' && row.stock > 0) {
-        return false
-      }
-
-      if (saleFilter === 'on-sale' && !isOnSale(row.product)) {
-        return false
-      }
-
-      if (saleFilter === 'not-sale' && isOnSale(row.product)) {
-        return false
-      }
-
-      if (
-        visibilityFilter === 'published' &&
-        !publishedProductIds.has(row.product.id)
-      ) {
-        return false
-      }
-
-      if (
-        visibilityFilter === 'unpublished' &&
-        publishedProductIds.has(row.product.id)
-      ) {
-        return false
-      }
-
-      return true
-    })
+  const filteredProductRows = getFilteredAdminProductRows(currentFilters)
     .sort((a, b) => compareAdminProductRows(a, b, sortValue))
     .map((row, index) => ({
       ...row,
@@ -266,7 +305,7 @@ export function AdminProductsPage() {
     <>
       <ProductsPageHeader />
 
-      <section className="grid gap-4 rounded-lg border bg-card p-4">
+      <section className="grid min-w-0 gap-4 rounded-lg border bg-card p-4">
         <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_auto]">
           <label className="relative block min-w-0">
             <SearchIcon
@@ -434,7 +473,7 @@ function AdminSegmentedFilter<TValue extends string>({
       <p className="text-xs font-medium text-muted-foreground">{label}</p>
       <div
         aria-label={label}
-        className="flex min-w-0 rounded-lg border bg-background p-1"
+        className="flex w-fit max-w-full rounded-lg border bg-background p-0.5"
         role="group"
       >
         {options.map((option) => {
@@ -444,7 +483,7 @@ function AdminSegmentedFilter<TValue extends string>({
             <button
               aria-pressed={active ? 'true' : 'false'}
               className={cn(
-                'inline-flex h-8 min-w-0 flex-1 items-center justify-center gap-1.5 rounded-md px-2 text-sm font-medium whitespace-nowrap',
+                'inline-flex h-7 min-w-18 items-center justify-center gap-1 rounded-md px-2 text-xs font-medium whitespace-nowrap',
                 active
                   ? 'bg-primary text-primary-foreground'
                   : 'text-muted-foreground hover:bg-accent/55 hover:text-foreground',
@@ -456,7 +495,7 @@ function AdminSegmentedFilter<TValue extends string>({
               <span className="truncate">{option.label}</span>
               <span
                 className={cn(
-                  'text-xs tabular-nums',
+                  'inline-block w-[3ch] shrink-0 text-right text-[0.68rem] tabular-nums',
                   active
                     ? 'text-primary-foreground/75'
                     : 'text-muted-foreground',
@@ -501,7 +540,7 @@ function ProductsTable({
   rows: ReadonlyArray<AdminProductRow>
 }) {
   return (
-    <section className="overflow-hidden rounded-lg border bg-card">
+    <section className="min-w-0 overflow-hidden rounded-lg border bg-card [contain:paint]">
       <div className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="min-w-0">
           <h2 className="font-heading text-base font-semibold">商品一覧</h2>
@@ -512,46 +551,50 @@ function ProductsTable({
         </Button>
       </div>
 
-      <div className="hidden border-y bg-muted/35 px-4 py-2 text-xs font-medium text-muted-foreground lg:grid lg:grid-cols-[48px_64px_minmax(240px,1.35fr)_104px_112px_72px_112px_88px_36px] lg:items-center lg:gap-3">
-        <span>No</span>
-        <span>ID</span>
-        <span>商品</span>
-        <span>カテゴリ</span>
-        <span>価格</span>
-        <span>在庫</span>
-        <span>公開状態</span>
-        <span>タグ</span>
-        <span aria-hidden="true" />
+      <div className="hidden min-w-0 overflow-x-auto lg:block">
+        <div className="min-w-[1040px]">
+          <div className="grid grid-cols-[48px_64px_minmax(240px,1.35fr)_104px_112px_72px_112px_88px_36px] items-center gap-3 border-y bg-muted/35 px-4 py-2 text-xs font-medium text-muted-foreground">
+            <span>No</span>
+            <span>ID</span>
+            <span>商品</span>
+            <span>カテゴリ</span>
+            <span>価格</span>
+            <span>在庫</span>
+            <span>公開状態</span>
+            <span>タグ</span>
+            <span aria-hidden="true" />
+          </div>
+
+          {rows.length > 0 ? (
+            <div className="divide-y">
+              {rows.map((row) => (
+                <ProductTableRow
+                  key={row.product.id}
+                  displayNo={row.displayNo}
+                  isPublished={publishedProductIds.has(row.product.id)}
+                  onTogglePublished={onTogglePublished}
+                  product={row.product}
+                  stock={row.stock}
+                />
+              ))}
+            </div>
+          ) : null}
+        </div>
       </div>
 
       {rows.length > 0 ? (
-        <>
-          <div className="hidden divide-y lg:block">
-            {rows.map((row) => (
-              <ProductTableRow
-                key={row.product.id}
-                displayNo={row.displayNo}
-                isPublished={publishedProductIds.has(row.product.id)}
-                onTogglePublished={onTogglePublished}
-                product={row.product}
-                stock={row.stock}
-              />
-            ))}
-          </div>
-
-          <div className="grid divide-y lg:hidden">
-            {rows.map((row) => (
-              <ProductMobileCard
-                key={row.product.id}
-                displayNo={row.displayNo}
-                isPublished={publishedProductIds.has(row.product.id)}
-                onTogglePublished={onTogglePublished}
-                product={row.product}
-                stock={row.stock}
-              />
-            ))}
-          </div>
-        </>
+        <div className="grid divide-y lg:hidden">
+          {rows.map((row) => (
+            <ProductMobileCard
+              key={row.product.id}
+              displayNo={row.displayNo}
+              isPublished={publishedProductIds.has(row.product.id)}
+              onTogglePublished={onTogglePublished}
+              product={row.product}
+              stock={row.stock}
+            />
+          ))}
+        </div>
       ) : (
         <div className="border-t p-6 text-center text-sm text-muted-foreground">
           条件に一致する商品はありません
@@ -577,41 +620,47 @@ function ProductTableRow({
   const primaryStatus = getPrimaryProductStatus(product)
 
   return (
-    <article className="grid px-4 py-3 lg:grid-cols-[48px_64px_minmax(240px,1.35fr)_104px_112px_72px_112px_88px_36px] lg:items-center lg:gap-3">
-      <p className="text-sm font-medium tabular-nums">{displayNo}</p>
-      <p className="text-sm font-medium text-muted-foreground tabular-nums">
-        {product.id}
-      </p>
+    <article className="grid grid-cols-[48px_64px_minmax(240px,1.35fr)_104px_112px_72px_112px_88px_36px] items-stretch gap-3 px-4">
       <button
         aria-label={`${product.name}の詳細を開く`}
-        className="-m-1 grid min-w-0 cursor-pointer grid-cols-[56px_minmax(0,1fr)] items-center gap-3 rounded-lg p-1 text-left outline-none hover:bg-accent/55 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+        className="col-span-6 -mx-1 grid min-w-0 cursor-pointer grid-cols-[48px_64px_minmax(240px,1.35fr)_104px_112px_72px] items-center gap-3 rounded-lg px-1 py-3.5 text-left outline-none hover:bg-accent/55 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
         type="button"
       >
-        <img
-          alt=""
-          className="aspect-square w-14 rounded-lg bg-muted object-cover"
-          src={assetUrl(product.image)}
-        />
-        <div className="min-w-0">
-          <p className="truncate text-sm font-semibold">{product.name}</p>
-          <p className="mt-1 truncate text-xs text-muted-foreground">
-            {product.brand}
-          </p>
-        </div>
+        <span className="text-sm font-medium tabular-nums">{displayNo}</span>
+        <span className="text-sm font-medium text-muted-foreground tabular-nums">
+          {product.id}
+        </span>
+        <span className="grid min-w-0 grid-cols-[56px_minmax(0,1fr)] items-center gap-3">
+          <img
+            alt=""
+            className="aspect-square w-14 rounded-lg bg-muted object-cover"
+            src={assetUrl(product.image)}
+          />
+          <span className="min-w-0">
+            <span className="block truncate text-sm font-semibold">
+              {product.name}
+            </span>
+            <span className="mt-1 block truncate text-xs text-muted-foreground">
+              {product.brand}
+            </span>
+          </span>
+        </span>
+        <span className="truncate text-sm">{product.category}</span>
+        <ProductPrice product={product} variant="rail" />
+        <span className="text-sm tabular-nums">{stock}</span>
       </button>
 
-      <p className="truncate text-sm">{product.category}</p>
-      <ProductPrice product={product} variant="rail" />
-      <p className="text-sm tabular-nums">{stock}</p>
-      <PublishStateToggle
-        isPublished={isPublished}
-        onToggle={() => onTogglePublished(product.id)}
-        productName={product.name}
-      />
-      <div className="flex min-w-0">
+      <div className="flex items-center">
+        <PublishStateToggle
+          isPublished={isPublished}
+          onToggle={() => onTogglePublished(product.id)}
+          productName={product.name}
+        />
+      </div>
+      <div className="flex min-w-0 items-center">
         <ProductStatusBadge status={primaryStatus} />
       </div>
-      <span className="flex justify-center">
+      <span className="flex items-center justify-center">
         <SelectionCheckbox ariaLabel={`${product.name}を選択`} />
       </span>
     </article>
@@ -634,60 +683,75 @@ function ProductMobileCard({
   const primaryStatus = getPrimaryProductStatus(product)
 
   return (
-    <article className="grid gap-4 p-4">
-      <div className="grid grid-cols-[minmax(0,1fr)_auto] gap-3">
-        <button
-          aria-label={`${product.name}の詳細を開く`}
-          className="-m-1 grid min-w-0 cursor-pointer grid-cols-[72px_minmax(0,1fr)] gap-3 rounded-lg p-1 text-left outline-none hover:bg-accent/55 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-          type="button"
-        >
+    <article className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-3 p-4">
+      <button
+        aria-label={`${product.name}の詳細を開く`}
+        className="-m-1 grid min-w-0 cursor-pointer gap-3 rounded-lg p-1 text-left outline-none hover:bg-accent/55 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+        type="button"
+      >
+        <span className="flex min-w-0 items-start justify-between gap-3">
+          <span className="grid min-w-0 gap-1">
+            <span className="flex flex-wrap items-center gap-2 text-xs font-medium text-muted-foreground">
+              <span className="tabular-nums">No {displayNo}</span>
+              <span aria-hidden="true">/</span>
+              <span className="tabular-nums">ID {product.id}</span>
+            </span>
+            <span className="block truncate text-base font-semibold">
+              {product.name}
+            </span>
+            <span className="block truncate text-xs text-muted-foreground">
+              {product.brand}
+            </span>
+          </span>
+          <span className="shrink-0">
+            <ProductStatusBadge status={primaryStatus} />
+          </span>
+        </span>
+
+        <span className="grid min-w-0 grid-cols-[72px_minmax(0,1fr)] gap-3">
           <img
             alt=""
             className="aspect-square w-[72px] rounded-lg bg-muted object-cover"
             src={assetUrl(product.image)}
           />
-          <div className="min-w-0">
-            <div className="flex flex-wrap gap-2">
-              <ProductStatusBadge status={primaryStatus} />
-            </div>
-            <h2 className="mt-2 line-clamp-2 text-sm leading-5 font-semibold">
-              {product.name}
-            </h2>
-            <p className="mt-1 truncate text-xs text-muted-foreground">
-              {product.brand} / {product.category}
-            </p>
-          </div>
-        </button>
-        <SelectionCheckbox ariaLabel={`${product.name}を選択`} />
-      </div>
+          <span className="grid min-w-0 grid-cols-2 gap-3 text-sm">
+            <span className="min-w-0">
+              <span className="block text-xs font-medium text-muted-foreground">
+                カテゴリ
+              </span>
+              <span className="mt-1 block truncate font-medium">
+                {product.category}
+              </span>
+            </span>
+            <span className="min-w-0">
+              <span className="block text-xs font-medium text-muted-foreground">
+                価格
+              </span>
+              <ProductPrice className="mt-1" product={product} variant="rail" />
+            </span>
+            <span className="min-w-0">
+              <span className="block text-xs font-medium text-muted-foreground">
+                在庫
+              </span>
+              <span className="mt-1 block font-medium tabular-nums">
+                {stock}
+              </span>
+            </span>
+          </span>
+        </span>
+      </button>
 
-      <div className="grid grid-cols-2 gap-3 rounded-lg border bg-muted/35 p-3 text-sm">
-        <div>
-          <p className="text-xs text-muted-foreground">No</p>
-          <p className="mt-1 font-medium tabular-nums">{displayNo}</p>
-        </div>
-        <div>
-          <p className="text-xs text-muted-foreground">ID</p>
-          <p className="mt-1 font-medium tabular-nums">{product.id}</p>
-        </div>
-        <div>
-          <p className="text-xs text-muted-foreground">価格</p>
-          <ProductPrice className="mt-1" product={product} variant="rail" />
-        </div>
-        <div>
-          <p className="text-xs text-muted-foreground">在庫</p>
-          <p className="mt-1 font-medium tabular-nums">{stock}</p>
-        </div>
-        <div>
-          <p className="text-xs text-muted-foreground">公開状態</p>
-          <div className="mt-1">
-            <PublishStateToggle
-              isPublished={isPublished}
-              onToggle={() => onTogglePublished(product.id)}
-              productName={product.name}
-            />
-          </div>
-        </div>
+      <span className="flex items-start justify-center pt-1">
+        <SelectionCheckbox ariaLabel={`${product.name}を選択`} />
+      </span>
+
+      <div className="col-span-2 flex items-center justify-between gap-3 rounded-lg border bg-muted/35 p-3">
+        <p className="text-xs font-medium text-muted-foreground">公開状態</p>
+        <PublishStateToggle
+          isPublished={isPublished}
+          onToggle={() => onTogglePublished(product.id)}
+          productName={product.name}
+        />
       </div>
     </article>
   )
@@ -696,11 +760,10 @@ function ProductMobileCard({
 function SelectionCheckbox({ ariaLabel }: { ariaLabel: string }) {
   return (
     <label className="grid size-8 cursor-pointer place-items-center rounded-md hover:bg-accent/55">
-      <input
-        aria-label={ariaLabel}
-        className="size-5 cursor-pointer rounded border-input accent-primary focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none"
-        type="checkbox"
-      />
+      <input aria-label={ariaLabel} className="peer sr-only" type="checkbox" />
+      <span className="grid size-5 place-items-center rounded border border-input bg-background text-transparent peer-checked:border-primary peer-checked:bg-primary peer-checked:text-primary-foreground peer-focus-visible:ring-2 peer-focus-visible:ring-ring peer-focus-visible:ring-offset-2">
+        <CheckIcon aria-hidden="true" className="size-3.5" />
+      </span>
     </label>
   )
 }

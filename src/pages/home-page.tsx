@@ -26,6 +26,10 @@ import {
 } from '@/lib/ui-styles'
 import { cn } from '@/lib/utils'
 
+const homeProducts = products
+  .filter((product) => !isSoldOut(product))
+  .slice(0, 6)
+
 export function HomePage() {
   return (
     <main className="min-h-svh bg-background pt-[calc(4rem+1px)] text-foreground sm:pt-0">
@@ -84,7 +88,7 @@ export function HomePage() {
 
           <div className="-mx-gutter [scrollbar-width:none] overflow-x-auto px-gutter pb-2 [&::-webkit-scrollbar]:hidden">
             <div className="flex w-max gap-4">
-              {products.slice(0, 6).map((product) => (
+              {homeProducts.map((product) => (
                 <ProductRailCard key={product.name} product={product} />
               ))}
             </div>
@@ -143,7 +147,6 @@ export function HomePage() {
 }
 
 function ProductRailCard({ product }: { product: Product }) {
-  const soldOut = isSoldOut(product)
   const primaryStatus = getPrimaryProductStatus(product)
 
   return (
@@ -157,17 +160,12 @@ function ProductRailCard({ product }: { product: Product }) {
       <div className="relative aspect-[3/4] overflow-hidden rounded-md bg-muted">
         <img
           alt=""
-          className={cn('size-full object-cover', soldOut && 'opacity-64')}
+          className="size-full object-cover"
           src={assetUrl(product.image)}
         />
         {primaryStatus ? (
           <div className="absolute top-2 left-2 flex flex-wrap gap-1">
             <ProductStatusBadge status={primaryStatus} />
-          </div>
-        ) : null}
-        {soldOut ? (
-          <div className="absolute inset-x-0 bottom-0 bg-card/88 px-3 py-2 text-center text-xs font-semibold text-muted-foreground">
-            SOLD OUT
           </div>
         ) : null}
       </div>
@@ -190,7 +188,7 @@ function ProductRailCard({ product }: { product: Product }) {
             {product.name}
           </p>
         </div>
-        <ProductPrice muted={soldOut} product={product} variant="rail" />
+        <ProductPrice product={product} variant="rail" />
       </div>
     </Link>
   )
