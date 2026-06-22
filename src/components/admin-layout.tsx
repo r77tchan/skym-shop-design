@@ -100,6 +100,7 @@ export function AdminLayout() {
             isTopbarPinned &&
               'min-h-0 flex-1 overflow-y-auto overscroll-y-none',
           )}
+          data-admin-scroll-container
         >
           <div
             className={cn(
