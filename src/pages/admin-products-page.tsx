@@ -513,18 +513,20 @@ function AdminSegmentedFilter<TValue extends string>({
 
 function ProductsPageHeader() {
   return (
-    <section className="flex flex-col gap-4 border-b pb-5 sm:flex-row sm:items-end sm:justify-between">
-      <div className="min-w-0">
-        <h1 className="font-heading text-2xl font-semibold tracking-normal sm:text-3xl">
-          商品
-        </h1>
-      </div>
+    <section className="border-b pb-5">
+      <div className="flex h-10 items-end justify-between gap-4">
+        <div className="min-w-0">
+          <h1 className="font-heading text-2xl font-semibold tracking-normal sm:text-3xl">
+            商品
+          </h1>
+        </div>
 
-      <div className="flex flex-wrap items-center gap-2">
-        <Button className="h-10 px-3">
-          <PlusIcon data-icon="inline-start" />
-          商品登録
-        </Button>
+        <div className="flex shrink-0 items-center gap-2">
+          <Button className="h-10 px-3">
+            <PlusIcon data-icon="inline-start" />
+            商品登録
+          </Button>
+        </div>
       </div>
     </section>
   )
