@@ -325,11 +325,11 @@ function AdminTopbar({
               type="button"
             >
               <span className="grid size-7 shrink-0 place-items-center rounded-lg bg-primary text-xs font-semibold text-primary-foreground">
-                SK
+                浅
               </span>
               <span className="min-w-0">
                 <span className="block truncate text-xs font-semibold">
-                  owner.skym@gmail.com
+                  tatsuya.asakawa@skym.co.jp
                 </span>
               </span>
             </button>
