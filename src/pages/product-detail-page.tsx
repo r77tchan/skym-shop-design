@@ -10,6 +10,7 @@ import {
 import { useState } from 'react'
 import { Link, Navigate, useParams } from 'react-router'
 
+import { CartQuantityBadge } from '@/components/cart-quantity-badge'
 import { FavoriteToggleButton } from '@/components/favorite-toggle-button'
 import { ProductCard } from '@/components/product-card'
 import { ProductPrice } from '@/components/product-price'
@@ -286,11 +287,18 @@ function ProductPurchasePanel({
   soldOut: boolean
 }) {
   const [quantity, setQuantity] = useState(1)
-  const { addItem, getAvailableQuantity } = useCart()
+  const { addItem, getAvailableQuantity, getCartQuantity } = useCart()
+  const cartQuantity = getCartQuantity(product.id)
   const availableQuantity = getAvailableQuantity(product.id)
   const canAddToCart = !soldOut && availableQuantity > 0
   const quantityOptions = getQuantityOptions(availableQuantity)
   const stockLabel = getProductStockLabel(product)
+  const purchaseButtonLabel = getPurchaseButtonLabel(
+    product.name,
+    cartQuantity,
+    canAddToCart,
+    soldOut,
+  )
   const selectedQuantity = Math.min(
     Math.max(quantity, 1),
     Math.max(availableQuantity, 1),
@@ -355,21 +363,21 @@ function ProductPurchasePanel({
         <div className="grid grid-cols-[3rem_minmax(0,1fr)] gap-2">
           <FavoriteToggleButton className="size-12" product={product} />
           <Button
+            aria-label={purchaseButtonLabel}
             className={cn(
-              'h-12 text-base',
+              'relative h-12 text-base',
               !canAddToCart &&
                 'disabled:pointer-events-auto disabled:cursor-not-allowed disabled:hover:bg-primary',
+              cartQuantity > 0 && 'disabled:opacity-100',
             )}
             disabled={!canAddToCart}
             onClick={() => addItem(product.id, selectedQuantity)}
+            title={purchaseButtonLabel}
             type="button"
           >
             <ShoppingCartIcon data-icon="inline-start" />
-            {soldOut
-              ? 'SOLD OUT'
-              : canAddToCart
-                ? 'カートに入れる'
-                : '在庫上限'}
+            {soldOut ? 'SOLD OUT' : canAddToCart ? 'カートに追加' : '在庫上限'}
+            <CartQuantityBadge quantity={cartQuantity} />
           </Button>
         </div>
       </div>
@@ -381,6 +389,27 @@ function getQuantityOptions(availableQuantity: number) {
   const optionCount = Math.max(Math.trunc(availableQuantity), 1)
 
   return Array.from({ length: optionCount }, (_, index) => index + 1)
+}
+
+function getPurchaseButtonLabel(
+  productName: string,
+  cartQuantity: number,
+  canAddToCart: boolean,
+  soldOut: boolean,
+) {
+  if (soldOut) {
+    return `${productName}は売り切れです`
+  }
+
+  if (cartQuantity > 0) {
+    return canAddToCart
+      ? `${productName}はカートに${cartQuantity}点入っています。さらに追加`
+      : `${productName}はカートに${cartQuantity}点入っています。在庫上限に達しています`
+  }
+
+  return canAddToCart
+    ? `${productName}をカートに追加`
+    : `${productName}は在庫上限に達しています`
 }
 
 function SectionHeading({

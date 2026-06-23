@@ -1,5 +1,6 @@
 import { ShoppingCartIcon } from 'lucide-react'
 
+import { CartQuantityBadge } from '@/components/cart-quantity-badge'
 import { Button } from '@/components/ui/button'
 import { useCart } from '@/hooks/use-cart'
 import { isSoldOut } from '@/lib/product-status'
@@ -35,11 +36,7 @@ export function ProductCardCartButton({ product }: { product: Product }) {
       variant={isInCart ? 'default' : canAddToCart ? 'outline' : 'secondary'}
     >
       <ShoppingCartIcon aria-hidden="true" className="size-4" />
-      {isInCart ? (
-        <span className="pointer-events-none absolute -top-1.5 -right-1.5 flex h-4 min-w-4 items-center justify-center rounded-full border border-primary/25 bg-card px-1 text-[0.62rem] leading-none font-semibold text-primary shadow-xs">
-          {formatCartQuantity(cartQuantity)}
-        </span>
-      ) : null}
+      <CartQuantityBadge quantity={cartQuantity} />
     </Button>
   )
 }
@@ -58,8 +55,4 @@ function getCartButtonLabel(
   return canAddToCart
     ? `${productName}をカートに追加`
     : `${productName}は在庫上限に達しています`
-}
-
-function formatCartQuantity(quantity: number) {
-  return quantity > 99 ? '99+' : String(quantity)
 }
