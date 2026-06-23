@@ -10,6 +10,8 @@ import {
 import { useState } from 'react'
 import { Link, Navigate, useParams } from 'react-router'
 
+import { FavoriteToggleButton } from '@/components/favorite-toggle-button'
+import { ProductCardCartButton } from '@/components/product-card-cart-button'
 import { ProductPrice } from '@/components/product-price'
 import {
   ProductStatusBadge,
@@ -19,8 +21,10 @@ import { SiteFooter } from '@/components/site-footer'
 import { SiteHeader } from '@/components/site-header'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { useCart } from '@/hooks/use-cart'
 import { assetUrl } from '@/lib/asset-url'
 import { getPrimaryProductStatus, isSoldOut } from '@/lib/product-status'
+import { getProductStockLabel } from '@/lib/product-stock'
 import { getProductPath, products, type Product } from '@/lib/shop-content'
 import {
   backButtonClassName,
@@ -109,8 +113,12 @@ export function ProductDetailPage() {
 
         <section>
           <div className="mx-auto grid max-w-7xl gap-8 px-gutter py-8 lg:grid-cols-[minmax(0,1fr)_430px] lg:gap-10 lg:py-10">
-            <ProductMedia key={product.id} product={product} />
-            <ProductPurchasePanel product={product} soldOut={soldOut} />
+            <ProductMedia key={`media-${product.id}`} product={product} />
+            <ProductPurchasePanel
+              key={`purchase-${product.id}`}
+              product={product}
+              soldOut={soldOut}
+            />
           </div>
         </section>
 
@@ -282,6 +290,17 @@ function ProductPurchasePanel({
   product: Product
   soldOut: boolean
 }) {
+  const [quantity, setQuantity] = useState(1)
+  const { addItem, getAvailableQuantity } = useCart()
+  const availableQuantity = getAvailableQuantity(product.id)
+  const canAddToCart = !soldOut && availableQuantity > 0
+  const quantityOptions = getQuantityOptions(availableQuantity)
+  const stockLabel = getProductStockLabel(product)
+  const selectedQuantity = Math.min(
+    Math.max(quantity, 1),
+    Math.max(availableQuantity, 1),
+  )
+
   return (
     <div className="h-fit rounded-lg border bg-card p-5 lg:sticky lg:top-20">
       <div className="flex flex-wrap items-center gap-2">
@@ -300,7 +319,16 @@ function ProductPurchasePanel({
       </p>
 
       <div className="mt-6 border-y py-5">
-        <ProductPrice product={product} variant="detail" />
+        <div className="flex flex-wrap items-end gap-x-2 gap-y-1">
+          <ProductPrice
+            className="min-w-0"
+            product={product}
+            variant="detail"
+          />
+          <p className="shrink-0 pb-0.5 text-[0.68rem] leading-none font-medium text-muted-foreground">
+            {stockLabel}
+          </p>
+        </div>
         <p className="mt-2 text-xs text-muted-foreground">
           表示価格には消費税が含まれています。別途送料がかかります。
         </p>
@@ -312,11 +340,15 @@ function ProductPurchasePanel({
           <div className="relative">
             <select
               className="h-11 w-full min-w-0 cursor-pointer appearance-none rounded-lg border border-input bg-background py-0 pr-12 pl-3 text-base outline-none focus:border-ring focus:ring-3 focus:ring-ring/30 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
-              disabled={soldOut}
-              defaultValue="1"
+              disabled={!canAddToCart}
+              onChange={(event) => setQuantity(Number(event.target.value))}
+              value={selectedQuantity}
             >
-              <option value="1">1</option>
-              <option value="2">2</option>
+              {quantityOptions.map((option) => (
+                <option key={option} value={option}>
+                  {option}
+                </option>
+              ))}
             </select>
             <ChevronDownIcon
               aria-hidden="true"
@@ -325,22 +357,35 @@ function ProductPurchasePanel({
           </div>
         </label>
 
-        <div className="grid gap-2">
+        <div className="grid grid-cols-[3rem_minmax(0,1fr)] gap-2">
+          <FavoriteToggleButton className="size-12" product={product} />
           <Button
             className={cn(
               'h-12 text-base',
-              soldOut &&
+              !canAddToCart &&
                 'disabled:pointer-events-auto disabled:cursor-not-allowed disabled:hover:bg-primary',
             )}
-            disabled={soldOut}
+            disabled={!canAddToCart}
+            onClick={() => addItem(product.id, selectedQuantity)}
+            type="button"
           >
             <ShoppingCartIcon data-icon="inline-start" />
-            {soldOut ? 'SOLD OUT' : 'カートに入れる'}
+            {soldOut
+              ? 'SOLD OUT'
+              : canAddToCart
+                ? 'カートに入れる'
+                : '在庫上限'}
           </Button>
         </div>
       </div>
     </div>
   )
+}
+
+function getQuantityOptions(availableQuantity: number) {
+  const optionCount = Math.max(Math.trunc(availableQuantity), 1)
+
+  return Array.from({ length: optionCount }, (_, index) => index + 1)
 }
 
 function SectionHeading({
@@ -367,6 +412,7 @@ function SectionHeading({
 
 function RelatedProductCard({ product }: { product: Product }) {
   const primaryStatus = getPrimaryProductStatus(product)
+  const stockLabel = getProductStockLabel(product)
 
   return (
     <article className="min-w-0">
@@ -420,20 +466,17 @@ function RelatedProductCard({ product }: { product: Product }) {
         </Link>
 
         <div className="flex min-w-0 items-center justify-between gap-3">
-          <ProductPrice className="min-w-0" product={product} />
+          <div className="min-w-0">
+            <ProductPrice className="min-w-0" product={product} />
+            <p className="mt-1 text-[0.68rem] leading-none font-medium text-muted-foreground">
+              {stockLabel}
+            </p>
+          </div>
 
-          <Button
-            aria-label="カートに追加"
-            className={cn(
-              'size-8 shrink-0',
-              'bg-card/92 text-foreground shadow-sm backdrop-blur hover:border-primary/55 hover:bg-primary hover:text-primary-foreground',
-            )}
-            size="icon"
-            title="カートに追加"
-            variant="outline"
-          >
-            <ShoppingCartIcon aria-hidden="true" className="size-4" />
-          </Button>
+          <div className="flex items-center gap-1">
+            <FavoriteToggleButton product={product} />
+            <ProductCardCartButton product={product} />
+          </div>
         </div>
       </div>
     </article>

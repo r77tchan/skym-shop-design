@@ -18,6 +18,8 @@
   --color-footer-foreground: var(--footer-foreground);
   --color-footer-muted: var(--footer-muted);
   --color-footer-border: var(--footer-border);
+  --color-favorite: var(--favorite);
+  --color-favorite-foreground: var(--favorite-foreground);
   --color-product-new: var(--product-new);
   --color-product-new-foreground: var(--product-new-foreground);
   --color-product-sale: var(--product-sale);
@@ -110,6 +112,8 @@
   --footer-foreground: oklch(0.98 0.004 230);
   --footer-muted: oklch(0.82 0.018 230);
   --footer-border: oklch(1 0 0 / 12%);
+  --favorite: oklch(0.62 0.22 18);
+  --favorite-foreground: oklch(0.985 0 0);
   --product-new: oklch(0.62 0.14 197);
   --product-new-foreground: oklch(0.985 0 0);
   --product-sale: oklch(0.64 0.19 31);
@@ -158,6 +162,8 @@
   --footer-foreground: oklch(0.98 0.004 230);
   --footer-muted: oklch(0.78 0.018 230);
   --footer-border: oklch(1 0 0 / 12%);
+  --favorite: oklch(0.72 0.19 18);
+  --favorite-foreground: oklch(0.145 0 0);
   --product-new: oklch(0.72 0.13 197);
   --product-new-foreground: oklch(0.145 0 0);
   --product-sale: oklch(0.72 0.18 31);

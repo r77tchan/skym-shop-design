@@ -1,5 +1,5 @@
 export const interactiveCardSurfaceClassName =
-  'group rounded-lg border bg-card hover:border-primary/40 hover:bg-accent/40 focus-within:border-primary/40 focus-within:bg-accent/40'
+  'group rounded-lg border bg-card hover:border-primary/40 hover:bg-accent/40'
 
 export const interactiveCardLinkClassName = `${interactiveCardSurfaceClassName} focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none`
 

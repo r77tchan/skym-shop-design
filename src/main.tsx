@@ -2,6 +2,8 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { BrowserRouter } from 'react-router'
 import { App } from './App'
+import { CartProvider } from './components/cart-provider'
+import { FavoritesProvider } from './components/favorites-provider'
 import { ScrollToTopOnNavigation } from './components/scroll-to-top-on-navigation'
 import { ThemeProvider } from './components/theme-provider'
 import './styles.css'
@@ -13,7 +15,11 @@ createRoot(document.getElementById('root')!).render(
     <BrowserRouter basename={routerBasename}>
       <ScrollToTopOnNavigation />
       <ThemeProvider>
-        <App />
+        <FavoritesProvider>
+          <CartProvider>
+            <App />
+          </CartProvider>
+        </FavoritesProvider>
       </ThemeProvider>
     </BrowserRouter>
   </StrictMode>,

@@ -6,55 +6,25 @@ import {
   Trash2Icon,
   XIcon,
 } from 'lucide-react'
-import { useState } from 'react'
 import { Link } from 'react-router'
 import { Dialog } from 'radix-ui'
 
 import { ProductPrice } from '@/components/product-price'
 import { Button } from '@/components/ui/button'
+import { useCart } from '@/hooks/use-cart'
 import { assetUrl } from '@/lib/asset-url'
-import { getProductPath, products, type Product } from '@/lib/shop-content'
+import type { CartLine } from '@/lib/cart-context'
+import { getProductStock } from '@/lib/product-stock'
+import { getProductPath, type Product } from '@/lib/shop-content'
 import { cn } from '@/lib/utils'
 
 type CartDrawerProps = {
   buttonClassName?: string
 }
 
-type CartLine = {
-  product: Product
-  quantity: number
-}
-
-const demoCartLineDefinitions = [
-  { productId: 11, quantity: 1 },
-  { productId: 22, quantity: 1 },
-  { productId: 12, quantity: 2 },
-] as const
-
 export function CartDrawer({ buttonClassName }: CartDrawerProps) {
-  const [cartLines, setCartLines] = useState<CartLine[]>(createDemoCartLines)
-  const itemCount = cartLines.reduce((total, line) => total + line.quantity, 0)
-  const subtotal = cartLines.reduce(
-    (total, line) =>
-      total + getProductPriceNumber(line.product) * line.quantity,
-    0,
-  )
-
-  const updateQuantity = (productId: number, quantity: number) => {
-    setCartLines((lines) =>
-      lines.map((line) =>
-        line.product.id === productId
-          ? { ...line, quantity: Math.min(Math.max(quantity, 1), 9) }
-          : line,
-      ),
-    )
-  }
-
-  const removeItem = (productId: number) => {
-    setCartLines((lines) =>
-      lines.filter((line) => line.product.id !== productId),
-    )
-  }
+  const { cartLines, itemCount, removeItem, subtotal, updateQuantity } =
+    useCart()
 
   return (
     <Dialog.Root>
@@ -172,6 +142,7 @@ function CartLineItem({
   const { product, quantity } = line
   const productPath = getProductPath(product)
   const lineTotal = getProductPriceNumber(product) * quantity
+  const stock = getProductStock(product)
 
   return (
     <li className="grid grid-cols-[5.25rem_minmax(0,1fr)] gap-3 py-4">
@@ -224,6 +195,7 @@ function CartLineItem({
             <Button
               aria-label={`${product.name}の数量を増やす`}
               className="size-8 rounded-l-none border-0"
+              disabled={quantity >= stock}
               onClick={() => onUpdateQuantity(product.id, quantity + 1)}
               size="icon"
               type="button"
@@ -249,21 +221,6 @@ function CartLineItem({
         </div>
       </div>
     </li>
-  )
-}
-
-function createDemoCartLines(): CartLine[] {
-  return demoCartLineDefinitions.reduce<CartLine[]>(
-    (lines, { productId, quantity }) => {
-      const product = products.find((item) => item.id === productId)
-
-      if (product) {
-        lines.push({ product, quantity })
-      }
-
-      return lines
-    },
-    [],
   )
 }
 

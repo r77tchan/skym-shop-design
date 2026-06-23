@@ -15,11 +15,8 @@ import { ProductStatusBadge } from '@/components/product-status-badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { assetUrl } from '@/lib/asset-url'
-import {
-  getPrimaryProductStatus,
-  isOnSale,
-  isSoldOut,
-} from '@/lib/product-status'
+import { getPrimaryProductStatus, isOnSale } from '@/lib/product-status'
+import { getProductStock } from '@/lib/product-stock'
 import {
   productBrands,
   productCategories,
@@ -28,7 +25,6 @@ import {
 } from '@/lib/shop-content'
 import { cn } from '@/lib/utils'
 
-const stockLevels = [18, 9, 0, 7, 0, 14, 4, 6, 21, 11, 3, 5] as const
 const allFilterLabel = '全て'
 
 type CategoryFilterValue = (typeof productCategories)[number]
@@ -39,13 +35,10 @@ type SortValue = 'new' | 'price-asc' | 'price-desc'
 type VisibilityFilterValue = 'all' | 'published' | 'unpublished'
 
 const adminProductRows = products.map((product, index) => {
-  const soldOut = isSoldOut(product)
-  const stock = soldOut ? 0 : stockLevels[index % stockLevels.length]
-
   return {
     displayNo: index + 1,
     product,
-    stock,
+    stock: getProductStock(product),
   }
 })
 

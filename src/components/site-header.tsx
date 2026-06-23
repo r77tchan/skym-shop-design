@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router'
 
 import { CartDrawer } from '@/components/cart-drawer'
+import { FavoritesDrawer } from '@/components/favorites-drawer'
 import { ThemeToggle } from '@/components/theme-toggle'
 import { assetUrl } from '@/lib/asset-url'
 import { cn } from '@/lib/utils'
@@ -111,6 +112,7 @@ export function SiteHeader({
             buttonClassName="header-control-button"
             className="header-control-group"
           />
+          <FavoritesDrawer buttonClassName="header-control-button size-[38px]" />
           <CartDrawer buttonClassName="header-control-button size-[38px]" />
         </div>
       </div>

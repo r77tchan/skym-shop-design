@@ -3,12 +3,13 @@ import {
   ChevronDownIcon,
   RotateCcwIcon,
   SearchIcon,
-  ShoppingCartIcon,
   SlidersHorizontalIcon,
 } from 'lucide-react'
 import { useState } from 'react'
 import { Link } from 'react-router'
 
+import { FavoriteToggleButton } from '@/components/favorite-toggle-button'
+import { ProductCardCartButton } from '@/components/product-card-cart-button'
 import { ProductPrice } from '@/components/product-price'
 import { ProductStatusBadge } from '@/components/product-status-badge'
 import { SiteFooter } from '@/components/site-footer'
@@ -21,6 +22,7 @@ import {
   isOnSale,
   isSoldOut,
 } from '@/lib/product-status'
+import { getProductStockLabel } from '@/lib/product-stock'
 import {
   getProductPath,
   productBrands,
@@ -472,6 +474,7 @@ function SortSelect({
 function ProductCard({ product }: { product: Product }) {
   const soldOut = isSoldOut(product)
   const primaryStatus = getPrimaryProductStatus(product)
+  const stockLabel = getProductStockLabel(product)
 
   return (
     <article className="min-w-0">
@@ -530,24 +533,21 @@ function ProductCard({ product }: { product: Product }) {
         </Link>
 
         <div className="flex min-w-0 items-center justify-between gap-3">
-          <ProductPrice className="min-w-0" muted={soldOut} product={product} />
+          <div className="min-w-0">
+            <ProductPrice
+              className="min-w-0"
+              muted={soldOut}
+              product={product}
+            />
+            <p className="mt-1 text-[0.68rem] leading-none font-medium text-muted-foreground">
+              {stockLabel}
+            </p>
+          </div>
 
-          <Button
-            aria-label="カートに追加"
-            className={cn(
-              'size-8 shrink-0',
-              soldOut &&
-                'disabled:pointer-events-auto disabled:cursor-not-allowed disabled:hover:bg-secondary',
-              !soldOut &&
-                'bg-card/92 text-foreground shadow-sm backdrop-blur hover:border-primary/55 hover:bg-primary hover:text-primary-foreground',
-            )}
-            disabled={soldOut}
-            size="icon"
-            title="カートに追加"
-            variant={soldOut ? 'secondary' : 'outline'}
-          >
-            <ShoppingCartIcon aria-hidden="true" className="size-4" />
-          </Button>
+          <div className="flex items-center gap-1">
+            <FavoriteToggleButton product={product} />
+            <ProductCardCartButton product={product} />
+          </div>
         </div>
       </div>
     </article>
