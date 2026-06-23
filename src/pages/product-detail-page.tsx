@@ -11,26 +11,20 @@ import { useState } from 'react'
 import { Link, Navigate, useParams } from 'react-router'
 
 import { FavoriteToggleButton } from '@/components/favorite-toggle-button'
-import { ProductCardCartButton } from '@/components/product-card-cart-button'
+import { ProductCard } from '@/components/product-card'
 import { ProductPrice } from '@/components/product-price'
-import {
-  ProductStatusBadge,
-  ProductStatusBadges,
-} from '@/components/product-status-badge'
+import { ProductStatusBadges } from '@/components/product-status-badge'
 import { SiteFooter } from '@/components/site-footer'
 import { SiteHeader } from '@/components/site-header'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { useCart } from '@/hooks/use-cart'
 import { assetUrl } from '@/lib/asset-url'
-import { getPrimaryProductStatus, isSoldOut } from '@/lib/product-status'
+import { isSoldOut } from '@/lib/product-status'
 import { getProductStockLabel } from '@/lib/product-stock'
-import { getProductPath, products, type Product } from '@/lib/shop-content'
+import { products, type Product } from '@/lib/shop-content'
 import {
   backButtonClassName,
-  interactiveCardMutedTextClassName,
-  interactiveCardSurfaceClassName,
-  interactiveCardTitleClassName,
   sectionActionButtonClassName,
 } from '@/lib/ui-styles'
 import { cn } from '@/lib/utils'
@@ -222,11 +216,12 @@ export function ProductDetailPage() {
               </Button>
             </div>
 
-            <div className="grid grid-cols-2 gap-x-4 gap-y-7 sm:grid-cols-3 sm:gap-x-5 sm:gap-y-8 lg:grid-cols-4 xl:gap-x-6">
+            <div className="grid grid-cols-[repeat(auto-fill,minmax(min(10rem,100%),1fr))] gap-x-4 gap-y-7 sm:grid-cols-3 sm:gap-x-5 sm:gap-y-8 lg:grid-cols-4 xl:gap-x-6">
               {relatedProducts.map((relatedProduct) => (
-                <RelatedProductCard
+                <ProductCard
                   key={relatedProduct.id}
                   product={relatedProduct}
+                  titleElement="h3"
                 />
               ))}
             </div>
@@ -407,79 +402,6 @@ function SectionHeading({
         </p>
       ) : null}
     </div>
-  )
-}
-
-function RelatedProductCard({ product }: { product: Product }) {
-  const primaryStatus = getPrimaryProductStatus(product)
-  const stockLabel = getProductStockLabel(product)
-
-  return (
-    <article className="min-w-0">
-      <div
-        className={cn(
-          interactiveCardSurfaceClassName,
-          'grid min-w-0 gap-3 p-3',
-        )}
-      >
-        <Link
-          aria-label={`${product.name}の商品プレビュー`}
-          className="grid min-w-0 gap-3 rounded-md focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none"
-          to={getProductPath(product)}
-        >
-          <div className="relative aspect-[3/4] overflow-hidden rounded-lg border bg-muted group-hover:border-primary/40">
-            <img
-              alt=""
-              className="size-full object-cover"
-              src={assetUrl(product.image)}
-            />
-            {primaryStatus ? (
-              <div className="absolute top-2 left-2 flex flex-wrap gap-1">
-                <ProductStatusBadge status={primaryStatus} />
-              </div>
-            ) : null}
-          </div>
-
-          <div className="min-w-0">
-            <div className="flex items-center justify-between gap-2">
-              <p
-                className={cn(
-                  'truncate text-xs font-medium text-muted-foreground',
-                  interactiveCardMutedTextClassName,
-                )}
-              >
-                {product.brand}
-              </p>
-              <span className="shrink-0 rounded-md bg-muted px-1.5 py-0.5 text-[0.68rem] leading-4 font-medium text-muted-foreground">
-                {product.category}
-              </span>
-            </div>
-            <p
-              className={cn(
-                'mt-1 [display:-webkit-box] min-h-10 overflow-hidden text-sm leading-5 font-semibold [-webkit-box-orient:vertical] [-webkit-line-clamp:2]',
-                interactiveCardTitleClassName,
-              )}
-            >
-              {product.name}
-            </p>
-          </div>
-        </Link>
-
-        <div className="flex min-w-0 items-center justify-between gap-3">
-          <div className="min-w-0">
-            <ProductPrice className="min-w-0" product={product} />
-            <p className="mt-1 text-[0.68rem] leading-none font-medium text-muted-foreground">
-              {stockLabel}
-            </p>
-          </div>
-
-          <div className="flex items-center gap-1">
-            <FavoriteToggleButton product={product} />
-            <ProductCardCartButton product={product} />
-          </div>
-        </div>
-      </div>
-    </article>
   )
 }
 
