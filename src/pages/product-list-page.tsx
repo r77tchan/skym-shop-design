@@ -474,7 +474,14 @@ function ProductCategoryNav({
   }>
 }) {
   return (
-    <section className="border-b bg-background" aria-label="商品カテゴリー">
+    <section
+      className="relative border-b bg-background"
+      aria-label="商品カテゴリー"
+    >
+      <div className="absolute top-0 right-gutter z-10 inline-flex -translate-y-1/2 items-center gap-1 rounded-sm bg-background px-1.5 text-[0.65rem] font-semibold text-muted-foreground/70 sm:hidden">
+        <span>SCROLL</span>
+        <ArrowRightIcon aria-hidden="true" className="size-3" />
+      </div>
       <div className="mx-auto max-w-7xl px-gutter">
         <nav
           aria-label="商品カテゴリー"
