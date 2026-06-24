@@ -5,6 +5,7 @@ import { AdminCustomersPage } from '@/pages/admin-customers-page'
 import { AdminDashboardPage } from '@/pages/admin-dashboard-page'
 import { AdminInquiriesPage } from '@/pages/admin-inquiries-page'
 import { AdminNewsPage } from '@/pages/admin-news-page'
+import { AdminNotFoundPage } from '@/pages/admin-not-found-page'
 import { AdminOrdersPage } from '@/pages/admin-orders-page'
 import { AdminProductsPage } from '@/pages/admin-products-page'
 import { AdminSettingsPage } from '@/pages/admin-settings-page'
@@ -38,7 +39,7 @@ export function App() {
         <Route element={<AdminCustomersPage />} path="customers" />
         <Route element={<AdminInquiriesPage />} path="inquiries" />
         <Route element={<AdminSettingsPage />} path="settings" />
-        <Route element={<Navigate replace to="/admin" />} path="*" />
+        <Route element={<AdminNotFoundPage />} path="*" />
       </Route>
       <Route element={<Navigate replace to="/" />} path="*" />
     </Routes>
