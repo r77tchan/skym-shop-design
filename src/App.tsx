@@ -3,6 +3,10 @@ import { Navigate, Route, Routes } from 'react-router'
 import { AdminLayout } from '@/components/admin-layout'
 import { AdminCustomersPage } from '@/pages/admin-customers-page'
 import { AdminDashboardPage } from '@/pages/admin-dashboard-page'
+import {
+  AdminProductDetailPage,
+  AdminProductNewPage,
+} from '@/pages/admin-product-form-page'
 import { AdminInquiriesPage } from '@/pages/admin-inquiries-page'
 import { AdminNewsPage } from '@/pages/admin-news-page'
 import { AdminNotFoundPage } from '@/pages/admin-not-found-page'
@@ -34,6 +38,11 @@ export function App() {
       <Route element={<AdminLayout />} path="/admin">
         <Route index element={<AdminDashboardPage />} />
         <Route element={<AdminProductsPage />} path="products" />
+        <Route element={<AdminProductNewPage />} path="products/new" />
+        <Route
+          element={<AdminProductDetailPage />}
+          path="products/:productId"
+        />
         <Route element={<AdminOrdersPage />} path="orders" />
         <Route element={<AdminNewsPage />} path="news" />
         <Route element={<AdminCustomersPage />} path="customers" />

@@ -9,6 +9,7 @@ import {
   SlidersHorizontalIcon,
 } from 'lucide-react'
 import { useState } from 'react'
+import { Link } from 'react-router'
 
 import { ProductPrice } from '@/components/product-price'
 import { ProductStatusBadge } from '@/components/product-status-badge'
@@ -515,9 +516,11 @@ function ProductsPageHeader() {
         </div>
 
         <div className="flex shrink-0 items-center gap-2">
-          <Button className="h-10 px-3">
-            <PlusIcon data-icon="inline-start" />
-            商品登録
+          <Button asChild className="h-10 px-3">
+            <Link to="/admin/products/new">
+              <PlusIcon data-icon="inline-start" />
+              商品登録
+            </Link>
           </Button>
         </div>
       </div>
@@ -616,10 +619,10 @@ function ProductTableRow({
 
   return (
     <article className="grid grid-cols-[48px_64px_minmax(240px,1.35fr)_104px_112px_72px_112px_88px_36px] items-stretch gap-3 px-4">
-      <button
+      <Link
         aria-label={`${product.name}の詳細を開く`}
         className="col-span-6 -mx-1 grid min-w-0 cursor-pointer grid-cols-[48px_64px_minmax(240px,1.35fr)_104px_112px_72px] items-center gap-3 rounded-lg px-1 py-3.5 text-left outline-none hover:bg-accent/55 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-        type="button"
+        to={`/admin/products/${product.id}`}
       >
         <span className="text-sm font-medium tabular-nums">{displayNo}</span>
         <span className="text-sm font-medium text-muted-foreground tabular-nums">
@@ -643,7 +646,7 @@ function ProductTableRow({
         <span className="truncate text-sm">{product.category}</span>
         <ProductPrice product={product} variant="rail" />
         <span className="text-sm tabular-nums">{stock}</span>
-      </button>
+      </Link>
 
       <div className="flex items-center">
         <PublishStateToggle
@@ -679,10 +682,10 @@ function ProductMobileCard({
 
   return (
     <article className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-3 p-4">
-      <button
+      <Link
         aria-label={`${product.name}の詳細を開く`}
         className="-m-1 grid min-w-0 cursor-pointer gap-3 rounded-lg p-1 text-left outline-none hover:bg-accent/55 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-        type="button"
+        to={`/admin/products/${product.id}`}
       >
         <span className="flex min-w-0 items-start justify-between gap-3">
           <span className="grid min-w-0 gap-1">
@@ -734,7 +737,7 @@ function ProductMobileCard({
             </span>
           </span>
         </span>
-      </button>
+      </Link>
 
       <span className="flex items-start justify-center pt-1">
         <SelectionCheckbox ariaLabel={`${product.name}を選択`} />
