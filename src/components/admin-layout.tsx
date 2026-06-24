@@ -72,6 +72,20 @@ export function AdminLayout() {
   const [isSidebarVisible, setIsSidebarVisible] = useState(true)
   const [isTopbarPinned, setIsTopbarPinned] = useState(false)
 
+  useEffect(() => {
+    const root = document.documentElement
+
+    if (isTopbarPinned) {
+      root.dataset.adminTopbarPinned = 'true'
+    } else {
+      delete root.dataset.adminTopbarPinned
+    }
+
+    return () => {
+      delete root.dataset.adminTopbarPinned
+    }
+  }, [isTopbarPinned])
+
   return (
     <main
       className={cn(

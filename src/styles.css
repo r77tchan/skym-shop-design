@@ -192,6 +192,12 @@
   }
   html {
     @apply font-sans;
+    overflow-y: scroll;
+    scrollbar-gutter: stable;
+  }
+  html[data-admin-topbar-pinned='true'] {
+    overflow-y: hidden;
+    scrollbar-gutter: auto;
   }
 }
 
@@ -218,6 +224,10 @@ body[data-scroll-locked] .site-header {
 
 .admin-layout-header-row {
   min-height: 4.5rem;
+}
+
+[data-admin-scroll-container] {
+  scrollbar-gutter: stable;
 }
 
 @media (min-width: 64rem) {
