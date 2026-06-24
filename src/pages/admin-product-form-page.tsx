@@ -121,7 +121,7 @@ function AdminProductFormPage({
               <h2 className="font-heading text-base font-semibold">基本情報</h2>
             </div>
 
-            <div className="grid gap-4 lg:grid-cols-2">
+            <div className="grid gap-4 lg:grid-cols-2 admin-top-nav:grid-cols-2">
               <label className={fieldWrapperClassName}>
                 <span className={fieldLabelClassName}>商品名</span>
                 <Input

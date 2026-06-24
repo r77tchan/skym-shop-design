@@ -3,6 +3,9 @@
 @import '@fontsource-variable/noto-sans-jp/wght.css';
 
 @custom-variant dark (&:is(.dark *));
+@custom-variant admin-top-nav (
+  @media (min-width: 48rem) and (max-width: 63.999rem)
+);
 
 @theme inline {
   --font-heading: var(--font-sans);
@@ -194,10 +197,6 @@
     @apply font-sans;
     overflow-y: scroll;
     scrollbar-gutter: stable;
-  }
-  html[data-admin-topbar-pinned='true'] {
-    overflow-y: hidden;
-    scrollbar-gutter: auto;
   }
 }
 

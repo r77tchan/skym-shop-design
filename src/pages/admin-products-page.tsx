@@ -300,7 +300,7 @@ export function AdminProductsPage() {
       <ProductsPageHeader />
 
       <section className="grid min-w-0 gap-4 rounded-lg border bg-card p-4">
-        <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_auto]">
+        <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_auto] admin-top-nav:grid-cols-[minmax(0,1fr)_auto]">
           <label className="relative block min-w-0">
             <SearchIcon
               aria-hidden="true"
@@ -315,7 +315,10 @@ export function AdminProductsPage() {
           </label>
 
           <div className="flex items-center gap-2">
-            <Button className="h-11 px-3 lg:hidden" variant="outline">
+            <Button
+              className="h-11 px-3 lg:hidden admin-top-nav:hidden"
+              variant="outline"
+            >
               <SlidersHorizontalIcon data-icon="inline-start" />
               絞り込み
             </Button>
@@ -323,7 +326,7 @@ export function AdminProductsPage() {
           </div>
         </div>
 
-        <div className="grid gap-2 sm:grid-cols-2 lg:max-w-xl">
+        <div className="grid gap-2 sm:grid-cols-2 lg:max-w-xl admin-top-nav:max-w-xl">
           <AdminFilterSelect
             onChange={setCategoryFilter}
             items={adminCategoryFilterItems}
@@ -549,7 +552,7 @@ function ProductsTable({
         </Button>
       </div>
 
-      <div className="hidden min-w-0 overflow-x-auto lg:block">
+      <div className="hidden min-w-0 overflow-x-auto lg:block admin-top-nav:block">
         <div className="min-w-[1040px]">
           <div className="grid grid-cols-[48px_64px_minmax(240px,1.35fr)_104px_112px_72px_112px_88px_36px] items-center gap-3 border-y bg-muted/35 px-4 py-2 text-xs font-medium text-muted-foreground">
             <span>No</span>
@@ -581,7 +584,7 @@ function ProductsTable({
       </div>
 
       {rows.length > 0 ? (
-        <div className="grid divide-y lg:hidden">
+        <div className="grid divide-y lg:hidden admin-top-nav:hidden">
           {rows.map((row) => (
             <ProductMobileCard
               key={row.product.id}

@@ -90,7 +90,7 @@ export function AdminSettingsPage() {
         </div>
 
         <form
-          className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(260px,0.55fr)_auto] lg:items-end"
+          className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(260px,0.55fr)_auto] lg:items-end admin-top-nav:grid-cols-[minmax(0,1fr)_minmax(260px,0.55fr)_auto] admin-top-nav:items-end"
           onSubmit={(event) => {
             event.preventDefault()
             handleAddEmail()
@@ -180,7 +180,7 @@ function AllowedEmailsTable({
         </div>
       </div>
 
-      <div className="hidden min-w-0 overflow-x-auto lg:block">
+      <div className="hidden min-w-0 overflow-x-auto lg:block admin-top-nav:block">
         <div className="min-w-[720px]">
           <div className="grid grid-cols-[48px_minmax(280px,1fr)_104px_112px_72px] items-center gap-3 border-y bg-muted/35 px-4 py-2 text-xs font-medium text-muted-foreground">
             <span>No</span>
@@ -203,7 +203,7 @@ function AllowedEmailsTable({
         </div>
       </div>
 
-      <div className="grid divide-y lg:hidden">
+      <div className="grid divide-y lg:hidden admin-top-nav:hidden">
         {emails.map((item, index) => (
           <AllowedEmailMobileCard
             displayNo={index + 1}

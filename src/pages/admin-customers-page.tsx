@@ -140,7 +140,7 @@ export function AdminCustomersPage() {
       <CustomersPageHeader />
 
       <section className="grid min-w-0 gap-4 rounded-lg border bg-card p-4">
-        <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_auto]">
+        <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_auto] admin-top-nav:grid-cols-[minmax(0,1fr)_auto]">
           <label className="relative block min-w-0">
             <SearchIcon
               aria-hidden="true"
@@ -155,7 +155,10 @@ export function AdminCustomersPage() {
           </label>
 
           <div className="flex items-center gap-2">
-            <Button className="h-11 px-3 lg:hidden" variant="outline">
+            <Button
+              className="h-11 px-3 lg:hidden admin-top-nav:hidden"
+              variant="outline"
+            >
               <SlidersHorizontalIcon data-icon="inline-start" />
               絞り込み
             </Button>
@@ -268,7 +271,7 @@ function CustomersTable({ rows }: { rows: ReadonlyArray<AdminCustomerRow> }) {
         </Button>
       </div>
 
-      <div className="hidden min-w-0 overflow-x-auto lg:block">
+      <div className="hidden min-w-0 overflow-x-auto lg:block admin-top-nav:block">
         <div className="min-w-[1040px]">
           <div className="grid grid-cols-[48px_minmax(260px,1.25fr)_132px_72px_112px_132px_96px_36px] items-center gap-3 border-y bg-muted/35 px-4 py-2 text-xs font-medium text-muted-foreground">
             <span>No</span>
@@ -292,7 +295,7 @@ function CustomersTable({ rows }: { rows: ReadonlyArray<AdminCustomerRow> }) {
       </div>
 
       {rows.length > 0 ? (
-        <div className="grid divide-y lg:hidden">
+        <div className="grid divide-y lg:hidden admin-top-nav:hidden">
           {rows.map((row) => (
             <CustomerMobileCard key={row.customer.email} row={row} />
           ))}

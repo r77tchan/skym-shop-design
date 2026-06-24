@@ -3,10 +3,6 @@ import {
   MailIcon,
   NewspaperIcon,
   PackageIcon,
-  PanelLeftCloseIcon,
-  PanelLeftOpenIcon,
-  PinIcon,
-  PinOffIcon,
   SearchIcon,
   SettingsIcon,
   ShoppingCartIcon,
@@ -69,59 +65,15 @@ const adminNavItems = [
 ]
 
 export function AdminLayout() {
-  const [isSidebarVisible, setIsSidebarVisible] = useState(true)
-  const [isTopbarPinned, setIsTopbarPinned] = useState(false)
-
-  useEffect(() => {
-    const root = document.documentElement
-
-    if (isTopbarPinned) {
-      root.dataset.adminTopbarPinned = 'true'
-    } else {
-      delete root.dataset.adminTopbarPinned
-    }
-
-    return () => {
-      delete root.dataset.adminTopbarPinned
-    }
-  }, [isTopbarPinned])
-
   return (
-    <main
-      className={cn(
-        'min-h-svh bg-muted/35 text-foreground',
-        isTopbarPinned && 'flex h-svh flex-col overflow-hidden',
-      )}
-    >
-      {isSidebarVisible ? <AdminSidebar /> : null}
+    <main className="min-h-svh bg-muted/35 text-foreground">
+      <AdminSidebar />
 
-      <div
-        className={cn(
-          'min-w-0',
-          isTopbarPinned && 'flex min-h-0 flex-1 flex-col overflow-hidden',
-          isSidebarVisible && 'lg:pl-[272px]',
-        )}
-      >
-        <AdminTopbar
-          isSidebarVisible={isSidebarVisible}
-          isTopbarPinned={isTopbarPinned}
-          onToggleSidebar={() => setIsSidebarVisible((current) => !current)}
-          onToggleTopbarPinned={() => setIsTopbarPinned((current) => !current)}
-        />
+      <div className="min-w-0 lg:pl-[272px]">
+        <AdminTopbar />
 
-        <div
-          className={cn(
-            isTopbarPinned &&
-              'min-h-0 flex-1 overflow-y-auto overscroll-y-none',
-          )}
-          data-admin-scroll-container
-        >
-          <div
-            className={cn(
-              'mx-auto grid w-full min-w-0 gap-5 px-gutter py-5 sm:gap-6 sm:py-6',
-              isSidebarVisible ? 'max-w-[1440px]' : 'max-w-[1760px]',
-            )}
-          >
+        <div data-admin-scroll-container>
+          <div className="mx-auto grid w-full max-w-[1760px] min-w-0 gap-5 px-gutter py-5 sm:gap-6 sm:py-6 lg:max-w-[1440px]">
             <Outlet />
           </div>
         </div>
@@ -221,21 +173,7 @@ function AdminSidebar() {
   )
 }
 
-function AdminTopbar({
-  isSidebarVisible,
-  isTopbarPinned,
-  onToggleSidebar,
-  onToggleTopbarPinned,
-}: {
-  isSidebarVisible: boolean
-  isTopbarPinned: boolean
-  onToggleSidebar: () => void
-  onToggleTopbarPinned: () => void
-}) {
-  const SidebarToggleIcon = isSidebarVisible
-    ? PanelLeftCloseIcon
-    : PanelLeftOpenIcon
-  const TopbarToggleIcon = isTopbarPinned ? PinOffIcon : PinIcon
+function AdminTopbar() {
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false)
   const profileMenuRef = useRef<HTMLDivElement>(null)
 
@@ -263,18 +201,8 @@ function AdminTopbar({
   }, [isProfileMenuOpen])
 
   return (
-    <header
-      className={cn(
-        'admin-layout-header-row border-b bg-background',
-        isTopbarPinned && 'shrink-0',
-      )}
-    >
-      <div
-        className={cn(
-          'admin-layout-topbar-inner mx-auto flex flex-col gap-3 px-gutter py-3 sm:flex-row sm:items-center sm:justify-between',
-          isSidebarVisible ? 'max-w-[1440px]' : 'max-w-[1760px]',
-        )}
-      >
+    <header className="admin-layout-header-row border-b bg-background">
+      <div className="admin-layout-topbar-inner mx-auto flex max-w-[1760px] flex-col gap-3 px-gutter py-3 sm:flex-row sm:items-center sm:justify-between lg:max-w-[1440px]">
         <label className="relative block min-w-0 sm:max-w-md sm:flex-1">
           <SearchIcon
             aria-hidden="true"
@@ -290,34 +218,6 @@ function AdminTopbar({
 
         <div className="flex flex-wrap items-center justify-between gap-2 sm:flex-nowrap sm:justify-end">
           <div className="flex shrink-0 items-center gap-2">
-            <Button
-              aria-label={
-                isSidebarVisible ? 'サイドバーを非表示' : 'サイドバーを表示'
-              }
-              aria-pressed={isSidebarVisible}
-              onClick={onToggleSidebar}
-              size="icon"
-              title={
-                isSidebarVisible ? 'サイドバーを非表示' : 'サイドバーを表示'
-              }
-              type="button"
-              variant="outline"
-            >
-              <SidebarToggleIcon aria-hidden="true" />
-            </Button>
-            <Button
-              aria-label={
-                isTopbarPinned ? 'ヘッダー固定を解除' : 'ヘッダーを固定'
-              }
-              aria-pressed={isTopbarPinned}
-              onClick={onToggleTopbarPinned}
-              size="icon"
-              title={isTopbarPinned ? 'ヘッダー固定を解除' : 'ヘッダーを固定'}
-              type="button"
-              variant="outline"
-            >
-              <TopbarToggleIcon aria-hidden="true" />
-            </Button>
             <Button asChild className="h-9 px-3" variant="outline">
               <Link to="/">
                 <StoreIcon data-icon="inline-start" />
