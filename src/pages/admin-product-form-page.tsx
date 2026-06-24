@@ -549,7 +549,7 @@ function PublishStateToggle({
       <span
         aria-hidden="true"
         className={[
-          'relative h-6 w-11 rounded-full transition-colors',
+          'relative h-6 w-11 rounded-full',
           disabled
             ? 'bg-muted-foreground/25'
             : isPublished
@@ -559,7 +559,7 @@ function PublishStateToggle({
       >
         <span
           className={[
-            'absolute top-1 left-1 size-4 rounded-full bg-background transition-transform',
+            'absolute top-1 left-1 size-4 rounded-full bg-background',
             isPublished ? 'translate-x-5' : 'translate-x-0',
           ].join(' ')}
         />

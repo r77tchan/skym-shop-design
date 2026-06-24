@@ -126,7 +126,7 @@ function FooterColumn({
                   <img
                     alt=""
                     aria-hidden="true"
-                    className="size-4 opacity-80 invert transition-opacity group-hover:opacity-100"
+                    className="size-4 opacity-80 invert group-hover:opacity-100"
                     src={assetUrl(item.icon)}
                   />
                 ) : null}

@@ -494,7 +494,7 @@ function ProductCategoryNav({
               <Link
                 aria-current={active ? 'page' : undefined}
                 className={cn(
-                  'inline-flex min-h-14 shrink-0 items-center border-b-2 px-3 text-sm font-semibold whitespace-nowrap transition-colors sm:min-h-16 sm:px-4 sm:text-base',
+                  'inline-flex min-h-14 shrink-0 items-center border-b-2 px-3 text-sm font-semibold whitespace-nowrap sm:min-h-16 sm:px-4 sm:text-base',
                   active
                     ? 'border-primary text-foreground'
                     : 'border-transparent text-muted-foreground hover:border-border hover:text-foreground',

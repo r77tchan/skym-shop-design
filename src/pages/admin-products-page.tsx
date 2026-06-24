@@ -443,7 +443,7 @@ function AdminCategoryFilterNav({
             <button
               aria-pressed={active ? 'true' : 'false'}
               className={cn(
-                'inline-flex min-h-14 shrink-0 items-center border-b-2 px-3 text-sm font-semibold whitespace-nowrap outline-none transition-colors sm:min-h-16 sm:px-4 sm:text-base',
+                'inline-flex min-h-14 shrink-0 items-center border-b-2 px-3 text-sm font-semibold whitespace-nowrap outline-none sm:min-h-16 sm:px-4 sm:text-base',
                 active
                   ? 'border-primary text-foreground'
                   : 'border-transparent text-muted-foreground hover:border-border hover:text-foreground focus-visible:border-primary focus-visible:text-foreground',
