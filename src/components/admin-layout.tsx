@@ -209,9 +209,10 @@ function AdminTopbar() {
             className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground"
           />
           <Input
-            aria-label="検索"
+            aria-label="横断検索（後日実装予定）"
             className="bg-card pr-3 pl-10"
-            placeholder="注文番号・商品名・顧客名で検索"
+            disabled
+            placeholder="横断検索は後日実装予定"
             type="search"
           />
         </label>

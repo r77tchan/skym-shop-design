@@ -8,7 +8,6 @@ import {
   PlusIcon,
   RotateCcwIcon,
   SearchIcon,
-  SlidersHorizontalIcon,
   XIcon,
 } from 'lucide-react'
 import { Dialog } from 'radix-ui'
@@ -98,6 +97,7 @@ type AdminProductFilterState = {
   categoryFilter: CategoryFilterValue
   inventoryFilter: InventoryFilterValue
   saleFilter: SaleFilterValue
+  searchValue: string
   visibilityFilter: VisibilityFilterValue
 }
 
@@ -115,6 +115,15 @@ function matchesAdminProductFilters(
   if (
     filters.brandFilter !== allFilterLabel &&
     row.product.brand !== filters.brandFilter
+  ) {
+    return false
+  }
+
+  const searchValue = filters.searchValue.trim().toLocaleLowerCase()
+
+  if (
+    searchValue &&
+    !row.product.name.toLocaleLowerCase().includes(searchValue)
   ) {
     return false
   }
@@ -163,6 +172,7 @@ export function AdminProductsPage() {
   const [inventoryFilter, setInventoryFilter] =
     useState<InventoryFilterValue>('all')
   const [saleFilter, setSaleFilter] = useState<SaleFilterValue>('all')
+  const [searchValue, setSearchValue] = useState('')
   const [sortValue, setSortValue] = useState<SortValue>('new')
   const [visibilityFilter, setVisibilityFilter] =
     useState<VisibilityFilterValue>('all')
@@ -171,6 +181,7 @@ export function AdminProductsPage() {
     categoryFilter,
     inventoryFilter,
     saleFilter,
+    searchValue,
     visibilityFilter,
   } satisfies AdminProductFilterState
   const getFilterCount = (filters: Partial<AdminProductFilterState> = {}) =>
@@ -178,23 +189,36 @@ export function AdminProductsPage() {
   const adminCategoryFilterItems = productCategories.map((category) => ({
     label: category,
     value: category,
-    count: getFilterCount({ categoryFilter: category }),
   })) satisfies ReadonlyArray<{
     label: string
     value: CategoryFilterValue
-    count: number
   }>
+  const hasBrandInCurrentCategory = (brand: BrandFilterValue) =>
+    getFilteredAdminProductRows({
+      brandFilter: brand,
+      categoryFilter,
+      inventoryFilter: 'all',
+      saleFilter: 'all',
+      searchValue: '',
+      visibilityFilter: 'all',
+    }).length > 0
   const adminBrandFilterItems = [
     {
       label: allFilterLabel,
       value: allFilterLabel,
       count: getFilterCount({ brandFilter: allFilterLabel }),
     },
-    ...productBrands.map((brand) => ({
-      label: brand,
-      value: brand,
-      count: getFilterCount({ brandFilter: brand }),
-    })),
+    ...productBrands.flatMap((brand) =>
+      brandFilter === brand || hasBrandInCurrentCategory(brand)
+        ? [
+            {
+              label: brand,
+              value: brand,
+              count: getFilterCount({ brandFilter: brand }),
+            },
+          ]
+        : [],
+    ),
   ] satisfies ReadonlyArray<{
     label: string
     value: BrandFilterValue
@@ -233,7 +257,7 @@ export function AdminProductsPage() {
       count: getFilterCount({ saleFilter: 'on-sale' }),
     },
     {
-      label: 'セールなし',
+      label: '通常',
       value: 'not-sale',
       count: getFilterCount({ saleFilter: 'not-sale' }),
     },
@@ -277,6 +301,7 @@ export function AdminProductsPage() {
     setBrandFilter(allFilterLabel)
     setInventoryFilter('all')
     setSaleFilter('all')
+    setSearchValue('')
     setSortValue('new')
     setVisibilityFilter('all')
   }
@@ -301,79 +326,85 @@ export function AdminProductsPage() {
     <>
       <ProductsPageHeader />
 
-      <section className="grid min-w-0 gap-4 rounded-lg border bg-card p-4">
-        <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_auto] admin-top-nav:grid-cols-[minmax(0,1fr)_auto]">
-          <label className="relative block min-w-0">
-            <SearchIcon
-              aria-hidden="true"
-              className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground"
-            />
-            <Input
-              aria-label="商品検索"
-              className="bg-background pr-3 pl-10"
-              placeholder="商品名・ブランドで検索"
-              type="search"
-            />
-          </label>
+      <section className="grid min-w-0 max-w-full grid-cols-[minmax(0,1fr)] overflow-hidden rounded-lg border bg-card">
+        <AdminCategoryFilterNav
+          activeValue={categoryFilter}
+          items={adminCategoryFilterItems}
+          onChange={setCategoryFilter}
+        />
 
-          <div className="flex items-center gap-2">
-            <Button
-              className="h-11 px-3 lg:hidden admin-top-nav:hidden"
-              variant="outline"
-            >
-              <SlidersHorizontalIcon data-icon="inline-start" />
-              絞り込み
-            </Button>
-            <AdminSortSelect onChange={setSortValue} value={sortValue} />
+        <div className="grid w-full min-w-0 max-w-full grid-cols-[minmax(0,1fr)] gap-4 overflow-hidden p-4">
+          <div className="flex w-full min-w-0 flex-col gap-3 lg:flex-row lg:flex-wrap lg:items-end admin-top-nav:flex-row admin-top-nav:flex-wrap admin-top-nav:items-end">
+            <label className="grid w-full min-w-0 grid-cols-[minmax(0,1fr)] gap-1.5 lg:w-[min(32rem,40vw)] admin-top-nav:w-[min(32rem,40vw)]">
+              <span className="text-xs font-medium text-muted-foreground">
+                キーワード
+              </span>
+              <span className="relative block min-w-0">
+                <SearchIcon
+                  aria-hidden="true"
+                  className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground"
+                />
+                <Input
+                  aria-label="商品検索"
+                  className="bg-background pr-3 pl-10"
+                  onChange={(event) =>
+                    setSearchValue(event.currentTarget.value)
+                  }
+                  placeholder="商品名で検索"
+                  type="search"
+                  value={searchValue}
+                />
+              </span>
+            </label>
+
+            <AdminFilterSelect
+              className="w-full lg:w-52 admin-top-nav:w-52"
+              items={adminBrandFilterItems}
+              label="ブランド"
+              onChange={setBrandFilter}
+              value={brandFilter}
+            />
+
+            <AdminSegmentedFilter
+              label="セール"
+              onChange={setSaleFilter}
+              options={saleFilterOptions}
+              value={saleFilter}
+            />
+
+            <AdminSortSelect
+              className="w-full lg:w-48 admin-top-nav:w-48"
+              onChange={setSortValue}
+              value={sortValue}
+            />
+
+            <div className="flex justify-end lg:justify-start lg:self-end admin-top-nav:justify-start admin-top-nav:self-end">
+              <Button
+                className="h-11 px-4 text-sm"
+                onClick={handleResetFilters}
+                type="button"
+                variant="outline"
+              >
+                <RotateCcwIcon data-icon="inline-start" />
+                リセット
+              </Button>
+            </div>
           </div>
-        </div>
 
-        <div className="grid gap-2 sm:grid-cols-2 lg:max-w-xl admin-top-nav:max-w-xl">
-          <AdminFilterSelect
-            onChange={setCategoryFilter}
-            items={adminCategoryFilterItems}
-            label="カテゴリー"
-            value={categoryFilter}
-          />
-          <AdminFilterSelect
-            items={adminBrandFilterItems}
-            label="ブランド"
-            onChange={setBrandFilter}
-            value={brandFilter}
-          />
-        </div>
-
-        <div className="grid gap-3 xl:grid-cols-3">
-          <AdminSegmentedFilter
-            label="在庫状態"
-            onChange={setInventoryFilter}
-            options={inventoryFilterOptions}
-            value={inventoryFilter}
-          />
-          <AdminSegmentedFilter
-            label="セール"
-            onChange={setSaleFilter}
-            options={saleFilterOptions}
-            value={saleFilter}
-          />
-          <AdminSegmentedFilter
-            label="公開状態"
-            onChange={setVisibilityFilter}
-            options={visibilityFilterOptions}
-            value={visibilityFilter}
-          />
-        </div>
-
-        <div className="flex justify-end">
-          <Button
-            onClick={handleResetFilters}
-            size="sm"
-            type="button"
-            variant="outline"
-          >
-            <RotateCcwIcon data-icon="inline-start" />
-            リセット
-          </Button>
+          <div className="flex w-full min-w-0 flex-col gap-3 border-t pt-4 sm:flex-row sm:flex-wrap sm:items-end">
+            <AdminSegmentedFilter
+              label="公開状態"
+              onChange={setVisibilityFilter}
+              options={visibilityFilterOptions}
+              value={visibilityFilter}
+            />
+            <AdminSegmentedFilter
+              label="在庫"
+              onChange={setInventoryFilter}
+              options={inventoryFilterOptions}
+              value={inventoryFilter}
+            />
+          </div>
         </div>
       </section>
 
@@ -387,24 +418,74 @@ export function AdminProductsPage() {
   )
 }
 
+function AdminCategoryFilterNav({
+  activeValue,
+  items,
+  onChange,
+}: {
+  activeValue: CategoryFilterValue
+  items: ReadonlyArray<{
+    label: string
+    value: CategoryFilterValue
+  }>
+  onChange: (value: CategoryFilterValue) => void
+}) {
+  return (
+    <div className="border-b" aria-label="商品カテゴリー">
+      <nav
+        aria-label="商品カテゴリー"
+        className="-mb-px flex min-w-0 gap-2 overflow-x-auto px-4"
+      >
+        {items.map((item) => {
+          const active = item.value === activeValue
+
+          return (
+            <button
+              aria-pressed={active ? 'true' : 'false'}
+              className={cn(
+                'inline-flex min-h-14 shrink-0 items-center border-b-2 px-3 text-sm font-semibold whitespace-nowrap outline-none transition-colors sm:min-h-16 sm:px-4 sm:text-base',
+                active
+                  ? 'border-primary text-foreground'
+                  : 'border-transparent text-muted-foreground hover:border-border hover:text-foreground focus-visible:border-primary focus-visible:text-foreground',
+              )}
+              key={item.value}
+              onClick={() => onChange(item.value)}
+              type="button"
+            >
+              {item.label}
+            </button>
+          )
+        })}
+      </nav>
+    </div>
+  )
+}
+
 function AdminFilterSelect<TValue extends string>({
+  className,
   items,
   label,
   onChange,
   value,
 }: {
+  className?: string
   items: ReadonlyArray<{ label: string; value: TValue; count: number }>
   label: string
   onChange: (value: TValue) => void
   value: TValue
 }) {
   return (
-    <label className="grid min-w-0 gap-1.5">
+    <label
+      className={cn(
+        'grid min-w-0 grid-cols-[minmax(0,1fr)] gap-1.5',
+        className,
+      )}
+    >
       <span className="text-xs font-medium text-muted-foreground">{label}</span>
       <span className="relative">
         <select
           aria-label={label}
-          className="h-10 w-full cursor-pointer appearance-none rounded-lg border bg-background px-3 pr-9 text-base font-medium outline-none hover:bg-accent/55 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 md:text-sm"
+          className="h-11 w-full cursor-pointer appearance-none rounded-lg border bg-background px-3 pr-9 text-base font-medium outline-none hover:bg-accent/55 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 md:text-sm"
           onChange={(event) => onChange(event.target.value as TValue)}
           value={value}
         >
@@ -424,35 +505,46 @@ function AdminFilterSelect<TValue extends string>({
 }
 
 function AdminSortSelect({
+  className,
   onChange,
   value,
 }: {
+  className?: string
   onChange: (value: SortValue) => void
   value: SortValue
 }) {
   return (
-    <label className="relative block w-44 min-w-0">
-      <span className="sr-only">並び替え</span>
-      <ArrowUpDownIcon
-        aria-hidden="true"
-        className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground"
-      />
-      <select
-        aria-label="並び替え"
-        className="h-11 w-full cursor-pointer appearance-none rounded-lg border bg-background pr-9 pl-10 text-base font-medium outline-none hover:bg-accent/55 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 md:text-sm"
-        onChange={(event) => onChange(event.target.value as SortValue)}
-        value={value}
-      >
-        {sortOptions.map((option) => (
-          <option key={option.value} value={option.value}>
-            {option.label}
-          </option>
-        ))}
-      </select>
-      <ChevronDownIcon
-        aria-hidden="true"
-        className="pointer-events-none absolute top-1/2 right-3 size-4 -translate-y-1/2 text-muted-foreground"
-      />
+    <label
+      className={cn(
+        'grid min-w-0 grid-cols-[minmax(0,1fr)] gap-1.5',
+        className,
+      )}
+    >
+      <span className="text-xs font-medium text-muted-foreground">
+        並び替え
+      </span>
+      <span className="relative">
+        <ArrowUpDownIcon
+          aria-hidden="true"
+          className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground"
+        />
+        <select
+          aria-label="並び替え"
+          className="h-11 w-full cursor-pointer appearance-none rounded-lg border bg-background pr-9 pl-10 text-base font-medium outline-none hover:bg-accent/55 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 md:text-sm"
+          onChange={(event) => onChange(event.target.value as SortValue)}
+          value={value}
+        >
+          {sortOptions.map((option) => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </select>
+        <ChevronDownIcon
+          aria-hidden="true"
+          className="pointer-events-none absolute top-1/2 right-3 size-4 -translate-y-1/2 text-muted-foreground"
+        />
+      </span>
     </label>
   )
 }
@@ -469,11 +561,11 @@ function AdminSegmentedFilter<TValue extends string>({
   value: TValue
 }) {
   return (
-    <div className="grid min-w-0 gap-1.5">
+    <div className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-1.5">
       <p className="text-xs font-medium text-muted-foreground">{label}</p>
       <div
         aria-label={label}
-        className="flex w-fit max-w-full rounded-lg border bg-background p-0.5"
+        className="flex h-11 w-fit max-w-full rounded-lg border bg-background p-1"
         role="group"
       >
         {options.map((option) => {
@@ -483,7 +575,7 @@ function AdminSegmentedFilter<TValue extends string>({
             <button
               aria-pressed={active ? 'true' : 'false'}
               className={cn(
-                'inline-flex h-7 min-w-18 items-center justify-center gap-1 rounded-md px-2 text-xs font-medium whitespace-nowrap',
+                'inline-flex h-full min-w-20 items-center justify-center gap-1.5 rounded-md px-3 text-sm font-medium whitespace-nowrap',
                 active
                   ? 'bg-primary text-primary-foreground'
                   : 'text-muted-foreground hover:bg-accent/55 hover:text-foreground',
