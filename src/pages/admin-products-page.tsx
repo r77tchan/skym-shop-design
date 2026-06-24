@@ -2,13 +2,17 @@ import {
   ArrowUpDownIcon,
   CheckIcon,
   ChevronDownIcon,
+  CircleCheckIcon,
+  EyeOffIcon,
   PencilIcon,
   PlusIcon,
   RotateCcwIcon,
   SearchIcon,
   SlidersHorizontalIcon,
+  XIcon,
 } from 'lucide-react'
-import { useState } from 'react'
+import { Dialog } from 'radix-ui'
+import { useState, type ReactNode } from 'react'
 import { Link } from 'react-router'
 
 import { ProductPrice } from '@/components/product-price'
@@ -19,6 +23,7 @@ import { assetUrl } from '@/lib/asset-url'
 import { getPrimaryProductStatus, isOnSale } from '@/lib/product-status'
 import { getProductStock } from '@/lib/product-stock'
 import {
+  isProductPublished,
   productBrands,
   productCategories,
   products,
@@ -38,6 +43,7 @@ type VisibilityFilterValue = 'all' | 'published' | 'unpublished'
 const adminProductRows = products.map((product, index) => {
   return {
     displayNo: index + 1,
+    isPublished: isProductPublished(product),
     product,
     stock: getProductStock(product),
   }
@@ -54,7 +60,6 @@ const sortOptions: Array<{ label: string; value: SortValue }> = [
   { label: '価格の安い順', value: 'price-asc' },
   { label: '価格の高い順', value: 'price-desc' },
 ]
-
 function getProductPriceNumber(product: Product) {
   return Number(product.price.replace(/[^\d]/g, ''))
 }
@@ -92,7 +97,6 @@ type AdminProductFilterState = {
   brandFilter: BrandFilterValue
   categoryFilter: CategoryFilterValue
   inventoryFilter: InventoryFilterValue
-  publishedProductIds: ReadonlySet<number>
   saleFilter: SaleFilterValue
   visibilityFilter: VisibilityFilterValue
 }
@@ -131,17 +135,11 @@ function matchesAdminProductFilters(
     return false
   }
 
-  if (
-    filters.visibilityFilter === 'published' &&
-    !filters.publishedProductIds.has(row.product.id)
-  ) {
+  if (filters.visibilityFilter === 'published' && !row.isPublished) {
     return false
   }
 
-  if (
-    filters.visibilityFilter === 'unpublished' &&
-    filters.publishedProductIds.has(row.product.id)
-  ) {
+  if (filters.visibilityFilter === 'unpublished' && row.isPublished) {
     return false
   }
 
@@ -155,9 +153,9 @@ function getFilteredAdminProductRows(filters: AdminProductFilterState) {
 }
 
 export function AdminProductsPage() {
-  const [publishedProductIds, setPublishedProductIds] = useState<
-    ReadonlySet<number>
-  >(() => new Set(products.map((product) => product.id)))
+  const [selectedProductIds, setSelectedProductIds] = useState(
+    () => new Set<number>(),
+  )
   const [categoryFilter, setCategoryFilter] =
     useState<CategoryFilterValue>(allFilterLabel)
   const [brandFilter, setBrandFilter] =
@@ -172,13 +170,11 @@ export function AdminProductsPage() {
     brandFilter,
     categoryFilter,
     inventoryFilter,
-    publishedProductIds,
     saleFilter,
     visibilityFilter,
   } satisfies AdminProductFilterState
-  const getFilterCount = (
-    filters: Partial<Omit<AdminProductFilterState, 'publishedProductIds'>> = {},
-  ) => getFilteredAdminProductRows({ ...currentFilters, ...filters }).length
+  const getFilterCount = (filters: Partial<AdminProductFilterState> = {}) =>
+    getFilteredAdminProductRows({ ...currentFilters, ...filters }).length
   const adminCategoryFilterItems = productCategories.map((category) => ({
     label: category,
     value: category,
@@ -273,6 +269,9 @@ export function AdminProductsPage() {
       ...row,
       displayNo: index + 1,
     }))
+  const visibleSelectedProductCount = filteredProductRows.filter((row) =>
+    selectedProductIds.has(row.product.id),
+  ).length
   const handleResetFilters = () => {
     setCategoryFilter(allFilterLabel)
     setBrandFilter(allFilterLabel)
@@ -281,14 +280,17 @@ export function AdminProductsPage() {
     setSortValue('new')
     setVisibilityFilter('all')
   }
-  const handleTogglePublished = (productId: number) => {
-    setPublishedProductIds((current) => {
+  const handleProductSelectionChange = (
+    productId: number,
+    isSelected: boolean,
+  ) => {
+    setSelectedProductIds((current) => {
       const next = new Set(current)
 
-      if (next.has(productId)) {
-        next.delete(productId)
-      } else {
+      if (isSelected) {
         next.add(productId)
+      } else {
+        next.delete(productId)
       }
 
       return next
@@ -376,9 +378,10 @@ export function AdminProductsPage() {
       </section>
 
       <ProductsTable
-        onTogglePublished={handleTogglePublished}
-        publishedProductIds={publishedProductIds}
+        onProductSelectionChange={handleProductSelectionChange}
         rows={filteredProductRows}
+        selectedProductIds={selectedProductIds}
+        visibleSelectedProductCount={visibleSelectedProductCount}
       />
     </>
   )
@@ -532,89 +535,124 @@ function ProductsPageHeader() {
 }
 
 function ProductsTable({
-  onTogglePublished,
-  publishedProductIds,
+  onProductSelectionChange,
   rows,
+  selectedProductIds,
+  visibleSelectedProductCount,
 }: {
-  onTogglePublished: (productId: number) => void
-  publishedProductIds: ReadonlySet<number>
+  onProductSelectionChange: (productId: number, isSelected: boolean) => void
   rows: ReadonlyArray<AdminProductRow>
+  selectedProductIds: ReadonlySet<number>
+  visibleSelectedProductCount: number
 }) {
+  const [bulkEditOpen, setBulkEditOpen] = useState(false)
+  const selectedRows = rows.filter((row) =>
+    selectedProductIds.has(row.product.id),
+  )
+
   return (
-    <section className="min-w-0 overflow-hidden rounded-lg border bg-card [contain:paint]">
-      <div className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
-        <div className="min-w-0">
-          <h2 className="font-heading text-base font-semibold">商品一覧</h2>
-        </div>
-        <Button className="w-fit" size="sm" variant="outline">
-          <PencilIcon data-icon="inline-start" />
-          一括編集
-        </Button>
-      </div>
-
-      <div className="hidden min-w-0 overflow-x-auto lg:block admin-top-nav:block">
-        <div className="min-w-[1040px]">
-          <div className="grid grid-cols-[48px_64px_minmax(240px,1.35fr)_104px_112px_72px_112px_88px_36px] items-center gap-3 border-y bg-muted/35 px-4 py-2 text-xs font-medium text-muted-foreground">
-            <span>No</span>
-            <span>ID</span>
-            <span>商品</span>
-            <span>カテゴリ</span>
-            <span>価格</span>
-            <span>在庫</span>
-            <span>公開状態</span>
-            <span>タグ</span>
-            <span aria-hidden="true" />
+    <Dialog.Root onOpenChange={setBulkEditOpen} open={bulkEditOpen}>
+      <section className="min-w-0 overflow-hidden rounded-lg border bg-card [contain:paint]">
+        <div className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="min-w-0">
+            <h2 className="font-heading text-base font-semibold">商品一覧</h2>
           </div>
+          <span
+            className={cn(
+              'inline-flex w-fit',
+              visibleSelectedProductCount === 0 && 'cursor-not-allowed',
+            )}
+          >
+            <Button
+              className="w-fit"
+              disabled={visibleSelectedProductCount === 0}
+              onClick={() => setBulkEditOpen(true)}
+              size="sm"
+              type="button"
+              variant="outline"
+            >
+              <PencilIcon data-icon="inline-start" />
+              一括編集
+            </Button>
+          </span>
+        </div>
 
-          {rows.length > 0 ? (
-            <div className="divide-y">
-              {rows.map((row) => (
-                <ProductTableRow
-                  key={row.product.id}
-                  displayNo={row.displayNo}
-                  isPublished={publishedProductIds.has(row.product.id)}
-                  onTogglePublished={onTogglePublished}
-                  product={row.product}
-                  stock={row.stock}
-                />
-              ))}
+        <div className="hidden min-w-0 overflow-x-auto lg:block admin-top-nav:block">
+          <div className="min-w-[1040px]">
+            <div className="grid grid-cols-[48px_64px_minmax(240px,1.35fr)_104px_112px_72px_112px_88px_36px] items-center gap-3 border-y bg-muted/35 px-4 py-2 text-xs font-medium text-muted-foreground">
+              <span>No</span>
+              <span>ID</span>
+              <span>商品</span>
+              <span>カテゴリ</span>
+              <span>価格</span>
+              <span>在庫</span>
+              <span>公開状態</span>
+              <span>タグ</span>
+              <span aria-hidden="true" />
             </div>
-          ) : null}
-        </div>
-      </div>
 
-      {rows.length > 0 ? (
-        <div className="grid divide-y lg:hidden admin-top-nav:hidden">
-          {rows.map((row) => (
-            <ProductMobileCard
-              key={row.product.id}
-              displayNo={row.displayNo}
-              isPublished={publishedProductIds.has(row.product.id)}
-              onTogglePublished={onTogglePublished}
-              product={row.product}
-              stock={row.stock}
-            />
-          ))}
+            {rows.length > 0 ? (
+              <div className="divide-y">
+                {rows.map((row) => (
+                  <ProductTableRow
+                    key={row.product.id}
+                    displayNo={row.displayNo}
+                    isPublished={row.isPublished}
+                    isSelected={selectedProductIds.has(row.product.id)}
+                    onSelectionChange={(isSelected) =>
+                      onProductSelectionChange(row.product.id, isSelected)
+                    }
+                    product={row.product}
+                    stock={row.stock}
+                  />
+                ))}
+              </div>
+            ) : null}
+          </div>
         </div>
-      ) : (
-        <div className="border-t p-6 text-center text-sm text-muted-foreground">
-          条件に一致する商品はありません
-        </div>
-      )}
-    </section>
+
+        {rows.length > 0 ? (
+          <div className="grid divide-y lg:hidden admin-top-nav:hidden">
+            {rows.map((row) => (
+              <ProductMobileCard
+                key={row.product.id}
+                displayNo={row.displayNo}
+                isPublished={row.isPublished}
+                isSelected={selectedProductIds.has(row.product.id)}
+                onSelectionChange={(isSelected) =>
+                  onProductSelectionChange(row.product.id, isSelected)
+                }
+                product={row.product}
+                stock={row.stock}
+              />
+            ))}
+          </div>
+        ) : (
+          <div className="border-t p-6 text-center text-sm text-muted-foreground">
+            条件に一致する商品はありません
+          </div>
+        )}
+      </section>
+
+      {bulkEditOpen ? (
+        <BulkEditDialogContent selectedRows={selectedRows} />
+      ) : null}
+    </Dialog.Root>
   )
 }
 
 function ProductTableRow({
   displayNo,
   isPublished,
-  onTogglePublished,
+  isSelected,
+  onSelectionChange,
   product,
   stock,
 }: {
   displayNo: number
   isPublished: boolean
-  onTogglePublished: (productId: number) => void
+  isSelected: boolean
+  onSelectionChange: (isSelected: boolean) => void
   product: Product
   stock: number
 }) {
@@ -624,7 +662,7 @@ function ProductTableRow({
     <article className="grid grid-cols-[48px_64px_minmax(240px,1.35fr)_104px_112px_72px_112px_88px_36px] items-stretch gap-3 px-4">
       <Link
         aria-label={`${product.name}の詳細を開く`}
-        className="col-span-6 -mx-1 grid min-w-0 cursor-pointer grid-cols-[48px_64px_minmax(240px,1.35fr)_104px_112px_72px] items-center gap-3 rounded-lg px-1 py-3.5 text-left outline-none hover:bg-accent/55 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+        className="col-span-8 -mx-1 grid min-w-0 cursor-pointer grid-cols-[48px_64px_minmax(240px,1.35fr)_104px_112px_72px_112px_88px] items-center gap-3 rounded-lg px-1 py-3.5 text-left outline-none hover:bg-accent/55 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
         to={`/admin/products/${product.id}`}
       >
         <span className="text-sm font-medium tabular-nums">{displayNo}</span>
@@ -649,20 +687,20 @@ function ProductTableRow({
         <span className="truncate text-sm">{product.category}</span>
         <ProductPrice product={product} variant="rail" />
         <span className="text-sm tabular-nums">{stock}</span>
+        <span className="flex items-center">
+          <PublishStateBadge isPublished={isPublished} />
+        </span>
+        <span className="flex min-w-0 items-center">
+          <ProductStatusBadge status={primaryStatus} />
+        </span>
       </Link>
 
-      <div className="flex items-center">
-        <PublishStateToggle
-          isPublished={isPublished}
-          onToggle={() => onTogglePublished(product.id)}
-          productName={product.name}
-        />
-      </div>
-      <div className="flex min-w-0 items-center">
-        <ProductStatusBadge status={primaryStatus} />
-      </div>
       <span className="flex items-center justify-center">
-        <SelectionCheckbox ariaLabel={`${product.name}を選択`} />
+        <SelectionCheckbox
+          ariaLabel={`${product.name}を選択`}
+          checked={isSelected}
+          onCheckedChange={onSelectionChange}
+        />
       </span>
     </article>
   )
@@ -671,13 +709,15 @@ function ProductTableRow({
 function ProductMobileCard({
   displayNo,
   isPublished,
-  onTogglePublished,
+  isSelected,
+  onSelectionChange,
   product,
   stock,
 }: {
   displayNo: number
   isPublished: boolean
-  onTogglePublished: (productId: number) => void
+  isSelected: boolean
+  onSelectionChange: (isSelected: boolean) => void
   product: Product
   stock: number
 }) {
@@ -743,25 +783,375 @@ function ProductMobileCard({
       </Link>
 
       <span className="flex items-start justify-center pt-1">
-        <SelectionCheckbox ariaLabel={`${product.name}を選択`} />
+        <SelectionCheckbox
+          ariaLabel={`${product.name}を選択`}
+          checked={isSelected}
+          onCheckedChange={onSelectionChange}
+        />
       </span>
 
       <div className="col-span-2 flex items-center justify-between gap-3 rounded-lg border bg-muted/35 p-3">
         <p className="text-xs font-medium text-muted-foreground">公開状態</p>
-        <PublishStateToggle
-          isPublished={isPublished}
-          onToggle={() => onTogglePublished(product.id)}
-          productName={product.name}
-        />
+        <PublishStateBadge isPublished={isPublished} />
       </div>
     </article>
   )
 }
 
-function SelectionCheckbox({ ariaLabel }: { ariaLabel: string }) {
+type BulkVisibilityValue = 'unchanged' | 'published' | 'unpublished'
+type BulkSaleValue = 'unchanged' | 'enable' | 'disable'
+type BulkSaleDiscountValue = '10' | '20' | '30' | 'custom'
+type BulkBrandValue = 'unchanged' | Product['brand']
+type BulkCategoryValue = 'unchanged' | Product['category']
+
+const bulkVisibilityOptions: ReadonlyArray<{
+  label: string
+  value: BulkVisibilityValue
+}> = [
+  { label: '変更しない', value: 'unchanged' },
+  { label: '公開にする', value: 'published' },
+  { label: '非公開にする', value: 'unpublished' },
+]
+
+const bulkSaleOptions: ReadonlyArray<{
+  label: string
+  value: BulkSaleValue
+}> = [
+  { label: '変更しない', value: 'unchanged' },
+  { label: 'セールにする', value: 'enable' },
+  { label: 'セール解除', value: 'disable' },
+]
+
+const bulkSaleDiscountOptions: ReadonlyArray<{
+  label: string
+  value: BulkSaleDiscountValue
+}> = [
+  { label: '10%', value: '10' },
+  { label: '20%', value: '20' },
+  { label: '30%', value: '30' },
+  { label: 'カスタム', value: 'custom' },
+]
+
+const bulkBrandOptions = productBrands
+const bulkCategoryOptions = productCategories.filter(
+  (category) => category !== allFilterLabel,
+)
+
+function BulkEditDialogContent({
+  selectedRows,
+}: {
+  selectedRows: ReadonlyArray<AdminProductRow>
+}) {
+  const [visibilityValue, setVisibilityValue] =
+    useState<BulkVisibilityValue>('unchanged')
+  const [saleValue, setSaleValue] = useState<BulkSaleValue>('unchanged')
+  const [saleDiscountValue, setSaleDiscountValue] =
+    useState<BulkSaleDiscountValue>('20')
+  const [customSaleDiscount, setCustomSaleDiscount] = useState('')
+  const [brandValue, setBrandValue] = useState<BulkBrandValue>('unchanged')
+  const [categoryValue, setCategoryValue] =
+    useState<BulkCategoryValue>('unchanged')
+  const selectedCount = selectedRows.length
+  const customSaleDiscountNumber = Number(customSaleDiscount)
+  const hasSaleValidationError =
+    saleValue === 'enable' &&
+    saleDiscountValue === 'custom' &&
+    !(customSaleDiscountNumber > 0 && customSaleDiscountNumber < 100)
+  const hasValidSaleChange =
+    saleValue === 'disable' ||
+    (saleValue === 'enable' &&
+      (saleDiscountValue !== 'custom' ||
+        (customSaleDiscountNumber > 0 && customSaleDiscountNumber < 100)))
+  const canApply =
+    !hasSaleValidationError &&
+    (visibilityValue !== 'unchanged' ||
+      hasValidSaleChange ||
+      brandValue !== 'unchanged' ||
+      categoryValue !== 'unchanged')
+
+  return (
+    <Dialog.Portal>
+      <Dialog.Overlay className="fixed inset-0 z-[70] bg-black/45" />
+      <Dialog.Content className="fixed top-1/2 left-1/2 z-[80] grid max-h-[calc(100svh-2rem)] w-[min(calc(100vw-2rem),44rem)] -translate-x-1/2 -translate-y-1/2 grid-rows-[auto_minmax(0,1fr)_auto] overflow-hidden rounded-lg border bg-background shadow-2xl outline-none">
+        <div className="flex min-w-0 items-start justify-between gap-4 border-b p-5">
+          <div className="min-w-0">
+            <Dialog.Title className="font-heading text-xl font-semibold">
+              一括編集
+            </Dialog.Title>
+            <Dialog.Description className="mt-2 text-sm leading-6 text-muted-foreground">
+              選択した商品にまとめて反映する項目を選択します。
+            </Dialog.Description>
+          </div>
+
+          <Dialog.Close asChild>
+            <Button
+              aria-label="閉じる"
+              size="icon"
+              type="button"
+              variant="ghost"
+            >
+              <XIcon aria-hidden="true" />
+            </Button>
+          </Dialog.Close>
+        </div>
+
+        <div className="grid min-h-0 min-w-0 gap-5 overflow-y-auto p-5">
+          <section className="grid min-w-0 gap-3 rounded-lg border bg-muted/35 p-4">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <h3 className="text-sm font-semibold">対象商品</h3>
+              <span className="rounded-full bg-primary/10 px-2.5 py-1 text-xs font-semibold text-primary">
+                {selectedCount}件選択中
+              </span>
+            </div>
+
+            <div className="grid max-h-72 min-w-0 gap-2 overflow-y-auto pr-1">
+              {selectedRows.map((row) => (
+                <div
+                  className="grid min-w-0 grid-cols-[40px_minmax(0,1fr)] items-center gap-3 rounded-lg bg-background p-2"
+                  key={row.product.id}
+                >
+                  <img
+                    alt=""
+                    className="aspect-square w-10 rounded-md bg-muted object-cover"
+                    src={assetUrl(row.product.image)}
+                  />
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-medium">
+                      {row.product.name}
+                    </p>
+                    <div className="mt-0.5 flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
+                      <span className="truncate">
+                        ID {row.product.id} / {row.product.brand}
+                      </span>
+                      <ProductPrice product={row.product} variant="rail" />
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          <section className="grid min-w-0 gap-4 rounded-lg border p-4">
+            <div className="min-w-0">
+              <h3 className="text-sm font-semibold">変更内容</h3>
+            </div>
+
+            <BulkEditField label="公開状態">
+              <BulkEditSegmentedControl
+                onChange={setVisibilityValue}
+                options={bulkVisibilityOptions}
+                value={visibilityValue}
+              />
+            </BulkEditField>
+
+            <BulkEditField label="セール">
+              <div className="grid min-w-0 gap-3">
+                <BulkEditSegmentedControl
+                  onChange={setSaleValue}
+                  options={bulkSaleOptions}
+                  value={saleValue}
+                />
+
+                {saleValue === 'enable' ? (
+                  <div className="grid min-w-0 gap-2 sm:grid-cols-[minmax(0,14rem)_minmax(0,1fr)]">
+                    <label className="grid min-w-0 gap-1.5">
+                      <span className="text-xs font-medium text-muted-foreground">
+                        割引率
+                      </span>
+                      <span className="relative block min-w-0">
+                        <select
+                          className="h-10 w-full cursor-pointer appearance-none rounded-lg border bg-background px-3 pr-9 text-base font-medium outline-none hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 md:text-sm"
+                          onChange={(event) =>
+                            setSaleDiscountValue(
+                              event.currentTarget
+                                .value as BulkSaleDiscountValue,
+                            )
+                          }
+                          value={saleDiscountValue}
+                        >
+                          {bulkSaleDiscountOptions.map((option) => (
+                            <option key={option.value} value={option.value}>
+                              {option.label}
+                            </option>
+                          ))}
+                        </select>
+                        <ChevronDownIcon
+                          aria-hidden="true"
+                          className="pointer-events-none absolute top-1/2 right-3 size-4 -translate-y-1/2 text-muted-foreground"
+                        />
+                      </span>
+                    </label>
+
+                    <label
+                      aria-hidden={saleDiscountValue !== 'custom'}
+                      className={cn(
+                        'grid min-w-0 gap-1.5',
+                        saleDiscountValue !== 'custom' && 'invisible',
+                      )}
+                    >
+                      <span className="text-xs font-medium text-muted-foreground">
+                        カスタム割引率
+                      </span>
+                      <span className="relative block min-w-0">
+                        <Input
+                          className="pr-9"
+                          disabled={saleDiscountValue !== 'custom'}
+                          max={99}
+                          min={1}
+                          onChange={(event) =>
+                            setCustomSaleDiscount(event.currentTarget.value)
+                          }
+                          step={1}
+                          tabIndex={saleDiscountValue === 'custom' ? 0 : -1}
+                          type="number"
+                          value={customSaleDiscount}
+                        />
+                        <span className="pointer-events-none absolute top-1/2 right-3 -translate-y-1/2 text-sm font-medium text-muted-foreground">
+                          %
+                        </span>
+                      </span>
+                    </label>
+                  </div>
+                ) : null}
+              </div>
+            </BulkEditField>
+
+            <BulkEditField label="ブランド">
+              <BulkEditSelect
+                onChange={setBrandValue}
+                options={bulkBrandOptions}
+                value={brandValue}
+              />
+            </BulkEditField>
+
+            <BulkEditField label="カテゴリー">
+              <BulkEditSelect
+                onChange={setCategoryValue}
+                options={bulkCategoryOptions}
+                value={categoryValue}
+              />
+            </BulkEditField>
+          </section>
+        </div>
+
+        <div className="flex flex-col-reverse gap-2 border-t p-5 sm:flex-row sm:items-center sm:justify-end">
+          <Dialog.Close asChild>
+            <Button type="button" variant="outline">
+              キャンセル
+            </Button>
+          </Dialog.Close>
+          <Dialog.Close asChild>
+            <Button disabled={!canApply} type="button">
+              変更を適用
+            </Button>
+          </Dialog.Close>
+        </div>
+      </Dialog.Content>
+    </Dialog.Portal>
+  )
+}
+
+function BulkEditField({
+  children,
+  label,
+}: {
+  children: ReactNode
+  label: string
+}) {
+  return (
+    <div className="grid min-w-0 gap-2 lg:grid-cols-[112px_minmax(0,1fr)] lg:items-start">
+      <p className="pt-2 text-xs font-medium text-muted-foreground">{label}</p>
+      <div className="min-w-0">{children}</div>
+    </div>
+  )
+}
+
+function BulkEditSelect<TValue extends string>({
+  onChange,
+  options,
+  value,
+}: {
+  onChange: (value: 'unchanged' | TValue) => void
+  options: readonly TValue[]
+  value: 'unchanged' | TValue
+}) {
+  return (
+    <span className="relative block min-w-0">
+      <select
+        className="h-10 w-full cursor-pointer appearance-none rounded-lg border bg-background px-3 pr-9 text-base font-medium outline-none hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 md:text-sm"
+        onChange={(event) =>
+          onChange(event.currentTarget.value as 'unchanged' | TValue)
+        }
+        value={value}
+      >
+        <option value="unchanged">変更しない</option>
+        {options.map((option) => (
+          <option key={option} value={option}>
+            {option}
+          </option>
+        ))}
+      </select>
+      <ChevronDownIcon
+        aria-hidden="true"
+        className="pointer-events-none absolute top-1/2 right-3 size-4 -translate-y-1/2 text-muted-foreground"
+      />
+    </span>
+  )
+}
+
+function BulkEditSegmentedControl<TValue extends string>({
+  onChange,
+  options,
+  value,
+}: {
+  onChange: (value: TValue) => void
+  options: ReadonlyArray<{ label: string; value: TValue }>
+  value: TValue
+}) {
+  return (
+    <div className="flex w-fit max-w-full rounded-lg border bg-background p-0.5">
+      {options.map((option) => {
+        const active = option.value === value
+
+        return (
+          <button
+            aria-pressed={active ? 'true' : 'false'}
+            className={cn(
+              'inline-flex h-8 min-w-20 items-center justify-center rounded-md px-2 text-xs font-medium whitespace-nowrap',
+              active
+                ? 'bg-primary text-primary-foreground'
+                : 'text-muted-foreground hover:bg-muted hover:text-foreground',
+            )}
+            key={option.value}
+            onClick={() => onChange(option.value)}
+            type="button"
+          >
+            {option.label}
+          </button>
+        )
+      })}
+    </div>
+  )
+}
+
+function SelectionCheckbox({
+  ariaLabel,
+  checked,
+  onCheckedChange,
+}: {
+  ariaLabel: string
+  checked: boolean
+  onCheckedChange: (checked: boolean) => void
+}) {
   return (
     <label className="grid size-8 cursor-pointer place-items-center rounded-md hover:bg-accent/55">
-      <input aria-label={ariaLabel} className="peer sr-only" type="checkbox" />
+      <input
+        aria-label={ariaLabel}
+        checked={checked}
+        className="peer sr-only"
+        onChange={(event) => onCheckedChange(event.currentTarget.checked)}
+        type="checkbox"
+      />
       <span className="grid size-5 place-items-center rounded border border-input bg-background text-transparent peer-checked:border-primary peer-checked:bg-primary peer-checked:text-primary-foreground peer-focus-visible:ring-2 peer-focus-visible:ring-ring peer-focus-visible:ring-offset-2">
         <CheckIcon aria-hidden="true" className="size-3.5" />
       </span>
@@ -769,46 +1159,20 @@ function SelectionCheckbox({ ariaLabel }: { ariaLabel: string }) {
   )
 }
 
-function PublishStateToggle({
-  isPublished,
-  onToggle,
-  productName,
-}: {
-  isPublished: boolean
-  onToggle: () => void
-  productName: string
-}) {
+function PublishStateBadge({ isPublished }: { isPublished: boolean }) {
+  const Icon = isPublished ? CircleCheckIcon : EyeOffIcon
+
   return (
-    <button
-      aria-checked={isPublished}
-      aria-label={`${productName}を${isPublished ? '非公開' : '公開'}にする`}
+    <span
       className={cn(
-        'inline-flex h-7 w-[4.5rem] items-center justify-between rounded-full px-1 text-xs font-semibold focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none',
+        'inline-flex h-7 min-w-20 items-center justify-center gap-1.5 rounded-full border px-2 text-xs font-semibold',
         isPublished
-          ? 'bg-primary text-primary-foreground hover:bg-primary/80'
-          : 'bg-muted-foreground/55 text-background hover:bg-muted-foreground/65',
+          ? 'border-primary/40 bg-primary/15 text-primary'
+          : 'border-muted-foreground/35 bg-muted-foreground/15 text-foreground',
       )}
-      onClick={onToggle}
-      role="switch"
-      type="button"
     >
-      {isPublished ? (
-        <>
-          <span className="pl-1.5">公開</span>
-          <span
-            aria-hidden="true"
-            className="size-5 rounded-full bg-background"
-          />
-        </>
-      ) : (
-        <>
-          <span
-            aria-hidden="true"
-            className="size-5 rounded-full bg-background"
-          />
-          <span className="pr-1.5">非公開</span>
-        </>
-      )}
-    </button>
+      <Icon aria-hidden="true" className="size-3.5" />
+      {isPublished ? '公開' : '非公開'}
+    </span>
   )
 }

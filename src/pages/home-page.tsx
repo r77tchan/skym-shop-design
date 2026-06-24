@@ -14,9 +14,9 @@ import {
   getNewsItemPath,
   getProductPath,
   newsItems,
-  products,
-  type Product,
   shopDescription,
+  storefrontProducts,
+  type Product,
 } from '@/lib/shop-content'
 import {
   interactiveCardLinkClassName,
@@ -26,7 +26,7 @@ import {
 } from '@/lib/ui-styles'
 import { cn } from '@/lib/utils'
 
-const homeProducts = products
+const homeProducts = storefrontProducts
   .filter((product) => !isSoldOut(product))
   .slice(0, 6)
 

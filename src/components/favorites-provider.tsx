@@ -4,14 +4,16 @@ import {
   FavoritesProviderContext,
   type FavoritesProviderState,
 } from '@/lib/favorites-context'
-import { products } from '@/lib/shop-content'
+import { storefrontProducts } from '@/lib/shop-content'
 
 type FavoritesProviderProps = {
   children: ReactNode
 }
 
 const demoFavoriteProductIds = [23, 22, 20, 17] as const
-const productById = new Map(products.map((product) => [product.id, product]))
+const productById = new Map(
+  storefrontProducts.map((product) => [product.id, product]),
+)
 
 export function FavoritesProvider({ children }: FavoritesProviderProps) {
   const [favoriteProductIds, setFavoriteProductIds] = useState<number[]>([

@@ -110,7 +110,8 @@ export type Product = {
   brand: ProductBrand
   category: ProductCategory
   price: string
-  statuses?: readonly ProductStatus[]
+  isNew?: boolean
+  published?: boolean
   sale?: ProductSale
   summary: string
   description: readonly string[]
@@ -124,12 +125,37 @@ export type Product = {
 
 export const products: readonly Product[] = [
   {
+    id: 24,
+    name: 'ASTRAR 2.4g（メタ・レアル）',
+    brand: 'ValkeIN',
+    category: 'スプーン',
+    price: '¥400',
+    published: false,
+    summary:
+      '強めの波動で広く探れる2.4gスプーン。放流後や魚の位置を早く見つけたい場面に。',
+    description: [
+      'ASTRAR 2.4gは、しっかり水を押しながらテンポよくサーチできるスプーンです。魚のレンジが絞り切れていない時間帯でも、巻き速度を変えながら反応を確認しやすいモデルです。',
+      'メタ・レアルは明滅で気づかせながら、アピールの強さを調整しやすいカラーです。放流直後の強い反応から、少し落ち着いたタイミングのフォローまで幅広く使えます。',
+    ],
+    specs: [
+      { label: 'ウエイト', value: '2.4g' },
+      { label: 'タイプ', value: 'スプーン' },
+      { label: 'カラー', value: 'メタ・レアル' },
+      { label: '用途', value: 'サーチ / 放流後' },
+    ],
+    image: '/skym-shop-assets/images/products/valkein-astrar-2-4g-front.jpg',
+    images: [
+      '/skym-shop-assets/images/products/valkein-astrar-2-4g-front.jpg',
+      '/skym-shop-assets/images/products/valkein-astrar-2-4g-back.jpg',
+    ],
+  },
+  {
     id: 23,
     name: 'フォルテ 2.1g（シルバー）',
     brand: 'VELVET ARTS',
     category: 'スプーン',
     price: '¥500',
-    statuses: ['NEW'],
+    isNew: true,
     summary:
       'クリアウォーターで使いやすいシルバー。自然なフラッシングでスレたトラウトにも合わせやすい一枚。',
     description: [
@@ -158,7 +184,7 @@ export const products: readonly Product[] = [
     brand: '1089工房',
     category: 'プラグ',
     price: '¥1,980',
-    statuses: ['NEW'],
+    isNew: true,
     summary:
       'ゆっくり巻いて誘えるニョロ系プラグ。スプーンで追い切らない魚への次の一手に。',
     description: [
@@ -184,7 +210,7 @@ export const products: readonly Product[] = [
     brand: 'VELVET ARTS',
     category: 'スプーン',
     price: '¥500',
-    statuses: ['SOLD OUT', 'NEW'],
+    isNew: true,
     summary:
       'グローを効かせた限定カラー。朝夕や濁りのある水質で魚に気づかせたい時に使いやすい一枚。',
     description: [
@@ -210,7 +236,7 @@ export const products: readonly Product[] = [
     brand: 'RODIO CRAFT',
     category: 'プラグ',
     price: '¥400',
-    statuses: ['NEW', 'SALE'],
+    isNew: true,
     sale: {
       originalPrice: '¥500',
       discountRate: '20%',
@@ -225,7 +251,6 @@ export const products: readonly Product[] = [
       { label: 'タイプ', value: 'プラグ' },
       { label: '用途', value: 'サーチ / フォロー' },
       { label: '推奨ライン', value: 'ナイロン・フロロ 2〜4lb' },
-      { label: '状態', value: 'NEW / SALE対象' },
     ],
     image:
       '/skym-shop-assets/images/products/033805811c6e8f5bae5e02633d66741f.jpg',
@@ -240,7 +265,7 @@ export const products: readonly Product[] = [
     brand: 'SKYM',
     category: 'フック',
     price: '¥700',
-    statuses: ['SOLD OUT', 'SALE', 'NEW'],
+    isNew: true,
     sale: {
       originalPrice: '¥880',
       discountRate: '20%',
@@ -255,7 +280,6 @@ export const products: readonly Product[] = [
       { label: 'タイプ', value: '交換フック' },
       { label: '内容', value: '複数サイズセット' },
       { label: '用途', value: 'スプーン / 小型プラグ' },
-      { label: '状態', value: 'SOLD OUT / SALE / NEW' },
     ],
     image:
       '/skym-shop-assets/images/products/04ac9a0e6908849f3cf8a5d496c1f898.jpg',
@@ -270,7 +294,6 @@ export const products: readonly Product[] = [
     brand: 'VELVET ARTS',
     category: 'スプーン',
     price: '¥500',
-    statuses: ['SOLD OUT'],
     summary:
       '強めの明滅で魚に気づかせやすい、放流直後からサーチまで使いやすい2.1gスプーン。',
     description: [
@@ -296,7 +319,7 @@ export const products: readonly Product[] = [
     brand: 'ValkeIN',
     category: 'スプーン',
     price: '¥400',
-    statuses: ['NEW'],
+    isNew: true,
     summary:
       '定番HI BURSTの1.6g。UVフラッシュで魚に気づかせつつ、テンポよくレンジを刻めます。',
     description: [
@@ -322,7 +345,6 @@ export const products: readonly Product[] = [
     brand: 'VELVET ARTS',
     category: 'スプーン',
     price: '¥500',
-    statuses: ['SOLD OUT'],
     summary:
       'イベント感のある強めカラー。魚の目線を集めたい朝夕や濁りのある状況に。',
     description: [
@@ -348,7 +370,7 @@ export const products: readonly Product[] = [
     brand: 'RODIO CRAFT',
     category: 'プラグ',
     price: '¥500',
-    statuses: ['NEW'],
+    isNew: true,
     summary:
       'スプーンで届かない魚に入れやすいサーチ系プラグ。レンジ変化をつけたい時に。',
     description: [
@@ -374,7 +396,6 @@ export const products: readonly Product[] = [
     brand: 'ValkeIN',
     category: 'スプーン',
     price: '¥320',
-    statuses: ['SOLD OUT', 'SALE'],
     sale: {
       originalPrice: '¥400',
       discountRate: '20%',
@@ -389,7 +410,6 @@ export const products: readonly Product[] = [
       { label: 'ウエイト', value: '1.6g' },
       { label: 'タイプ', value: 'スプーン' },
       { label: '推奨ライン', value: 'ナイロン・フロロ 2〜4lb' },
-      { label: '状態', value: 'SOLD OUT / SALE対象' },
     ],
     image:
       '/skym-shop-assets/images/products/01ffb9bb455cb67ba79e0f8049e3c6e0.jpg',
@@ -429,7 +449,6 @@ export const products: readonly Product[] = [
     brand: 'SKYM',
     category: 'フック',
     price: '¥880',
-    statuses: ['SALE'],
     sale: {
       originalPrice: '¥1,100',
       discountRate: '20%',
@@ -444,7 +463,6 @@ export const products: readonly Product[] = [
       { label: 'タイプ', value: '交換フック' },
       { label: '内容', value: '複数サイズセット' },
       { label: '用途', value: 'スプーン / 小型プラグ' },
-      { label: '状態', value: 'SALE対象' },
     ],
     image:
       '/skym-shop-assets/images/products/04ac9a0e6908849f3cf8a5d496c1f898.jpg',
@@ -724,6 +742,28 @@ export const products: readonly Product[] = [
     ],
   },
 ]
+
+export function isProductPublished(product: Product) {
+  return product.published ?? true
+}
+
+export const storefrontProducts = products.filter(isProductPublished)
+
+const hiddenEditableProductSpecLabels = new Set(['タイプ', '状態'])
+
+export function getEditableProductSpecs(product: Product) {
+  return product.specs.filter(
+    (spec) => !hiddenEditableProductSpecLabels.has(spec.label),
+  )
+}
+
+export function getProductSpecRows(product: Product) {
+  return [
+    { label: 'ブランド', value: product.brand },
+    { label: 'カテゴリー', value: product.category },
+    ...getEditableProductSpecs(product),
+  ]
+}
 
 export function getProductPath(product: Product) {
   return `/items/${product.id}`

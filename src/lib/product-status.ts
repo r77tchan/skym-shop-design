@@ -1,4 +1,5 @@
 import type { Product, ProductStatus } from '@/lib/shop-content'
+import { getProductStock } from '@/lib/product-stock'
 
 const productStatusPriority = [
   'SOLD OUT',
@@ -7,15 +8,33 @@ const productStatusPriority = [
 ] as const satisfies readonly ProductStatus[]
 
 export function hasProductStatus(product: Product, status: ProductStatus) {
-  return product.statuses?.includes(status) ?? false
+  return getProductStatuses(product).includes(status)
 }
 
 export function isSoldOut(product: Product) {
-  return hasProductStatus(product, 'SOLD OUT')
+  return getProductStock(product) <= 0
 }
 
 export function isOnSale(product: Product) {
-  return hasProductStatus(product, 'SALE')
+  return Boolean(product.sale)
+}
+
+export function getProductStatuses(product: Product) {
+  const statuses: ProductStatus[] = []
+
+  if (isSoldOut(product)) {
+    statuses.push('SOLD OUT')
+  }
+
+  if (isOnSale(product)) {
+    statuses.push('SALE')
+  }
+
+  if (product.isNew) {
+    statuses.push('NEW')
+  }
+
+  return statuses
 }
 
 export function getPrimaryProductStatus(product: Product) {

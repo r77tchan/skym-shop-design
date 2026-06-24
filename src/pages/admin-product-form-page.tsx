@@ -2,11 +2,21 @@ import {
   ArrowLeftIcon,
   ChevronDownIcon,
   EyeIcon,
+  ExternalLinkIcon,
   ImageIcon,
+  PlusIcon,
   SaveIcon,
+  Trash2Icon,
+  UploadIcon,
 } from 'lucide-react'
-import { useState } from 'react'
-import { Link, useParams } from 'react-router'
+import {
+  useEffect,
+  useRef,
+  useState,
+  type ChangeEvent,
+  type DragEvent,
+} from 'react'
+import { Link, useNavigate, useParams } from 'react-router'
 
 import { ProductStatusBadges } from '@/components/product-status-badge'
 import { Badge } from '@/components/ui/badge'
@@ -14,8 +24,11 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { assetUrl } from '@/lib/asset-url'
+import { getProductStatuses } from '@/lib/product-status'
 import { getProductStock } from '@/lib/product-stock'
 import {
+  getEditableProductSpecs,
+  isProductPublished,
   productBrands,
   productCategories,
   products,
@@ -56,6 +69,7 @@ function AdminProductFormPage({
   mode: 'detail' | 'new'
   product?: Product
 }) {
+  const navigate = useNavigate()
   const isNew = mode === 'new'
   const stock = product ? getProductStock(product) : 0
   const regularPrice = getPriceInputValue(
@@ -64,8 +78,9 @@ function AdminProductFormPage({
   const salePrice = product?.sale ? getPriceInputValue(product.price) : ''
   const description = product?.description.join('\n\n') ?? ''
   const imageUrls = product?.images ?? []
-  const firstSpec = product?.specs[0]
-  const secondSpec = product?.specs[1]
+  const specs = product ? getEditableProductSpecs(product) : []
+  const isPublished = product ? isProductPublished(product) : false
+  const productStatuses = product ? getProductStatuses(product) : []
   const pageTitle = isNew ? '商品登録' : (product?.name ?? '商品詳細')
 
   return (
@@ -73,25 +88,33 @@ function AdminProductFormPage({
       <section className="border-b pb-5">
         <div className="grid gap-4">
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <Button asChild variant="outline">
-              <Link to="/admin/products">
-                <ArrowLeftIcon data-icon="inline-start" />
-                商品一覧
-              </Link>
+            <Button
+              onClick={() => navigate(-1)}
+              type="button"
+              variant="outline"
+            >
+              <ArrowLeftIcon data-icon="inline-start" />
+              Back
             </Button>
 
             <div className="flex flex-wrap items-center justify-end gap-2">
-              {!isNew && product ? (
-                <Button asChild variant="outline">
+              {!isNew && product && isPublished ? (
+                <Button asChild className="h-10 px-3" variant="outline">
                   <Link to={`/items/${product.id}`}>
-                    <EyeIcon data-icon="inline-start" />
+                    <ExternalLinkIcon data-icon="inline-start" />
                     ストア表示
                   </Link>
                 </Button>
               ) : null}
-              <Button type="button">
+
+              <Button className="h-10 px-3" type="button" variant="outline">
+                <EyeIcon data-icon="inline-start" />
+                プレビュー
+              </Button>
+
+              <Button className="h-10 px-3" type="button">
                 <SaveIcon data-icon="inline-start" />
-                保存
+                {isNew ? '登録' : '保存'}
               </Button>
             </div>
           </div>
@@ -103,7 +126,7 @@ function AdminProductFormPage({
                   {isNew ? '新規' : `ID ${product?.id}`}
                 </Badge>
                 {product ? (
-                  <ProductStatusBadges statuses={product.statuses} />
+                  <ProductStatusBadges statuses={productStatuses} />
                 ) : null}
               </div>
               <h1 className="font-heading text-2xl font-semibold tracking-normal sm:text-3xl">
@@ -114,8 +137,8 @@ function AdminProductFormPage({
         </div>
       </section>
 
-      <form className="grid min-w-0 gap-5 xl:grid-cols-[minmax(0,1fr)_360px]">
-        <div className="grid min-w-0 gap-5">
+      <form className="grid min-w-0 items-start gap-5 xl:grid-cols-[minmax(0,1fr)_360px]">
+        <div className="grid min-w-0 content-start gap-5">
           <section className="grid min-w-0 gap-4 rounded-lg border bg-card p-4">
             <div className="min-w-0">
               <h2 className="font-heading text-base font-semibold">基本情報</h2>
@@ -124,11 +147,7 @@ function AdminProductFormPage({
             <div className="grid gap-4 lg:grid-cols-2 admin-top-nav:grid-cols-2">
               <label className={fieldWrapperClassName}>
                 <span className={fieldLabelClassName}>商品名</span>
-                <Input
-                  defaultValue={product?.name}
-                  placeholder="フォルテ 2.1g（シルバー）"
-                  type="text"
-                />
+                <Input defaultValue={product?.name} type="text" />
               </label>
 
               <label className={fieldWrapperClassName}>
@@ -151,38 +170,30 @@ function AdminProductFormPage({
 
               <label className={fieldWrapperClassName}>
                 <span className={fieldLabelClassName}>公開状態</span>
-                <PublishStateToggle defaultPublished={!isNew} />
+                <PublishStateToggle
+                  defaultPublished={isPublished}
+                  disabled={isNew}
+                />
               </label>
             </div>
 
             <label className={fieldWrapperClassName}>
-              <span className={fieldLabelClassName}>概要</span>
-              <Textarea
-                className="min-h-28"
-                defaultValue={product?.summary}
-                placeholder="一覧や商品詳細の冒頭に表示する短い説明"
-              />
+              <span className={fieldLabelClassName}>キャッチフレーズ</span>
+              <Input defaultValue={product?.summary} type="text" />
             </label>
 
             <label className={fieldWrapperClassName}>
               <span className={fieldLabelClassName}>商品説明</span>
-              <Textarea
-                defaultValue={description}
-                placeholder="商品の特徴、使いどころ、推奨シーンなど"
-              />
+              <Textarea defaultValue={description} />
             </label>
           </section>
 
           <section className="grid min-w-0 gap-4 rounded-lg border bg-card p-4">
             <div className="min-w-0">
-              <h2 className="font-heading text-base font-semibold">仕様</h2>
+              <h2 className="font-heading text-base font-semibold">スペック</h2>
             </div>
 
-            <div className="grid gap-3">
-              <SpecFields label={firstSpec?.label} value={firstSpec?.value} />
-              <SpecFields label={secondSpec?.label} value={secondSpec?.value} />
-              <SpecFields />
-            </div>
+            <ProductSpecsField key={product?.id ?? 'new'} specs={specs} />
           </section>
         </div>
 
@@ -198,7 +209,6 @@ function AdminProductFormPage({
                 <Input
                   defaultValue={regularPrice}
                   min={1}
-                  placeholder="500"
                   step={1}
                   type="number"
                 />
@@ -208,7 +218,6 @@ function AdminProductFormPage({
                 <span className={fieldLabelClassName}>セール価格</span>
                 <Input
                   defaultValue={salePrice}
-                  placeholder="任意"
                   min={1}
                   step={1}
                   type="number"
@@ -232,7 +241,10 @@ function AdminProductFormPage({
               <h2 className="font-heading text-base font-semibold">画像</h2>
             </div>
 
-            <ProductImagesField imageUrls={imageUrls} />
+            <ProductImagesField
+              key={product?.id ?? 'new'}
+              imageUrls={imageUrls}
+            />
           </section>
         </aside>
       </form>
@@ -240,67 +252,294 @@ function AdminProductFormPage({
   )
 }
 
+type ProductImageSlot = {
+  existingUrl: string
+  file?: File
+  id: string
+  previewUrl?: string
+}
+
+function createImageSlots(imageUrls: readonly string[]): ProductImageSlot[] {
+  const urls = imageUrls.length > 0 ? imageUrls : ['']
+
+  return urls.map((imageUrl, index) => ({
+    existingUrl: imageUrl,
+    id: `image-${index}`,
+  }))
+}
+
+function createEmptyImageSlot(index: number): ProductImageSlot {
+  return {
+    existingUrl: '',
+    id: `image-${index}`,
+  }
+}
+
 function ProductImagesField({ imageUrls }: { imageUrls: readonly string[] }) {
-  const visibleImageUrls =
-    imageUrls.length >= 3
-      ? imageUrls
-      : [
-          ...imageUrls,
-          ...Array.from({ length: 3 - imageUrls.length }, () => ''),
-        ]
+  const [imageSlots, setImageSlots] = useState(() =>
+    createImageSlots(imageUrls),
+  )
+  const nextSlotIndex = useRef(imageSlots.length)
+  const previewUrls = useRef(new Set<string>())
+
+  useEffect(() => {
+    const trackedPreviewUrls = previewUrls.current
+
+    return () => {
+      trackedPreviewUrls.forEach((url) => URL.revokeObjectURL(url))
+    }
+  }, [])
+
+  function addImageSlot() {
+    const nextIndex = nextSlotIndex.current
+    nextSlotIndex.current += 1
+
+    setImageSlots((current) => [...current, createEmptyImageSlot(nextIndex)])
+  }
+
+  function removeImageSlot(slotId: string) {
+    const slot = imageSlots.find((item) => item.id === slotId)
+
+    if (slot?.previewUrl) {
+      URL.revokeObjectURL(slot.previewUrl)
+      previewUrls.current.delete(slot.previewUrl)
+    }
+
+    setImageSlots((current) => {
+      const nextSlots = current.filter((slot) => slot.id !== slotId)
+
+      return nextSlots.length > 0 ? nextSlots : [createEmptyImageSlot(0)]
+    })
+  }
+
+  function updateImageFile(slotId: string, file: File) {
+    const previewUrl = URL.createObjectURL(file)
+    const currentSlot = imageSlots.find((slot) => slot.id === slotId)
+
+    if (currentSlot?.previewUrl) {
+      URL.revokeObjectURL(currentSlot.previewUrl)
+      previewUrls.current.delete(currentSlot.previewUrl)
+    }
+
+    previewUrls.current.add(previewUrl)
+
+    setImageSlots((current) =>
+      current.map((slot) =>
+        slot.id === slotId ? { ...slot, file, previewUrl } : slot,
+      ),
+    )
+  }
 
   return (
     <div className="grid min-w-0 gap-3">
-      {visibleImageUrls.map((imageUrl, index) => (
-        <div
-          className="grid min-w-0 grid-cols-[4rem_minmax(0,1fr)] items-start gap-3 rounded-lg border bg-muted/35 p-3"
-          key={index}
-        >
-          <div className="overflow-hidden rounded-lg border bg-muted">
-            {imageUrl ? (
-              <img
-                alt=""
-                className="aspect-square w-full object-cover"
-                src={assetUrl(imageUrl)}
-              />
-            ) : (
-              <div className="grid aspect-square place-items-center text-muted-foreground">
-                <ImageIcon aria-hidden="true" className="size-5" />
-              </div>
-            )}
-          </div>
-
-          <label className={fieldWrapperClassName}>
-            <span className="flex min-w-0 items-center gap-2">
-              <span className={fieldLabelClassName}>画像URL {index + 1}</span>
-              {index === 0 ? (
-                <Badge className="bg-primary/10 text-primary">メイン</Badge>
-              ) : null}
-            </span>
-            <Input
-              defaultValue={imageUrl}
-              placeholder="/images/product.jpg"
-              type="text"
-            />
-          </label>
-        </div>
+      {imageSlots.map((slot, index) => (
+        <ProductImageSlotField
+          canRemove={
+            imageSlots.length > 1 || Boolean(slot.existingUrl || slot.file)
+          }
+          index={index}
+          isPrimary={index === 0}
+          key={slot.id}
+          onFileChange={(file) => updateImageFile(slot.id, file)}
+          onRemove={() => removeImageSlot(slot.id)}
+          slot={slot}
+        />
       ))}
+
+      <Button
+        className="h-10 w-full border-dashed"
+        onClick={addImageSlot}
+        type="button"
+        variant="outline"
+      >
+        <PlusIcon data-icon="inline-start" />
+        画像を追加
+      </Button>
     </div>
   )
 }
 
+function ProductImageSlotField({
+  canRemove,
+  index,
+  isPrimary,
+  onFileChange,
+  onRemove,
+  slot,
+}: {
+  canRemove: boolean
+  index: number
+  isPrimary: boolean
+  onFileChange: (file: File) => void
+  onRemove: () => void
+  slot: ProductImageSlot
+}) {
+  const [isDragging, setIsDragging] = useState(false)
+  const inputId = `${slot.id}-file`
+  const displayImageUrl =
+    slot.previewUrl ??
+    (slot.existingUrl ? assetUrl(slot.existingUrl) : undefined)
+  const fileName = slot.file?.name ?? getImageFileName(slot.existingUrl)
+  const fileInfo = slot.file ? formatFileSize(slot.file.size) : '登録済み画像'
+
+  function handleFileChange(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.currentTarget.files?.[0]
+
+    if (file) {
+      onFileChange(file)
+    }
+
+    event.currentTarget.value = ''
+  }
+
+  function handleDrop(event: DragEvent<HTMLDivElement>) {
+    event.preventDefault()
+    setIsDragging(false)
+
+    const file = Array.from(event.dataTransfer.files).find((item) =>
+      item.type.startsWith('image/'),
+    )
+
+    if (file) {
+      onFileChange(file)
+    }
+  }
+
+  return (
+    <div className="grid min-w-0 gap-3 rounded-lg border bg-muted/35 p-3">
+      <div className="flex min-w-0 items-center justify-between gap-2">
+        <span className="flex min-w-0 items-center gap-2">
+          <span className={fieldLabelClassName}>画像 {index + 1}</span>
+          {isPrimary ? (
+            <Badge className="bg-primary/10 text-primary">メイン</Badge>
+          ) : null}
+        </span>
+
+        <Button
+          aria-hidden={!canRemove}
+          aria-label={`画像 ${index + 1} を削除`}
+          className={canRemove ? undefined : 'invisible'}
+          disabled={!canRemove}
+          onClick={onRemove}
+          size="icon"
+          tabIndex={canRemove ? undefined : -1}
+          type="button"
+          variant="ghost"
+        >
+          <Trash2Icon aria-hidden="true" />
+        </Button>
+      </div>
+
+      <div
+        className={[
+          'grid aspect-square min-w-0 place-items-center overflow-hidden rounded-lg border bg-background text-center outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
+          displayImageUrl ? 'border-input' : 'border-dashed border-input p-4',
+          isDragging ? 'border-primary bg-primary/5' : '',
+        ].join(' ')}
+        onDragLeave={() => setIsDragging(false)}
+        onDragOver={(event) => {
+          event.preventDefault()
+          event.dataTransfer.dropEffect = 'copy'
+          setIsDragging(true)
+        }}
+        onDrop={handleDrop}
+        tabIndex={0}
+      >
+        {displayImageUrl ? (
+          <img
+            alt=""
+            className="size-full object-cover"
+            src={displayImageUrl}
+          />
+        ) : (
+          <div className="grid justify-items-center gap-3 text-muted-foreground">
+            <ImageIcon aria-hidden="true" className="size-8" />
+            <div className="grid gap-1">
+              <span className="text-sm font-medium text-foreground">
+                ドラッグ&ドロップ
+              </span>
+              <span className="text-xs">またはファイルを選択</span>
+            </div>
+            <Button asChild className="h-9 px-3">
+              <label htmlFor={inputId}>
+                <UploadIcon data-icon="inline-start" />
+                ファイル選択
+              </label>
+            </Button>
+          </div>
+        )}
+      </div>
+
+      {displayImageUrl ? (
+        <div className="grid min-w-0 gap-2">
+          <div className="min-w-0">
+            <p className="truncate text-sm font-medium">{fileName}</p>
+            <p className="text-xs text-muted-foreground">{fileInfo}</p>
+          </div>
+
+          <Button asChild className="h-9 px-3" variant="outline">
+            <label htmlFor={inputId}>
+              <UploadIcon data-icon="inline-start" />
+              ファイル変更
+            </label>
+          </Button>
+        </div>
+      ) : null}
+
+      <input
+        accept="image/*"
+        className="sr-only"
+        id={inputId}
+        onChange={handleFileChange}
+        type="file"
+      />
+    </div>
+  )
+}
+
+function getImageFileName(imageUrl: string) {
+  const segments = imageUrl.split('/').filter(Boolean)
+  return segments[segments.length - 1] ?? '画像未選択'
+}
+
+function formatFileSize(size: number) {
+  if (size < 1024) {
+    return `${size} B`
+  }
+
+  if (size < 1024 * 1024) {
+    return `${Math.round(size / 1024)} KB`
+  }
+
+  return `${(size / 1024 / 1024).toFixed(1)} MB`
+}
+
 function PublishStateToggle({
   defaultPublished,
+  disabled = false,
 }: {
   defaultPublished: boolean
+  disabled?: boolean
 }) {
   const [isPublished, setIsPublished] = useState(defaultPublished)
 
   return (
     <button
       aria-checked={isPublished}
-      aria-label={isPublished ? '商品を非公開にする' : '商品を公開する'}
-      className="inline-flex h-11 w-full items-center justify-between rounded-lg border bg-background px-3 text-sm font-medium outline-none hover:bg-accent/55 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+      aria-label={
+        disabled
+          ? '商品は非公開です'
+          : isPublished
+            ? '商品を非公開にする'
+            : '商品を公開する'
+      }
+      className={[
+        'inline-flex h-11 w-full items-center justify-between rounded-lg border px-3 text-sm font-medium outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
+        disabled
+          ? 'cursor-not-allowed bg-muted/45 text-muted-foreground'
+          : 'bg-background hover:bg-accent/55',
+      ].join(' ')}
+      disabled={disabled}
       onClick={() => setIsPublished((current) => !current)}
       role="switch"
       type="button"
@@ -310,7 +549,11 @@ function PublishStateToggle({
         aria-hidden="true"
         className={[
           'relative h-6 w-11 rounded-full transition-colors',
-          isPublished ? 'bg-primary' : 'bg-muted-foreground/45',
+          disabled
+            ? 'bg-muted-foreground/25'
+            : isPublished
+              ? 'bg-primary'
+              : 'bg-muted-foreground/45',
         ].join(' ')}
       >
         <span
@@ -344,17 +587,126 @@ function SelectField({
   )
 }
 
-function SpecFields({ label, value }: { label?: string; value?: string }) {
+type ProductSpecSlot = {
+  id: string
+  label: string
+  value: string
+}
+
+function createSpecSlots(specs: Product['specs']): ProductSpecSlot[] {
+  const sourceSpecs = specs.length > 0 ? specs : [{ label: '', value: '' }]
+
+  return sourceSpecs.map((spec, index) => ({
+    id: `spec-${index}`,
+    label: spec.label,
+    value: spec.value,
+  }))
+}
+
+function createEmptySpecSlot(index: number): ProductSpecSlot {
+  return {
+    id: `spec-${index}`,
+    label: '',
+    value: '',
+  }
+}
+
+function ProductSpecsField({ specs }: { specs: Product['specs'] }) {
+  const [specSlots, setSpecSlots] = useState(() => createSpecSlots(specs))
+  const nextSlotIndex = useRef(specSlots.length)
+
+  function addSpecSlot() {
+    const nextIndex = nextSlotIndex.current
+    nextSlotIndex.current += 1
+
+    setSpecSlots((current) => [...current, createEmptySpecSlot(nextIndex)])
+  }
+
+  function removeSpecSlot(slotId: string) {
+    setSpecSlots((current) => {
+      const nextSlots = current.filter((slot) => slot.id !== slotId)
+
+      return nextSlots.length > 0 ? nextSlots : [createEmptySpecSlot(0)]
+    })
+  }
+
+  function updateSpecSlot(
+    slotId: string,
+    field: 'label' | 'value',
+    value: string,
+  ) {
+    setSpecSlots((current) =>
+      current.map((slot) =>
+        slot.id === slotId ? { ...slot, [field]: value } : slot,
+      ),
+    )
+  }
+
   return (
-    <div className="grid gap-3 sm:grid-cols-[minmax(160px,0.36fr)_minmax(0,1fr)]">
-      <label className={fieldWrapperClassName}>
-        <span className={fieldLabelClassName}>項目名</span>
-        <Input defaultValue={label} placeholder="ウエイト" type="text" />
-      </label>
-      <label className={fieldWrapperClassName}>
-        <span className={fieldLabelClassName}>内容</span>
-        <Input defaultValue={value} placeholder="2.1g" type="text" />
-      </label>
+    <div className="grid min-w-0 gap-3">
+      {specSlots.map((slot, index) => {
+        const canRemove =
+          specSlots.length > 1 || Boolean(slot.label || slot.value)
+
+        return (
+          <div
+            className="grid min-w-0 gap-3 rounded-lg border bg-muted/35 p-3"
+            key={slot.id}
+          >
+            <div className="flex min-w-0 items-center justify-between gap-2">
+              <span className={fieldLabelClassName}>スペック {index + 1}</span>
+
+              <Button
+                aria-hidden={!canRemove}
+                aria-label={`スペック ${index + 1} を削除`}
+                className={canRemove ? undefined : 'invisible'}
+                disabled={!canRemove}
+                onClick={() => removeSpecSlot(slot.id)}
+                size="icon"
+                tabIndex={canRemove ? undefined : -1}
+                type="button"
+                variant="ghost"
+              >
+                <Trash2Icon aria-hidden="true" />
+              </Button>
+            </div>
+
+            <div className="grid gap-3 sm:grid-cols-[minmax(160px,0.36fr)_minmax(0,1fr)]">
+              <label className={fieldWrapperClassName}>
+                <span className={fieldLabelClassName}>項目</span>
+                <Input
+                  onChange={(event) =>
+                    updateSpecSlot(slot.id, 'label', event.currentTarget.value)
+                  }
+                  type="text"
+                  value={slot.label}
+                />
+              </label>
+
+              <label className={fieldWrapperClassName}>
+                <span className={fieldLabelClassName}>値</span>
+                <Input
+                  onChange={(event) =>
+                    updateSpecSlot(slot.id, 'value', event.currentTarget.value)
+                  }
+                  type="text"
+                  value={slot.value}
+                />
+              </label>
+            </div>
+          </div>
+        )
+      })}
+
+      <Button
+        className="h-10 w-full border-dashed"
+        onClick={addSpecSlot}
+        type="button"
+        variant="outline"
+      >
+        <PlusIcon data-icon="inline-start" />
+        スペックを追加
+      </Button>
     </div>
   )
 }

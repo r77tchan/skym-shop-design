@@ -6,7 +6,7 @@ import {
   type CartProviderState,
 } from '@/lib/cart-context'
 import { getProductStock } from '@/lib/product-stock'
-import { products } from '@/lib/shop-content'
+import { storefrontProducts } from '@/lib/shop-content'
 
 type CartProviderProps = {
   children: ReactNode
@@ -22,7 +22,9 @@ const demoCartLineDefinitions = [
   { productId: 22, quantity: 1 },
   { productId: 12, quantity: 2 },
 ] as const satisfies readonly CartLineState[]
-const productById = new Map(products.map((product) => [product.id, product]))
+const productById = new Map(
+  storefrontProducts.map((product) => [product.id, product]),
+)
 
 export function CartProvider({ children }: CartProviderProps) {
   const [cartLineStates, setCartLineStates] = useState<CartLineState[]>([
@@ -157,7 +159,7 @@ export function CartProvider({ children }: CartProviderProps) {
 }
 
 function clampCartQuantity(
-  product: (typeof products)[number],
+  product: (typeof storefrontProducts)[number],
   quantity: number,
 ) {
   const stock = getProductStock(product)
@@ -169,6 +171,6 @@ function clampCartQuantity(
   return Math.min(Math.max(Math.trunc(quantity) || 1, 1), stock)
 }
 
-function getProductPriceNumber(product: (typeof products)[number]) {
+function getProductPriceNumber(product: (typeof storefrontProducts)[number]) {
   return Number(product.price.replace(/[^\d]/g, ''))
 }

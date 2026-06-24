@@ -21,9 +21,13 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { useCart } from '@/hooks/use-cart'
 import { assetUrl } from '@/lib/asset-url'
-import { isSoldOut } from '@/lib/product-status'
+import { getProductStatuses, isSoldOut } from '@/lib/product-status'
 import { getProductStockLabel } from '@/lib/product-stock'
-import { products, type Product } from '@/lib/shop-content'
+import {
+  getProductSpecRows,
+  storefrontProducts,
+  type Product,
+} from '@/lib/shop-content'
 import {
   backButtonClassName,
   sectionActionButtonClassName,
@@ -56,7 +60,9 @@ const serviceNotes = [
 
 export function ProductDetailPage() {
   const { productId } = useParams()
-  const product = products.find((item) => item.id === Number(productId))
+  const product = storefrontProducts.find(
+    (item) => item.id === Number(productId),
+  )
 
   if (!product) {
     return <Navigate replace to="/items" />
@@ -64,6 +70,7 @@ export function ProductDetailPage() {
 
   const soldOut = isSoldOut(product)
   const relatedProducts = getRelatedProducts(product)
+  const productSpecRows = getProductSpecRows(product)
 
   return (
     <main className="min-h-svh bg-background text-foreground">
@@ -136,7 +143,7 @@ export function ProductDetailPage() {
             <div className="rounded-lg border bg-card p-4">
               <p className="text-sm font-semibold">スペック</p>
               <dl className="mt-4 grid gap-3">
-                {product.specs.map((spec) => (
+                {productSpecRows.map((spec) => (
                   <div
                     className="grid grid-cols-[7.5rem_minmax(0,1fr)] gap-3 border-b pb-3 last:border-b-0 last:pb-0"
                     key={spec.label}
@@ -147,12 +154,6 @@ export function ProductDetailPage() {
                     <dd className="text-sm font-medium">{spec.value}</dd>
                   </div>
                 ))}
-                <div className="grid grid-cols-[7.5rem_minmax(0,1fr)] gap-3">
-                  <dt className="text-xs font-medium text-muted-foreground">
-                    ブランド
-                  </dt>
-                  <dd className="text-sm font-medium">{product.brand}</dd>
-                </div>
               </dl>
             </div>
           </div>
@@ -293,6 +294,7 @@ function ProductPurchasePanel({
   const canAddToCart = !soldOut && availableQuantity > 0
   const quantityOptions = getQuantityOptions(availableQuantity)
   const stockLabel = getProductStockLabel(product)
+  const productStatuses = getProductStatuses(product)
   const purchaseButtonLabel = getPurchaseButtonLabel(
     product.name,
     cartQuantity,
@@ -307,7 +309,7 @@ function ProductPurchasePanel({
   return (
     <div className="h-fit rounded-lg border bg-card p-5 lg:sticky lg:top-20">
       <div className="flex flex-wrap items-center gap-2">
-        <ProductStatusBadges statuses={product.statuses} />
+        <ProductStatusBadges statuses={productStatuses} />
         <Badge variant="outline">{product.category}</Badge>
       </div>
 
@@ -436,13 +438,13 @@ function SectionHeading({
 
 function getRelatedProducts(product: Product) {
   return [
-    ...products.filter(
+    ...storefrontProducts.filter(
       (item) =>
         item.id !== product.id &&
         item.category === product.category &&
         !isSoldOut(item),
     ),
-    ...products.filter(
+    ...storefrontProducts.filter(
       (item) =>
         item.id !== product.id &&
         item.category !== product.category &&

@@ -17,7 +17,7 @@ import { isOnSale, isSoldOut } from '@/lib/product-status'
 import {
   productBrands,
   productCategories,
-  products,
+  storefrontProducts,
   type Product,
 } from '@/lib/shop-content'
 import { cn } from '@/lib/utils'
@@ -37,7 +37,7 @@ const sortOptions: Array<{ label: string; value: SortValue }> = [
 ]
 
 const productOrderIndexes = new Map(
-  products.map((product, index) => [product.id, index]),
+  storefrontProducts.map((product, index) => [product.id, index]),
 )
 
 function getProductPriceNumber(product: Product) {
@@ -107,7 +107,7 @@ function matchesShopProductFilters(
 }
 
 function getFilteredProducts(filters: ShopProductFilterState) {
-  return products.filter((product) =>
+  return storefrontProducts.filter((product) =>
     matchesShopProductFilters(product, filters),
   )
 }
