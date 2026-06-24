@@ -80,6 +80,21 @@ export const productCategories = [
   'フック',
 ] as const
 
+export type ProductCategory = Exclude<
+  (typeof productCategories)[number],
+  '全て'
+>
+
+export const productCategoryItems = [
+  { label: 'スプーン', slug: 'spoons' },
+  { label: 'プラグ', slug: 'plugs' },
+  { label: 'ロッド＆リール', slug: 'rods-reels' },
+  { label: 'フック', slug: 'hooks' },
+] as const satisfies ReadonlyArray<{
+  label: ProductCategory
+  slug: string
+}>
+
 export const productBrands = [
   'VELVET ARTS',
   'ValkeIN',
@@ -93,10 +108,6 @@ export const productBrands = [
 ] as const
 
 export type ProductStatus = 'SOLD OUT' | 'SALE' | 'NEW'
-export type ProductCategory = Exclude<
-  (typeof productCategories)[number],
-  '全て'
->
 export type ProductBrand = (typeof productBrands)[number]
 
 export type ProductSale = {
@@ -765,6 +776,20 @@ export function getProductSpecRows(product: Product) {
   ]
 }
 
+export function getProductCategoryItem(category: ProductCategory) {
+  return productCategoryItems.find((item) => item.label === category)
+}
+
+export function getProductCategoryItemBySlug(slug: string) {
+  return productCategoryItems.find((item) => item.slug === slug)
+}
+
+export function getProductCategoryPath(category?: ProductCategory) {
+  const categoryItem = category ? getProductCategoryItem(category) : undefined
+
+  return categoryItem ? `/items/${categoryItem.slug}` : '/items'
+}
+
 export function getProductPath(product: Product) {
-  return `/items/${product.id}`
+  return `/item/${product.id}`
 }

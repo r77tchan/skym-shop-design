@@ -18,9 +18,11 @@ import { cn } from '@/lib/utils'
 type ProductCardTitleElement = 'h2' | 'h3' | 'p'
 
 export function ProductCard({
+  detailState,
   product,
   titleElement: Title = 'h2',
 }: {
+  detailState?: { fromProductList?: boolean }
   product: Product
   titleElement?: ProductCardTitleElement
 }) {
@@ -39,6 +41,7 @@ export function ProductCard({
         <Link
           aria-label={`${product.name}の商品プレビュー`}
           className="grid min-w-0 gap-3 rounded-md focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none"
+          state={detailState}
           to={getProductPath(product)}
         >
           <div className="relative aspect-[3/4] overflow-hidden rounded-lg border bg-muted group-hover:border-primary/40">
@@ -60,19 +63,14 @@ export function ProductCard({
           </div>
 
           <div className="min-w-0">
-            <div className="flex items-center justify-between gap-2">
-              <p
-                className={cn(
-                  'truncate text-xs font-medium text-muted-foreground',
-                  interactiveCardMutedTextClassName,
-                )}
-              >
-                {product.brand}
-              </p>
-              <span className="shrink-0 rounded-md bg-muted px-1.5 py-0.5 text-[0.68rem] leading-4 font-medium text-muted-foreground">
-                {product.category}
-              </span>
-            </div>
+            <p
+              className={cn(
+                'truncate text-xs font-medium text-muted-foreground',
+                interactiveCardMutedTextClassName,
+              )}
+            >
+              {product.brand}
+            </p>
             <Title
               className={cn(
                 'mt-1 [display:-webkit-box] min-h-10 overflow-hidden text-sm leading-5 font-semibold [-webkit-box-orient:vertical] [-webkit-line-clamp:2]',

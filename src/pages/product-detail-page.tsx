@@ -7,8 +7,14 @@ import {
   ShoppingCartIcon,
   TruckIcon,
 } from 'lucide-react'
-import { useState } from 'react'
-import { Link, Navigate, useParams } from 'react-router'
+import { useState, type MouseEvent } from 'react'
+import {
+  Link,
+  Navigate,
+  useLocation,
+  useNavigate,
+  useParams,
+} from 'react-router'
 
 import { CartQuantityBadge } from '@/components/cart-quantity-badge'
 import { FavoriteToggleButton } from '@/components/favorite-toggle-button'
@@ -25,6 +31,7 @@ import { getProductStatuses, isSoldOut } from '@/lib/product-status'
 import { getProductStockLabel } from '@/lib/product-stock'
 import {
   getProductSpecRows,
+  getProductCategoryPath,
   storefrontProducts,
   type Product,
 } from '@/lib/shop-content'
@@ -60,6 +67,8 @@ const serviceNotes = [
 
 export function ProductDetailPage() {
   const { productId } = useParams()
+  const location = useLocation()
+  const navigate = useNavigate()
   const product = storefrontProducts.find(
     (item) => item.id === Number(productId),
   )
@@ -70,7 +79,16 @@ export function ProductDetailPage() {
 
   const soldOut = isSoldOut(product)
   const relatedProducts = getRelatedProducts(product)
+  const categoryPath = getProductCategoryPath(product.category)
   const productSpecRows = getProductSpecRows(product)
+  const locationState = location.state as { fromProductList?: boolean } | null
+
+  function handleBackClick(event: MouseEvent<HTMLAnchorElement>) {
+    if (locationState?.fromProductList && window.history.length > 1) {
+      event.preventDefault()
+      navigate(-1)
+    }
+  }
 
   return (
     <main className="min-h-svh bg-background text-foreground">
@@ -101,11 +119,20 @@ export function ProductDetailPage() {
               <span aria-hidden="true" className="text-border">
                 /
               </span>
-              <span className="text-foreground">商品詳細</span>
+              <Link
+                className="underline decoration-foreground/35 underline-offset-4 hover:text-foreground hover:decoration-foreground"
+                to={categoryPath}
+              >
+                {product.category}
+              </Link>
+              <span aria-hidden="true" className="text-border">
+                /
+              </span>
+              <span className="text-foreground">{product.name}</span>
             </nav>
 
             <Button asChild className={backButtonClassName} variant="ghost">
-              <Link to="/items">
+              <Link onClick={handleBackClick} to={categoryPath}>
                 <ArrowLeftIcon data-icon="inline-start" />
                 Back
               </Link>

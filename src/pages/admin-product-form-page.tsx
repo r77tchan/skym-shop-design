@@ -28,6 +28,7 @@ import { getProductStatuses } from '@/lib/product-status'
 import { getProductStock } from '@/lib/product-stock'
 import {
   getEditableProductSpecs,
+  getProductPath,
   isProductPublished,
   productBrands,
   productCategories,
@@ -100,7 +101,7 @@ function AdminProductFormPage({
             <div className="flex flex-wrap items-center justify-end gap-2">
               {!isNew && product && isPublished ? (
                 <Button asChild className="h-10 px-3" variant="outline">
-                  <Link to={`/items/${product.id}`}>
+                  <Link to={getProductPath(product)}>
                     <ExternalLinkIcon data-icon="inline-start" />
                     ストア表示
                   </Link>

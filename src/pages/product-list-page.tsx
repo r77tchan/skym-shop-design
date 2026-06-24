@@ -1,12 +1,12 @@
 import {
-  ArrowUpDownIcon,
+  ArrowRightIcon,
   ChevronDownIcon,
+  CheckIcon,
   RotateCcwIcon,
   SearchIcon,
-  SlidersHorizontalIcon,
 } from 'lucide-react'
-import { useState } from 'react'
-import { Link } from 'react-router'
+import { useState, type MouseEvent } from 'react'
+import { Link, Navigate, useParams, useSearchParams } from 'react-router'
 
 import { ProductCard } from '@/components/product-card'
 import { SiteFooter } from '@/components/site-footer'
@@ -15,34 +15,26 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { isOnSale, isSoldOut } from '@/lib/product-status'
 import {
+  getProductCategoryItemBySlug,
+  getProductCategoryPath,
   productBrands,
-  productCategories,
+  productCategoryItems,
   storefrontProducts,
   type Product,
+  type ProductCategory,
 } from '@/lib/shop-content'
 import { cn } from '@/lib/utils'
 
 const allFilterLabel = '全て'
+const productPageSize = 12
 
 type StatusFilterValue = 'all' | 'sale'
-type CategoryFilterValue = (typeof productCategories)[number]
+type CategoryFilterValue = typeof allFilterLabel | ProductCategory
 type BrandFilterValue = typeof allFilterLabel | (typeof productBrands)[number]
-
-type SortValue = 'new' | 'price-asc' | 'price-desc'
-
-const sortOptions: Array<{ label: string; value: SortValue }> = [
-  { label: '新着順', value: 'new' },
-  { label: '価格の安い順', value: 'price-asc' },
-  { label: '価格の高い順', value: 'price-desc' },
-]
 
 const productOrderIndexes = new Map(
   storefrontProducts.map((product, index) => [product.id, index]),
 )
-
-function getProductPriceNumber(product: Product) {
-  return Number(product.price.replace(/[^\d]/g, ''))
-}
 
 function compareOriginalOrder(a: Product, b: Product) {
   return (
@@ -50,26 +42,12 @@ function compareOriginalOrder(a: Product, b: Product) {
   )
 }
 
-function compareProducts(a: Product, b: Product, sortValue: SortValue) {
+function compareProducts(a: Product, b: Product) {
   const aSoldOut = isSoldOut(a)
   const bSoldOut = isSoldOut(b)
 
   if (aSoldOut !== bSoldOut) {
     return aSoldOut ? 1 : -1
-  }
-
-  if (sortValue === 'price-asc') {
-    return (
-      getProductPriceNumber(a) - getProductPriceNumber(b) ||
-      compareOriginalOrder(a, b)
-    )
-  }
-
-  if (sortValue === 'price-desc') {
-    return (
-      getProductPriceNumber(b) - getProductPriceNumber(a) ||
-      compareOriginalOrder(a, b)
-    )
   }
 
   return compareOriginalOrder(a, b)
@@ -78,7 +56,12 @@ function compareProducts(a: Product, b: Product, sortValue: SortValue) {
 type ShopProductFilterState = {
   brandFilter: BrandFilterValue
   categoryFilter: CategoryFilterValue
+  searchValue: string
   statusFilterValue: StatusFilterValue
+}
+
+function normalizeSearchText(value: string) {
+  return value.trim().toLocaleLowerCase('ja-JP')
 }
 
 function matchesShopProductFilters(
@@ -103,6 +86,20 @@ function matchesShopProductFilters(
     return false
   }
 
+  const searchText = normalizeSearchText(filters.searchValue)
+
+  if (searchText) {
+    const searchableText = normalizeSearchText(
+      [product.name, product.brand, product.category, product.summary].join(
+        ' ',
+      ),
+    )
+
+    if (!searchableText.includes(searchText)) {
+      return false
+    }
+  }
+
   return true
 }
 
@@ -112,27 +109,69 @@ function getFilteredProducts(filters: ShopProductFilterState) {
   )
 }
 
-function getVisibleProducts(
-  filters: ShopProductFilterState,
-  sortValue: SortValue,
-) {
+function getVisibleProducts(filters: ShopProductFilterState) {
   const filteredProducts = getFilteredProducts(filters)
-  return [...filteredProducts].sort((a, b) => compareProducts(a, b, sortValue))
+  return [...filteredProducts].sort(compareProducts)
+}
+
+function getPageNumber(pageValue: string | null) {
+  const pageNumber = Number(pageValue)
+
+  return Number.isInteger(pageNumber) && pageNumber > 0 ? pageNumber : 1
+}
+
+function getPagePath(basePath: string, pageNumber: number) {
+  return pageNumber <= 1 ? basePath : `${basePath}?page=${pageNumber}`
 }
 
 export function ProductListPage() {
+  const { categorySlug } = useParams()
+  const [searchParams] = useSearchParams()
+
+  return (
+    <ProductListContent
+      categorySlug={categorySlug}
+      key={categorySlug ?? 'all'}
+      searchParams={searchParams}
+    />
+  )
+}
+
+function ProductListContent({
+  categorySlug,
+  searchParams,
+}: {
+  categorySlug?: string
+  searchParams: URLSearchParams
+}) {
   const [brandFilter, setBrandFilter] =
     useState<BrandFilterValue>(allFilterLabel)
-  const [categoryFilter, setCategoryFilter] =
-    useState<CategoryFilterValue>(allFilterLabel)
-  const [sortValue, setSortValue] = useState<SortValue>('new')
+  const [searchValue, setSearchValue] = useState('')
   const [statusFilterValue, setStatusFilterValue] =
     useState<StatusFilterValue>('all')
+  const [loadMoreState, setLoadMoreState] = useState({ count: 1, key: '' })
+  const activeCategoryItem = categorySlug
+    ? getProductCategoryItemBySlug(categorySlug)
+    : undefined
+  const hasUnknownCategory = Boolean(categorySlug && !activeCategoryItem)
+  const categoryFilter = activeCategoryItem?.label ?? allFilterLabel
+  const categoryPath = getProductCategoryPath(activeCategoryItem?.label)
+  const requestedPageNumber = getPageNumber(searchParams.get('page'))
   const currentFilters = {
     brandFilter,
     categoryFilter,
+    searchValue,
     statusFilterValue,
   } satisfies ShopProductFilterState
+  const loadMoreKey = [
+    brandFilter,
+    categoryFilter,
+    requestedPageNumber,
+    searchValue,
+    statusFilterValue,
+  ].join('|')
+  const loadedPageCount =
+    loadMoreState.key === loadMoreKey ? loadMoreState.count : 1
   const getFilterCount = (filters: Partial<ShopProductFilterState> = {}) =>
     getFilteredProducts({ ...currentFilters, ...filters }).length
   const statusFilterOptions = [
@@ -151,32 +190,84 @@ export function ProductListPage() {
     value: StatusFilterValue
     count: number
   }>
-  const categoryFilterItems = productCategories.map((category) => ({
-    label: category,
-    value: category,
-    count: getFilterCount({ categoryFilter: category }),
-  })) satisfies ReadonlyArray<{
+  const categoryNavItems = [
+    {
+      label: allFilterLabel,
+      path: '/items',
+      value: allFilterLabel,
+    },
+    ...productCategoryItems.map((category) => ({
+      label: category.label,
+      path: getProductCategoryPath(category.label),
+      value: category.label,
+    })),
+  ] satisfies ReadonlyArray<{
     label: string
+    path: string
     value: CategoryFilterValue
-    count: number
   }>
   const brandFilterItems = [
     {
       label: allFilterLabel,
       value: allFilterLabel,
-      count: getFilterCount({ brandFilter: allFilterLabel }),
+      count: getFilteredProducts({
+        brandFilter: allFilterLabel,
+        categoryFilter,
+        searchValue,
+        statusFilterValue,
+      }).length,
     },
-    ...productBrands.map((brand) => ({
-      label: brand,
-      value: brand,
-      count: getFilterCount({ brandFilter: brand }),
-    })),
+    ...productBrands.flatMap((brand) => {
+      const categoryBrandCount = getFilteredProducts({
+        brandFilter: brand,
+        categoryFilter,
+        searchValue: '',
+        statusFilterValue: 'all',
+      }).length
+      const count = getFilteredProducts({
+        brandFilter: brand,
+        categoryFilter,
+        searchValue,
+        statusFilterValue,
+      }).length
+
+      if (categoryBrandCount === 0) {
+        return []
+      }
+
+      return [
+        {
+          label: brand,
+          value: brand,
+          count,
+        },
+      ]
+    }),
   ] satisfies ReadonlyArray<{
     label: string
     value: BrandFilterValue
     count: number
   }>
-  const visibleProducts = getVisibleProducts(currentFilters, sortValue)
+  const visibleProducts = getVisibleProducts(currentFilters)
+  const pageCount = Math.max(
+    Math.ceil(visibleProducts.length / productPageSize),
+    1,
+  )
+  const currentPageNumber = Math.min(requestedPageNumber, pageCount)
+  const firstProductIndex = (currentPageNumber - 1) * productPageSize
+  const displayedProductCount = Math.min(
+    firstProductIndex + loadedPageCount * productPageSize,
+    visibleProducts.length,
+  )
+  const displayedProducts = visibleProducts.slice(
+    firstProductIndex,
+    displayedProductCount,
+  )
+  const hasNextPage = displayedProductCount < visibleProducts.length
+  const nextPagePath = getPagePath(
+    categoryPath,
+    currentPageNumber + loadedPageCount,
+  )
   const purchasableProductCount = visibleProducts.filter(
     (product) => !isSoldOut(product),
   ).length
@@ -185,9 +276,23 @@ export function ProductListPage() {
   ).length
   const handleResetFilters = () => {
     setBrandFilter(allFilterLabel)
-    setCategoryFilter(allFilterLabel)
-    setSortValue('new')
+    setSearchValue('')
     setStatusFilterValue('all')
+  }
+  const handleLoadMoreClick = (event: MouseEvent<HTMLAnchorElement>) => {
+    event.preventDefault()
+    setLoadMoreState((current) => {
+      const currentCount = current.key === loadMoreKey ? current.count : 1
+
+      return {
+        count: Math.min(currentCount + 1, pageCount),
+        key: loadMoreKey,
+      }
+    })
+  }
+
+  if (hasUnknownCategory) {
+    return <Navigate replace to="/items" />
   }
 
   return (
@@ -224,54 +329,54 @@ export function ProductListPage() {
         </div>
       </section>
 
+      <ProductCategoryNav
+        activeValue={categoryFilter}
+        items={categoryNavItems}
+      />
+
       <section className="border-b bg-background">
-        <div className="mx-auto grid max-w-7xl gap-4 px-gutter py-4">
-          <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_auto]">
-            <label className="relative block min-w-0">
-              <SearchIcon
-                aria-hidden="true"
-                className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground"
-              />
-              <Input
-                aria-label="商品検索"
-                className="bg-card pr-3 pl-10"
-                placeholder="商品名・ブランドで検索"
-                type="search"
-              />
+        <div className="mx-auto max-w-7xl px-gutter py-5 lg:py-6">
+          <div className="flex flex-col gap-3 lg:flex-row lg:flex-wrap lg:items-end">
+            <label className="grid min-w-0 gap-1.5 lg:w-[min(32rem,40vw)]">
+              <span className="text-xs font-medium text-muted-foreground">
+                キーワード
+              </span>
+              <span className="relative block min-w-0">
+                <SearchIcon
+                  aria-hidden="true"
+                  className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground"
+                />
+                <Input
+                  aria-label="商品検索"
+                  className="bg-card pr-3 pl-10"
+                  onChange={(event) =>
+                    setSearchValue(event.currentTarget.value)
+                  }
+                  placeholder="商品名で検索"
+                  type="search"
+                  value={searchValue}
+                />
+              </span>
             </label>
 
-            <SortSelect onChange={setSortValue} value={sortValue} />
-          </div>
+            <FilterSelect
+              className="lg:w-52"
+              items={brandFilterItems}
+              label="ブランド"
+              onChange={setBrandFilter}
+              value={brandFilter}
+            />
 
-          <div className="grid gap-3">
-            <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(320px,420px)] lg:items-end">
-              <div className="min-w-0">
-                <ProductStatusFilter
-                  options={statusFilterOptions}
-                  onChange={setStatusFilterValue}
-                  value={statusFilterValue}
-                />
-              </div>
+            <ProductStatusFilter
+              options={statusFilterOptions}
+              onChange={setStatusFilterValue}
+              value={statusFilterValue}
+            />
 
-              <div className="grid gap-2 sm:grid-cols-2">
-                <FilterSelect
-                  items={categoryFilterItems}
-                  label="カテゴリー"
-                  onChange={setCategoryFilter}
-                  value={categoryFilter}
-                />
-                <FilterSelect
-                  items={brandFilterItems}
-                  label="ブランド"
-                  onChange={setBrandFilter}
-                  value={brandFilter}
-                />
-              </div>
-            </div>
-            <div className="flex justify-end">
+            <div className="flex justify-end lg:justify-start">
               <Button
+                className="h-11 px-4 text-sm"
                 onClick={handleResetFilters}
-                size="sm"
                 type="button"
                 variant="outline"
               >
@@ -288,18 +393,26 @@ export function ProductListPage() {
           <div className="grid content-start gap-5">
             <div className="flex flex-col gap-3 border-b pb-4 sm:flex-row sm:items-center sm:justify-between">
               <div>
-                <p className="text-sm font-semibold">全ての商品</p>
+                <p className="text-sm font-semibold">
+                  {categoryFilter === allFilterLabel
+                    ? '全ての商品'
+                    : `${categoryFilter}の商品`}
+                </p>
                 <p className="mt-1 text-xs text-muted-foreground">
-                  購入可能な商品 {purchasableProductCount}件 / SOLD OUT{' '}
+                  購入可能 {purchasableProductCount}件 / SOLD OUT{' '}
                   {soldOutProductCount}件
                 </p>
               </div>
             </div>
 
-            {visibleProducts.length > 0 ? (
+            {displayedProducts.length > 0 ? (
               <div className="grid grid-cols-[repeat(auto-fill,minmax(min(10rem,100%),1fr))] gap-x-4 gap-y-7 sm:grid-cols-3 sm:gap-x-5 sm:gap-y-8 lg:grid-cols-4 xl:grid-cols-5 xl:gap-x-6">
-                {visibleProducts.map((product) => (
-                  <ProductCard key={product.id} product={product} />
+                {displayedProducts.map((product) => (
+                  <ProductCard
+                    detailState={{ fromProductList: true }}
+                    key={product.id}
+                    product={product}
+                  />
                 ))}
               </div>
             ) : (
@@ -313,6 +426,13 @@ export function ProductListPage() {
               </div>
             )}
 
+            <ProductListLoadMore
+              hasNextPage={hasNextPage}
+              nextPagePath={nextPagePath}
+              onLoadMoreClick={handleLoadMoreClick}
+              productCount={visibleProducts.length}
+            />
+
             <div className="border-t pt-6">
               <p className="text-xs text-muted-foreground">
                 表示価格には消費税が含まれています。別途送料がかかります。
@@ -324,6 +444,86 @@ export function ProductListPage() {
 
       <SiteFooter />
     </main>
+  )
+}
+
+function ProductCategoryNav({
+  activeValue,
+  items,
+}: {
+  activeValue: CategoryFilterValue
+  items: ReadonlyArray<{
+    label: string
+    path: string
+    value: CategoryFilterValue
+  }>
+}) {
+  return (
+    <section className="border-b bg-background" aria-label="商品カテゴリー">
+      <div className="mx-auto max-w-7xl px-gutter">
+        <nav
+          aria-label="商品カテゴリー"
+          className="-mb-px flex min-w-0 gap-2 overflow-x-auto"
+        >
+          {items.map((item) => {
+            const active = item.value === activeValue
+
+            return (
+              <Link
+                aria-current={active ? 'page' : undefined}
+                className={cn(
+                  'inline-flex min-h-14 shrink-0 items-center border-b-2 px-3 text-sm font-semibold whitespace-nowrap transition-colors sm:min-h-16 sm:px-4 sm:text-base',
+                  active
+                    ? 'border-primary text-foreground'
+                    : 'border-transparent text-muted-foreground hover:border-border hover:text-foreground',
+                )}
+                key={item.value}
+                to={item.path}
+              >
+                <span>{item.label}</span>
+              </Link>
+            )
+          })}
+        </nav>
+      </div>
+    </section>
+  )
+}
+
+function ProductListLoadMore({
+  hasNextPage,
+  nextPagePath,
+  onLoadMoreClick,
+  productCount,
+}: {
+  hasNextPage: boolean
+  nextPagePath: string
+  onLoadMoreClick: (event: MouseEvent<HTMLAnchorElement>) => void
+  productCount: number
+}) {
+  if (productCount === 0) {
+    return null
+  }
+
+  return (
+    <nav
+      aria-label="商品一覧の追加表示"
+      className="flex justify-center border-t pt-6"
+    >
+      {hasNextPage ? (
+        <Button asChild className="h-11 min-w-44 px-5">
+          <Link onClick={onLoadMoreClick} to={nextPagePath}>
+            さらに表示
+            <ArrowRightIcon data-icon="inline-end" />
+          </Link>
+        </Button>
+      ) : (
+        <div className="inline-flex min-h-11 min-w-44 items-center justify-center gap-2 rounded-lg border bg-muted/40 px-5 text-sm font-semibold text-muted-foreground">
+          <CheckIcon aria-hidden="true" className="size-4" />
+          すべての商品を表示しました
+        </div>
+      )}
+    </nav>
   )
 }
 
@@ -342,13 +542,10 @@ function ProductStatusFilter({
 }) {
   return (
     <div className="grid min-w-0 gap-1.5">
-      <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
-        <SlidersHorizontalIcon aria-hidden="true" className="size-4" />
-        絞り込み
-      </div>
+      <div className="text-xs font-medium text-muted-foreground">セール</div>
       <div
-        aria-label="絞り込み"
-        className="flex w-fit max-w-full rounded-lg border bg-card p-1"
+        aria-label="セール"
+        className="flex h-11 w-fit max-w-full rounded-lg border bg-card p-1"
         role="group"
       >
         {options.map((option) => {
@@ -358,7 +555,7 @@ function ProductStatusFilter({
             <button
               aria-pressed={active ? 'true' : 'false'}
               className={cn(
-                'inline-flex h-7 min-w-16 items-center justify-center gap-1 rounded-md px-2 text-xs font-medium whitespace-nowrap',
+                'inline-flex h-full min-w-20 items-center justify-center gap-1.5 rounded-md px-3 text-sm font-medium whitespace-nowrap',
                 active
                   ? 'bg-primary text-primary-foreground'
                   : 'text-muted-foreground hover:bg-accent/55 hover:text-foreground',
@@ -387,23 +584,25 @@ function ProductStatusFilter({
 }
 
 function FilterSelect<TValue extends string>({
+  className,
   items,
   label,
   onChange,
   value,
 }: {
+  className?: string
   items: ReadonlyArray<{ label: string; value: TValue; count: number }>
   label: string
   onChange: (value: TValue) => void
   value: TValue
 }) {
   return (
-    <label className="grid min-w-0 gap-1.5">
+    <label className={cn('grid min-w-0 gap-1.5', className)}>
       <span className="text-xs font-medium text-muted-foreground">{label}</span>
       <span className="relative">
         <select
           aria-label={label}
-          className="h-10 w-full cursor-pointer appearance-none rounded-lg border bg-card px-3 pr-9 text-sm font-medium outline-none hover:bg-accent/55 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+          className="h-11 w-full cursor-pointer appearance-none rounded-lg border bg-card px-3 pr-9 text-sm font-medium outline-none hover:bg-accent/55 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
           onChange={(event) => onChange(event.target.value as TValue)}
           value={value}
         >
@@ -418,40 +617,6 @@ function FilterSelect<TValue extends string>({
           className="pointer-events-none absolute top-1/2 right-3 size-4 -translate-y-1/2 text-muted-foreground"
         />
       </span>
-    </label>
-  )
-}
-
-function SortSelect({
-  onChange,
-  value,
-}: {
-  onChange: (value: SortValue) => void
-  value: SortValue
-}) {
-  return (
-    <label className="relative block min-w-0 lg:w-44">
-      <span className="sr-only">並び替え</span>
-      <ArrowUpDownIcon
-        aria-hidden="true"
-        className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground"
-      />
-      <select
-        aria-label="並び替え"
-        className="h-11 w-full cursor-pointer appearance-none rounded-lg border bg-card pr-9 pl-10 text-sm font-medium outline-none hover:bg-accent/55 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-        onChange={(event) => onChange(event.target.value as SortValue)}
-        value={value}
-      >
-        {sortOptions.map((option) => (
-          <option key={option.value} value={option.value}>
-            {option.label}
-          </option>
-        ))}
-      </select>
-      <ChevronDownIcon
-        aria-hidden="true"
-        className="pointer-events-none absolute top-1/2 right-3 size-4 -translate-y-1/2 text-muted-foreground"
-      />
     </label>
   )
 }

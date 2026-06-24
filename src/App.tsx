@@ -28,7 +28,8 @@ export function App() {
     <Routes>
       <Route element={<HomePage />} path="/" />
       <Route element={<ProductListPage />} path="/items" />
-      <Route element={<ProductDetailPage />} path="/items/:productId" />
+      <Route element={<ProductListPage />} path="/items/:categorySlug" />
+      <Route element={<ProductDetailPage />} path="/item/:productId" />
       <Route element={<NewsPage />} path="/news" />
       <Route element={<NewsDetailPage />} path="/news/:newsId" />
       <Route element={<ContactPage />} path="/contact" />
