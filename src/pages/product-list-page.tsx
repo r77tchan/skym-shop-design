@@ -296,14 +296,14 @@ function ProductListContent({
   }
 
   return (
-    <main className="min-h-svh bg-background text-foreground">
+    <main className="flex min-h-svh flex-col bg-background text-foreground">
       <SiteHeader />
 
       <section className="border-b bg-muted/35 pt-20">
         <div className="mx-auto grid max-w-7xl gap-6 px-gutter py-10 sm:py-12">
           <nav
             aria-label="パンくず"
-            className="flex items-center gap-2 text-xs font-medium text-muted-foreground"
+            className="flex flex-wrap items-center gap-2 text-xs font-medium text-muted-foreground"
           >
             <Link
               className="underline decoration-foreground/35 underline-offset-4 hover:text-foreground hover:decoration-foreground"
@@ -314,7 +314,22 @@ function ProductListContent({
             <span aria-hidden="true" className="text-border">
               /
             </span>
-            <span className="text-foreground">商品一覧</span>
+            {categoryFilter === allFilterLabel ? (
+              <span className="text-foreground">商品一覧</span>
+            ) : (
+              <>
+                <Link
+                  className="underline decoration-foreground/35 underline-offset-4 hover:text-foreground hover:decoration-foreground"
+                  to="/items"
+                >
+                  商品一覧
+                </Link>
+                <span aria-hidden="true" className="text-border">
+                  /
+                </span>
+                <span className="text-foreground">{categoryFilter}</span>
+              </>
+            )}
           </nav>
 
           <div className="max-w-3xl">
@@ -478,6 +493,8 @@ function ProductCategoryNav({
                     : 'border-transparent text-muted-foreground hover:border-border hover:text-foreground',
                 )}
                 key={item.value}
+                preventScrollReset
+                state={{ preserveScroll: true }}
                 to={item.path}
               >
                 <span>{item.label}</span>

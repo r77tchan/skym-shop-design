@@ -8,7 +8,7 @@ const footerLinkClassName =
 
 export function SiteFooter() {
   return (
-    <footer className="border-t border-footer-border bg-footer text-footer-foreground">
+    <footer className="mt-auto border-t border-footer-border bg-footer text-footer-foreground">
       <div className="mx-auto grid max-w-7xl gap-section px-gutter py-section md:grid-cols-[minmax(0,1fr)_repeat(3,minmax(140px,180px))]">
         <div>
           <Link

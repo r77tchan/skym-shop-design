@@ -91,7 +91,7 @@ export function ProductDetailPage() {
   }
 
   return (
-    <main className="min-h-svh bg-background text-foreground">
+    <main className="flex min-h-svh flex-col bg-background text-foreground">
       <SiteHeader />
 
       <article>

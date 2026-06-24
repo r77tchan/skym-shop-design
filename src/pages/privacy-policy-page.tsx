@@ -86,7 +86,7 @@ const externalLinkClassName =
 
 export function PrivacyPolicyPage() {
   return (
-    <main className="min-h-svh bg-background text-foreground">
+    <main className="flex min-h-svh flex-col bg-background text-foreground">
       <SiteHeader />
 
       <section className="border-b bg-muted/35 pt-20">
