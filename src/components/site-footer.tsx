@@ -1,5 +1,6 @@
 import { Link } from 'react-router'
 
+import { ThemeToggle } from '@/components/theme-toggle'
 import { assetUrl } from '@/lib/asset-url'
 import { companyName, companyUrl, shopDescription } from '@/lib/shop-content'
 
@@ -40,6 +41,16 @@ export function SiteFooter() {
             </a>
             {shopDescription.slice(companyName.length)}
           </p>
+          <div className="mt-5">
+            <p className="text-sm font-semibold text-footer-foreground">
+              THEME
+            </p>
+            <ThemeToggle
+              activeButtonClassName="bg-footer-foreground text-footer hover:bg-footer-foreground hover:text-footer"
+              buttonClassName="text-footer-muted hover:bg-white/10 hover:text-footer-foreground focus-visible:border-footer-foreground/40 focus-visible:ring-footer-foreground/30"
+              className="mt-2 border-footer-border bg-white/8 text-footer-muted"
+            />
+          </div>
         </div>
         <FooterColumn
           items={[

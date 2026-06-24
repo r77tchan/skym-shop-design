@@ -3,7 +3,6 @@ import { Link } from 'react-router'
 
 import { CartDrawer } from '@/components/cart-drawer'
 import { FavoritesDrawer } from '@/components/favorites-drawer'
-import { ThemeToggle } from '@/components/theme-toggle'
 import { assetUrl } from '@/lib/asset-url'
 import { cn } from '@/lib/utils'
 
@@ -107,11 +106,6 @@ export function SiteHeader({
         </Link>
 
         <div className="flex items-center gap-2">
-          <ThemeToggle
-            activeButtonClassName="header-control-button--active"
-            buttonClassName="header-control-button"
-            className="header-control-group"
-          />
           <FavoritesDrawer buttonClassName="header-control-button size-[38px]" />
           <CartDrawer buttonClassName="header-control-button size-[38px]" />
         </div>
