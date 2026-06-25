@@ -3,208 +3,187 @@ import {
   PencilIcon,
   RotateCcwIcon,
   SearchIcon,
-  SlidersHorizontalIcon,
+  XIcon,
 } from 'lucide-react'
-import { useState } from 'react'
+import { Dialog } from 'radix-ui'
+import { useState, type ReactNode } from 'react'
+import { Link } from 'react-router'
 
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import {
+  getAdminInquiryRows,
+  getAdminInquiryStatusClassName,
+  type AdminInquiryRow,
+  type AdminInquiryStatus,
+} from '@/lib/admin-inquiries'
 import { cn } from '@/lib/utils'
-
-type AdminInquiryStatus = '未対応' | '対応中' | '対応済み'
-
-type AdminInquiry = {
-  id: number
-  status: AdminInquiryStatus
-  name: string
-  email: string
-  category: string
-  subject: string
-  summary: string
-  receivedAt: string
-}
 
 type InquiryStatusFilterValue = 'all' | AdminInquiryStatus
 
-const adminInquiries: AdminInquiry[] = [
-  {
-    id: 3088,
-    status: '未対応',
-    name: '田中 瑞希',
-    email: 'mizuki.tanaka@gmail.com',
-    category: '注文・配送',
-    subject: '発送予定日の確認',
-    summary:
-      '本日注文したフォルテ 2.1g ほか2点の発送予定と追跡番号の反映タイミングを確認したい。',
-    receivedAt: '2026/06/20 11:24',
-  },
-  {
-    id: 3087,
-    status: '対応中',
-    name: '佐藤 陽翔',
-    email: 'haruto.sato@gmail.com',
-    category: '商品',
-    subject: '限定カラーの再入荷予定',
-    summary:
-      'ドリフトスピン限定カラーの別カラー再入荷があるか、入荷通知を受け取れるか確認したい。',
-    receivedAt: '2026/06/20 10:08',
-  },
-  {
-    id: 3086,
-    status: '未対応',
-    name: '中村 葵',
-    email: 'aoi.nakamura@gmail.com',
-    category: '返品・交換',
-    subject: '返金処理の進行状況',
-    summary:
-      '返金処理中の注文について、返金反映予定日と担当者確認の状況を知りたい。',
-    receivedAt: '2026/06/19 18:52',
-  },
-  {
-    id: 3085,
-    status: '対応済み',
-    name: '小林 結衣',
-    email: 'yui.kobayashi@gmail.com',
-    category: '注文・配送',
-    subject: 'ネコポス追跡番号について',
-    summary:
-      '発送済みメールに記載された追跡番号が配送会社側でまだ反映されていない。',
-    receivedAt: '2026/06/19 15:31',
-  },
-  {
-    id: 3084,
-    status: '対応中',
-    name: '鈴木 蓮',
-    email: 'ren.suzuki@gmail.com',
-    category: '決済',
-    subject: '決済完了メールが届かない',
-    summary:
-      'フック トライアルパックの注文後、決済完了メールが届いていないため状況を確認したい。',
-    receivedAt: '2026/06/18 12:10',
-  },
-  {
-    id: 3083,
-    status: '対応済み',
-    name: '伊藤 空',
-    email: 'sora.ito@gmail.com',
-    category: 'イベント',
-    subject: 'イベント販売商品の取り置き',
-    summary:
-      'SKYM トラウトカップで販売予定の商品について、オンラインでの事前取り置きが可能か知りたい。',
-    receivedAt: '2026/06/17 09:42',
-  },
-]
+const adminInquiryRows = getAdminInquiryRows()
 
-const adminInquiryRows = adminInquiries.map((inquiry, index) => ({
-  displayNo: index + 1,
-  inquiry,
-}))
-
-type AdminInquiryRow = (typeof adminInquiryRows)[number]
-
-const statusFilterOptions = [
+const inquiryStatusFilterOptions = [
   {
     label: '全て',
     value: 'all' as const,
-    count: adminInquiries.length,
   },
   {
     label: '未対応',
     value: '未対応' as const,
-    count: adminInquiries.filter((inquiry) => inquiry.status === '未対応')
-      .length,
   },
   {
     label: '対応中',
     value: '対応中' as const,
-    count: adminInquiries.filter((inquiry) => inquiry.status === '対応中')
-      .length,
   },
   {
     label: '対応済み',
     value: '対応済み' as const,
-    count: adminInquiries.filter((inquiry) => inquiry.status === '対応済み')
-      .length,
   },
 ] as const
 
-function getInquiryStatusClassName(status: AdminInquiryStatus) {
-  if (status === '未対応') {
-    return 'bg-chart-4/14 text-chart-4'
+type AdminInquiryFilterState = {
+  searchValue: string
+  statusFilterValue: InquiryStatusFilterValue
+}
+
+function matchesAdminInquiryFilters(
+  row: AdminInquiryRow,
+  filters: AdminInquiryFilterState,
+) {
+  if (
+    filters.statusFilterValue !== 'all' &&
+    row.inquiry.status !== filters.statusFilterValue
+  ) {
+    return false
   }
 
-  if (status === '対応中') {
-    return 'bg-primary/10 text-primary'
+  const searchValue = filters.searchValue.trim().toLocaleLowerCase()
+
+  if (
+    searchValue &&
+    !String(row.inquiry.id).includes(searchValue) &&
+    !row.inquiry.name.toLocaleLowerCase().includes(searchValue) &&
+    !row.inquiry.category.toLocaleLowerCase().includes(searchValue) &&
+    !row.inquiry.subject.toLocaleLowerCase().includes(searchValue)
+  ) {
+    return false
   }
 
-  return 'bg-muted text-muted-foreground'
+  return true
+}
+
+function getFilteredAdminInquiryRows(filters: AdminInquiryFilterState) {
+  return adminInquiryRows.filter((row) =>
+    matchesAdminInquiryFilters(row, filters),
+  )
 }
 
 export function AdminInquiriesPage() {
+  const [searchValue, setSearchValue] = useState('')
+  const [selectedInquiryIds, setSelectedInquiryIds] = useState(
+    () => new Set<number>(),
+  )
   const [statusFilterValue, setStatusFilterValue] =
     useState<InquiryStatusFilterValue>('all')
-  const filteredInquiryRows =
-    statusFilterValue === 'all'
-      ? adminInquiryRows
-      : adminInquiryRows.filter(
-          (row) => row.inquiry.status === statusFilterValue,
-        )
+  const currentFilters = {
+    searchValue,
+    statusFilterValue,
+  } satisfies AdminInquiryFilterState
+  const getFilterCount = (filters: Partial<AdminInquiryFilterState> = {}) =>
+    getFilteredAdminInquiryRows({ ...currentFilters, ...filters }).length
+  const statusFilterOptions = inquiryStatusFilterOptions.map((option) => ({
+    ...option,
+    count: getFilterCount({ statusFilterValue: option.value }),
+  }))
+  const filteredInquiryRows = getFilteredAdminInquiryRows(currentFilters).map(
+    (row, index) => ({
+      ...row,
+      displayNo: index + 1,
+    }),
+  )
+  const visibleSelectedInquiryCount = filteredInquiryRows.filter((row) =>
+    selectedInquiryIds.has(row.inquiry.id),
+  ).length
   const handleResetFilters = () => {
+    setSearchValue('')
     setStatusFilterValue('all')
+  }
+  const handleInquirySelectionChange = (
+    inquiryId: number,
+    isSelected: boolean,
+  ) => {
+    setSelectedInquiryIds((current) => {
+      const next = new Set(current)
+
+      if (isSelected) {
+        next.add(inquiryId)
+      } else {
+        next.delete(inquiryId)
+      }
+
+      return next
+    })
   }
 
   return (
     <>
       <InquiriesPageHeader />
 
-      <section className="grid min-w-0 gap-4 rounded-lg border bg-card p-4">
-        <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_auto] admin-top-nav:grid-cols-[minmax(0,1fr)_auto]">
-          <label className="relative block min-w-0">
-            <SearchIcon
-              aria-hidden="true"
-              className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground"
-            />
-            <Input
-              aria-label="お問い合わせ検索"
-              className="bg-background pr-3 pl-10"
-              placeholder="名前・メール・件名で検索"
-              type="search"
-            />
-          </label>
+      <section className="grid max-w-full min-w-0 grid-cols-[minmax(0,1fr)] overflow-hidden rounded-lg border bg-card">
+        <div className="grid w-full max-w-full min-w-0 grid-cols-[minmax(0,1fr)] gap-4 overflow-hidden p-4">
+          <div className="flex w-full min-w-0 flex-col gap-3 lg:flex-row lg:flex-wrap lg:items-end admin-top-nav:flex-row admin-top-nav:flex-wrap admin-top-nav:items-end">
+            <label className="grid w-full min-w-0 grid-cols-[minmax(0,1fr)] gap-1.5 lg:w-[min(32rem,40vw)] admin-top-nav:w-[min(32rem,40vw)]">
+              <span className="text-xs font-medium text-muted-foreground">
+                キーワード
+              </span>
+              <span className="relative block min-w-0">
+                <SearchIcon
+                  aria-hidden="true"
+                  className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground"
+                />
+                <Input
+                  aria-label="お問い合わせ検索"
+                  className="bg-background pr-3 pl-10"
+                  onChange={(event) =>
+                    setSearchValue(event.currentTarget.value)
+                  }
+                  placeholder="ID・名前・種別・件名で検索"
+                  type="search"
+                  value={searchValue}
+                />
+              </span>
+            </label>
 
-          <div className="flex items-center gap-2">
-            <Button
-              className="h-11 px-3 lg:hidden admin-top-nav:hidden"
-              variant="outline"
-            >
-              <SlidersHorizontalIcon data-icon="inline-start" />
-              絞り込み
-            </Button>
+            <InquirySegmentedFilter
+              label="ステータス"
+              onChange={setStatusFilterValue}
+              options={statusFilterOptions}
+              value={statusFilterValue}
+            />
+
+            <div className="flex justify-end lg:justify-start lg:self-end admin-top-nav:justify-start admin-top-nav:self-end">
+              <Button
+                className="h-11 px-4 text-sm"
+                onClick={handleResetFilters}
+                type="button"
+                variant="outline"
+              >
+                <RotateCcwIcon data-icon="inline-start" />
+                リセット
+              </Button>
+            </div>
           </div>
-        </div>
-
-        <InquirySegmentedFilter
-          label="ステータス"
-          onChange={setStatusFilterValue}
-          options={statusFilterOptions}
-          value={statusFilterValue}
-        />
-
-        <div className="flex justify-end">
-          <Button
-            onClick={handleResetFilters}
-            size="sm"
-            type="button"
-            variant="outline"
-          >
-            <RotateCcwIcon data-icon="inline-start" />
-            リセット
-          </Button>
         </div>
       </section>
 
-      <InquiriesTable rows={filteredInquiryRows} />
+      <InquiriesTable
+        onInquirySelectionChange={handleInquirySelectionChange}
+        rows={filteredInquiryRows}
+        selectedInquiryIds={selectedInquiryIds}
+        visibleSelectedInquiryCount={visibleSelectedInquiryCount}
+      />
     </>
   )
 }
@@ -235,11 +214,11 @@ function InquirySegmentedFilter<TValue extends string>({
   value: TValue
 }) {
   return (
-    <div className="grid min-w-0 gap-1.5">
+    <div className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-1.5">
       <p className="text-xs font-medium text-muted-foreground">{label}</p>
       <div
         aria-label={label}
-        className="flex w-fit max-w-full rounded-lg border bg-background p-0.5"
+        className="grid h-11 w-full max-w-full grid-cols-4 rounded-lg border bg-background p-1 sm:w-fit"
         role="group"
       >
         {options.map((option) => {
@@ -249,7 +228,7 @@ function InquirySegmentedFilter<TValue extends string>({
             <button
               aria-pressed={active ? 'true' : 'false'}
               className={cn(
-                'inline-flex h-7 min-w-18 items-center justify-center gap-1 rounded-md px-2 text-xs font-medium whitespace-nowrap',
+                'inline-flex h-full min-w-0 items-center justify-center gap-1 rounded-md px-1.5 text-xs font-medium whitespace-nowrap sm:min-w-20 sm:gap-1.5 sm:px-3 sm:text-sm',
                 active
                   ? 'bg-primary text-primary-foreground'
                   : 'text-muted-foreground hover:bg-accent/55 hover:text-foreground',
@@ -261,7 +240,7 @@ function InquirySegmentedFilter<TValue extends string>({
               <span className="truncate">{option.label}</span>
               <span
                 className={cn(
-                  'inline-block w-[3ch] shrink-0 text-right text-[0.68rem] tabular-nums',
+                  'inline-block w-[2ch] shrink-0 text-right text-[0.68rem] tabular-nums sm:w-[3ch]',
                   active
                     ? 'text-primary-foreground/75'
                     : 'text-muted-foreground',
@@ -277,114 +256,356 @@ function InquirySegmentedFilter<TValue extends string>({
   )
 }
 
-function InquiriesTable({ rows }: { rows: ReadonlyArray<AdminInquiryRow> }) {
+function InquiriesTable({
+  onInquirySelectionChange,
+  rows,
+  selectedInquiryIds,
+  visibleSelectedInquiryCount,
+}: {
+  onInquirySelectionChange: (inquiryId: number, isSelected: boolean) => void
+  rows: ReadonlyArray<AdminInquiryRow>
+  selectedInquiryIds: ReadonlySet<number>
+  visibleSelectedInquiryCount: number
+}) {
+  const [bulkEditOpen, setBulkEditOpen] = useState(false)
+  const selectedRows = rows.filter((row) =>
+    selectedInquiryIds.has(row.inquiry.id),
+  )
+
   return (
-    <section className="min-w-0 overflow-hidden rounded-lg border bg-card [contain:paint]">
-      <div className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
-        <div className="min-w-0">
-          <h2 className="font-heading text-base font-semibold">
-            お問い合わせ一覧
-          </h2>
-        </div>
-        <Button className="w-fit" size="sm" variant="outline">
-          <PencilIcon data-icon="inline-start" />
-          一括編集
-        </Button>
-      </div>
-
-      <div className="hidden min-w-0 overflow-x-auto lg:block admin-top-nav:block">
-        <div className="min-w-[1240px]">
-          <div className="grid grid-cols-[48px_64px_96px_112px_minmax(220px,1fr)_132px_minmax(260px,1.15fr)_132px_36px] items-center gap-3 border-y bg-muted/35 px-4 py-2 text-xs font-medium text-muted-foreground">
-            <span>No</span>
-            <span>ID</span>
-            <span>ステータス</span>
-            <span>名前</span>
-            <span>メール</span>
-            <span>種別</span>
-            <span>件名</span>
-            <span>受付日時</span>
-            <span aria-hidden="true" />
+    <Dialog.Root onOpenChange={setBulkEditOpen} open={bulkEditOpen}>
+      <section className="min-w-0 overflow-hidden rounded-lg border bg-card [contain:paint]">
+        <div className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="min-w-0">
+            <h2 className="font-heading text-base font-semibold">
+              お問い合わせ一覧
+            </h2>
           </div>
+          <span
+            className={cn(
+              'inline-flex w-fit',
+              visibleSelectedInquiryCount === 0 && 'cursor-not-allowed',
+            )}
+          >
+            <Button
+              className="w-fit"
+              disabled={visibleSelectedInquiryCount === 0}
+              onClick={() => setBulkEditOpen(true)}
+              size="sm"
+              type="button"
+              variant="outline"
+            >
+              <PencilIcon data-icon="inline-start" />
+              一括編集
+            </Button>
+          </span>
+        </div>
 
-          {rows.length > 0 ? (
-            <div className="divide-y">
-              {rows.map((row) => (
-                <InquiryTableRow key={row.inquiry.id} row={row} />
-              ))}
+        <div className="hidden min-w-0 overflow-x-auto lg:block admin-top-nav:block">
+          <div className="min-w-[1040px]">
+            <div className="grid grid-cols-[48px_64px_112px_132px_132px_minmax(320px,1.35fr)_132px_36px] items-center gap-3 border-y bg-muted/35 px-4 py-2 text-xs font-medium text-muted-foreground">
+              <span>No</span>
+              <span>ID</span>
+              <span>ステータス</span>
+              <span>種別</span>
+              <span>名前</span>
+              <span>件名</span>
+              <span>受付日時</span>
+              <span aria-hidden="true" />
             </div>
-          ) : null}
-        </div>
-      </div>
 
-      {rows.length > 0 ? (
-        <div className="grid divide-y lg:hidden admin-top-nav:hidden">
-          {rows.map((row) => (
-            <InquiryMobileCard key={row.inquiry.id} row={row} />
-          ))}
+            {rows.length > 0 ? (
+              <div className="divide-y">
+                {rows.map((row) => (
+                  <InquiryTableRow
+                    isSelected={selectedInquiryIds.has(row.inquiry.id)}
+                    key={row.inquiry.id}
+                    onSelectionChange={(isSelected) =>
+                      onInquirySelectionChange(row.inquiry.id, isSelected)
+                    }
+                    row={row}
+                  />
+                ))}
+              </div>
+            ) : null}
+          </div>
         </div>
-      ) : (
-        <div className="border-t p-6 text-center text-sm text-muted-foreground">
-          条件に一致するお問い合わせはありません
-        </div>
-      )}
-    </section>
+
+        {rows.length > 0 ? (
+          <div className="grid divide-y lg:hidden admin-top-nav:hidden">
+            {rows.map((row) => (
+              <InquiryMobileCard
+                isSelected={selectedInquiryIds.has(row.inquiry.id)}
+                key={row.inquiry.id}
+                onSelectionChange={(isSelected) =>
+                  onInquirySelectionChange(row.inquiry.id, isSelected)
+                }
+                row={row}
+              />
+            ))}
+          </div>
+        ) : (
+          <div className="border-t p-6 text-center text-sm text-muted-foreground">
+            条件に一致するお問い合わせはありません
+          </div>
+        )}
+      </section>
+
+      {bulkEditOpen ? (
+        <BulkEditDialogContent selectedRows={selectedRows} />
+      ) : null}
+    </Dialog.Root>
   )
 }
 
-function InquiryTableRow({ row }: { row: AdminInquiryRow }) {
+type BulkInquiryStatusValue = 'unchanged' | AdminInquiryStatus
+
+const bulkInquiryStatusOptions: ReadonlyArray<{
+  label: string
+  value: BulkInquiryStatusValue
+}> = [
+  { label: '変更しない', value: 'unchanged' },
+  { label: '未対応', value: '未対応' },
+  { label: '対応中', value: '対応中' },
+  { label: '対応済み', value: '対応済み' },
+]
+
+function BulkEditDialogContent({
+  selectedRows,
+}: {
+  selectedRows: ReadonlyArray<AdminInquiryRow>
+}) {
+  const [statusValue, setStatusValue] =
+    useState<BulkInquiryStatusValue>('unchanged')
+  const selectedCount = selectedRows.length
+  const canApply = statusValue !== 'unchanged'
+
+  return (
+    <Dialog.Portal>
+      <Dialog.Overlay className="fixed inset-0 z-[70] bg-black/45" />
+      <Dialog.Content className="fixed top-1/2 left-1/2 z-[80] grid max-h-[calc(100svh-2rem)] w-[min(calc(100vw-2rem),40rem)] -translate-x-1/2 -translate-y-1/2 grid-rows-[auto_minmax(0,1fr)_auto] overflow-hidden rounded-lg border bg-background shadow-2xl outline-none">
+        <div className="flex min-w-0 items-start justify-between gap-4 border-b p-5">
+          <div className="min-w-0">
+            <Dialog.Title className="font-heading text-xl font-semibold">
+              一括編集
+            </Dialog.Title>
+            <Dialog.Description className="mt-2 text-sm leading-6 text-muted-foreground">
+              選択したお問い合わせにまとめて反映する項目を選択します。
+            </Dialog.Description>
+          </div>
+
+          <Dialog.Close asChild>
+            <Button
+              aria-label="閉じる"
+              size="icon"
+              type="button"
+              variant="ghost"
+            >
+              <XIcon aria-hidden="true" />
+            </Button>
+          </Dialog.Close>
+        </div>
+
+        <div className="grid min-h-0 min-w-0 gap-5 overflow-y-auto p-5">
+          <section className="grid min-w-0 gap-3 rounded-lg border bg-muted/35 p-4">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <h3 className="text-sm font-semibold">対象お問い合わせ</h3>
+              <span className="rounded-full bg-primary/10 px-2.5 py-1 text-xs font-semibold text-primary">
+                {selectedCount}件選択中
+              </span>
+            </div>
+
+            <div className="grid max-h-72 min-w-0 gap-2 overflow-y-auto pr-1">
+              {selectedRows.map((row) => (
+                <div
+                  className="grid min-w-0 gap-2 rounded-lg bg-background p-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center"
+                  key={row.inquiry.id}
+                >
+                  <div className="min-w-0">
+                    <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 text-xs font-medium text-muted-foreground">
+                      <span className="tabular-nums">No {row.displayNo}</span>
+                      <span aria-hidden="true">/</span>
+                      <span className="tabular-nums">ID {row.inquiry.id}</span>
+                      <span aria-hidden="true">/</span>
+                      <span className="tabular-nums">
+                        {row.inquiry.receivedAt}
+                      </span>
+                    </div>
+                    <p className="mt-1 truncate text-sm font-semibold">
+                      {row.inquiry.subject}
+                    </p>
+                  </div>
+                  <div className="flex shrink-0 flex-wrap items-center gap-2 sm:justify-end">
+                    <Badge
+                      className={cn(
+                        'w-fit',
+                        getAdminInquiryStatusClassName(row.inquiry.status),
+                      )}
+                    >
+                      {row.inquiry.status}
+                    </Badge>
+                    <span className="text-sm font-semibold">
+                      {row.inquiry.category}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          <section className="grid min-w-0 gap-4 rounded-lg border p-4">
+            <div className="min-w-0">
+              <h3 className="text-sm font-semibold">変更内容</h3>
+            </div>
+
+            <BulkEditField label="ステータス">
+              <BulkEditSegmentedControl
+                onChange={setStatusValue}
+                options={bulkInquiryStatusOptions}
+                value={statusValue}
+              />
+            </BulkEditField>
+          </section>
+        </div>
+
+        <div className="flex flex-col-reverse gap-2 border-t p-5 sm:flex-row sm:items-center sm:justify-end">
+          <Dialog.Close asChild>
+            <Button type="button" variant="outline">
+              キャンセル
+            </Button>
+          </Dialog.Close>
+          <Dialog.Close asChild>
+            <Button disabled={!canApply} type="button">
+              変更を適用
+            </Button>
+          </Dialog.Close>
+        </div>
+      </Dialog.Content>
+    </Dialog.Portal>
+  )
+}
+
+function BulkEditField({
+  children,
+  label,
+}: {
+  children: ReactNode
+  label: string
+}) {
+  return (
+    <div className="grid min-w-0 gap-2 lg:grid-cols-[112px_minmax(0,1fr)] lg:items-start">
+      <p className="pt-2 text-xs font-medium text-muted-foreground">{label}</p>
+      <div className="min-w-0">{children}</div>
+    </div>
+  )
+}
+
+function BulkEditSegmentedControl<TValue extends string>({
+  onChange,
+  options,
+  value,
+}: {
+  onChange: (value: TValue) => void
+  options: ReadonlyArray<{ label: string; value: TValue }>
+  value: TValue
+}) {
+  return (
+    <div className="grid w-full max-w-full grid-cols-2 gap-1 rounded-lg border bg-background p-1 sm:flex sm:w-fit">
+      {options.map((option) => {
+        const active = option.value === value
+
+        return (
+          <button
+            aria-pressed={active ? 'true' : 'false'}
+            className={cn(
+              'inline-flex h-8 min-w-0 items-center justify-center rounded-md px-2 text-xs font-medium whitespace-nowrap sm:min-w-20',
+              active
+                ? 'bg-primary text-primary-foreground'
+                : 'text-muted-foreground hover:bg-muted hover:text-foreground',
+            )}
+            key={option.value}
+            onClick={() => onChange(option.value)}
+            type="button"
+          >
+            {option.label}
+          </button>
+        )
+      })}
+    </div>
+  )
+}
+
+function InquiryTableRow({
+  isSelected,
+  onSelectionChange,
+  row,
+}: {
+  isSelected: boolean
+  onSelectionChange: (isSelected: boolean) => void
+  row: AdminInquiryRow
+}) {
   const { displayNo, inquiry } = row
 
   return (
-    <article className="grid grid-cols-[48px_64px_96px_112px_minmax(220px,1fr)_132px_minmax(260px,1.15fr)_132px_36px] items-stretch gap-3 px-4">
-      <button
+    <article className="grid grid-cols-[48px_64px_112px_132px_132px_minmax(320px,1.35fr)_132px_36px] items-stretch gap-3 px-4">
+      <Link
         aria-label={`お問い合わせID ${inquiry.id} の詳細を開く`}
-        className="col-span-8 -mx-1 grid min-w-0 cursor-pointer grid-cols-[48px_64px_96px_112px_minmax(220px,1fr)_132px_minmax(260px,1.15fr)_132px] items-center gap-3 rounded-lg px-1 py-3.5 text-left outline-none hover:bg-accent/55 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-        type="button"
+        className="col-span-7 -mx-1 grid min-w-0 cursor-pointer grid-cols-[48px_64px_112px_132px_132px_minmax(320px,1.35fr)_132px] items-center gap-3 rounded-lg px-1 py-3.5 text-left outline-none hover:bg-accent/55 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+        to={`/admin/inquiries/${inquiry.id}`}
       >
         <span className="text-sm font-medium tabular-nums">{displayNo}</span>
         <span className="text-sm font-medium text-muted-foreground tabular-nums">
           {inquiry.id}
         </span>
         <Badge
-          className={cn('w-fit', getInquiryStatusClassName(inquiry.status))}
+          className={cn(
+            'w-fit',
+            getAdminInquiryStatusClassName(inquiry.status),
+          )}
         >
           {inquiry.status}
         </Badge>
+        <span className="truncate text-sm font-medium">{inquiry.category}</span>
         <span className="block min-w-0 truncate text-sm font-medium">
           {inquiry.name}
         </span>
-        <span className="truncate text-sm text-muted-foreground">
-          {inquiry.email}
-        </span>
-        <span className="truncate text-sm font-medium">{inquiry.category}</span>
         <span className="min-w-0">
           <span className="block truncate text-sm font-semibold">
             {inquiry.subject}
-          </span>
-          <span className="mt-1 block truncate text-xs text-muted-foreground">
-            {inquiry.summary}
           </span>
         </span>
         <span className="truncate text-sm font-medium">
           {inquiry.receivedAt}
         </span>
-      </button>
+      </Link>
       <span className="flex items-center justify-center">
-        <SelectionCheckbox ariaLabel={`${inquiry.id}を選択`} />
+        <SelectionCheckbox
+          ariaLabel={`${inquiry.id}を選択`}
+          checked={isSelected}
+          onCheckedChange={onSelectionChange}
+        />
       </span>
     </article>
   )
 }
 
-function InquiryMobileCard({ row }: { row: AdminInquiryRow }) {
+function InquiryMobileCard({
+  isSelected,
+  onSelectionChange,
+  row,
+}: {
+  isSelected: boolean
+  onSelectionChange: (isSelected: boolean) => void
+  row: AdminInquiryRow
+}) {
   const { displayNo, inquiry } = row
 
   return (
-    <article className="grid grid-cols-[minmax(0,1fr)_auto] items-stretch gap-3 p-4">
-      <button
+    <article className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-3 p-4">
+      <Link
         aria-label={`お問い合わせID ${inquiry.id} の詳細を開く`}
         className="-m-1 grid min-w-0 cursor-pointer gap-3 rounded-lg p-1 text-left outline-none hover:bg-accent/55 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-        type="button"
+        to={`/admin/inquiries/${inquiry.id}`}
       >
         <span className="flex min-w-0 items-start justify-between gap-3">
           <span className="grid min-w-0 gap-1">
@@ -394,38 +615,17 @@ function InquiryMobileCard({ row }: { row: AdminInquiryRow }) {
               <span className="tabular-nums">ID {inquiry.id}</span>
             </span>
             <span className="block truncate text-base font-semibold">
-              {inquiry.name}
+              {inquiry.subject}
             </span>
           </span>
           <Badge
             className={cn(
               'shrink-0',
-              getInquiryStatusClassName(inquiry.status),
+              getAdminInquiryStatusClassName(inquiry.status),
             )}
           >
             {inquiry.status}
           </Badge>
-        </span>
-
-        <span className="grid min-w-0 gap-1">
-          <span className="text-xs font-medium text-muted-foreground">
-            メール
-          </span>
-          <span className="truncate text-sm text-muted-foreground">
-            {inquiry.email}
-          </span>
-        </span>
-
-        <span className="grid min-w-0 gap-1">
-          <span className="text-xs font-medium text-muted-foreground">
-            件名
-          </span>
-          <span className="truncate text-sm font-semibold">
-            {inquiry.subject}
-          </span>
-          <span className="line-clamp-2 text-xs leading-5 text-muted-foreground">
-            {inquiry.summary}
-          </span>
         </span>
 
         <span className="grid grid-cols-2 gap-3 text-sm">
@@ -439,6 +639,14 @@ function InquiryMobileCard({ row }: { row: AdminInquiryRow }) {
           </span>
           <span className="min-w-0">
             <span className="block text-xs font-medium text-muted-foreground">
+              名前
+            </span>
+            <span className="mt-1 block truncate font-medium">
+              {inquiry.name}
+            </span>
+          </span>
+          <span className="col-span-2 min-w-0">
+            <span className="block text-xs font-medium text-muted-foreground">
               受付日時
             </span>
             <span className="mt-1 block truncate font-medium">
@@ -446,19 +654,37 @@ function InquiryMobileCard({ row }: { row: AdminInquiryRow }) {
             </span>
           </span>
         </span>
-      </button>
+      </Link>
 
       <span className="flex items-start justify-center pt-1">
-        <SelectionCheckbox ariaLabel={`${inquiry.id}を選択`} />
+        <SelectionCheckbox
+          ariaLabel={`${inquiry.id}を選択`}
+          checked={isSelected}
+          onCheckedChange={onSelectionChange}
+        />
       </span>
     </article>
   )
 }
 
-function SelectionCheckbox({ ariaLabel }: { ariaLabel: string }) {
+function SelectionCheckbox({
+  ariaLabel,
+  checked,
+  onCheckedChange,
+}: {
+  ariaLabel: string
+  checked: boolean
+  onCheckedChange: (checked: boolean) => void
+}) {
   return (
     <label className="grid size-8 cursor-pointer place-items-center rounded-md hover:bg-accent/55">
-      <input aria-label={ariaLabel} className="peer sr-only" type="checkbox" />
+      <input
+        aria-label={ariaLabel}
+        checked={checked}
+        className="peer sr-only"
+        onChange={(event) => onCheckedChange(event.currentTarget.checked)}
+        type="checkbox"
+      />
       <span className="grid size-5 place-items-center rounded border border-input bg-background text-transparent peer-checked:border-primary peer-checked:bg-primary peer-checked:text-primary-foreground peer-focus-visible:ring-2 peer-focus-visible:ring-ring peer-focus-visible:ring-offset-2">
         <CheckIcon aria-hidden="true" className="size-3.5" />
       </span>

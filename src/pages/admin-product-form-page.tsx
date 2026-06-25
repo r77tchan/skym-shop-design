@@ -161,7 +161,7 @@ function AdminProductFormPage({
               </label>
 
               <label className={fieldWrapperClassName}>
-                <span className={fieldLabelClassName}>カテゴリー</span>
+                <span className={fieldLabelClassName}>カテゴリ</span>
                 <SelectField defaultValue={product?.category}>
                   {editableProductCategories.map((category) => (
                     <option key={category}>{category}</option>

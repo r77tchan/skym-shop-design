@@ -1,17 +1,30 @@
 import { Navigate, Route, Routes } from 'react-router'
 
 import { AdminLayout } from '@/components/admin-layout'
+import { AdminCustomerDetailPage } from '@/pages/admin-customer-detail-page'
 import { AdminCustomersPage } from '@/pages/admin-customers-page'
 import { AdminDashboardPage } from '@/pages/admin-dashboard-page'
+import { AdminInquiryDetailPage } from '@/pages/admin-inquiry-detail-page'
 import {
   AdminProductDetailPage,
   AdminProductNewPage,
 } from '@/pages/admin-product-form-page'
 import { AdminInquiriesPage } from '@/pages/admin-inquiries-page'
+import {
+  AdminNewsDetailPage,
+  AdminNewsNewPage,
+} from '@/pages/admin-news-form-page'
 import { AdminNewsPage } from '@/pages/admin-news-page'
 import { AdminNotFoundPage } from '@/pages/admin-not-found-page'
+import { AdminOrderDetailPage } from '@/pages/admin-order-detail-page'
 import { AdminOrdersPage } from '@/pages/admin-orders-page'
 import { AdminProductsPage } from '@/pages/admin-products-page'
+import { AdminSettingsAuthPage } from '@/pages/admin-settings-auth-page'
+import {
+  AdminSettingsBrandsPage,
+  AdminSettingsCategoriesPage,
+  AdminSettingsNewsTagsPage,
+} from '@/pages/admin-settings-master-pages'
 import { AdminSettingsPage } from '@/pages/admin-settings-page'
 import { CommercialTransactionsPage } from '@/pages/commercial-transactions-page'
 import { ContactPage } from '@/pages/contact-page'
@@ -45,10 +58,31 @@ export function App() {
           path="products/:productId"
         />
         <Route element={<AdminOrdersPage />} path="orders" />
+        <Route element={<AdminOrderDetailPage />} path="orders/:orderId" />
         <Route element={<AdminNewsPage />} path="news" />
+        <Route element={<AdminNewsNewPage />} path="news/new" />
+        <Route element={<AdminNewsDetailPage />} path="news/:newsId" />
         <Route element={<AdminCustomersPage />} path="customers" />
+        <Route
+          element={<AdminCustomerDetailPage />}
+          path="customers/:customerId"
+        />
         <Route element={<AdminInquiriesPage />} path="inquiries" />
+        <Route
+          element={<AdminInquiryDetailPage />}
+          path="inquiries/:inquiryId"
+        />
         <Route element={<AdminSettingsPage />} path="settings" />
+        <Route element={<AdminSettingsAuthPage />} path="settings/auth" />
+        <Route element={<AdminSettingsBrandsPage />} path="settings/brands" />
+        <Route
+          element={<AdminSettingsCategoriesPage />}
+          path="settings/categories"
+        />
+        <Route
+          element={<AdminSettingsNewsTagsPage />}
+          path="settings/news-tags"
+        />
         <Route element={<AdminNotFoundPage />} path="*" />
       </Route>
       <Route element={<Navigate replace to="/" />} path="*" />

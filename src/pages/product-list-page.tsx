@@ -476,7 +476,7 @@ function ProductCategoryNav({
   return (
     <section
       className="relative border-b bg-background"
-      aria-label="商品カテゴリー"
+      aria-label="商品カテゴリ"
     >
       <div className="absolute top-0 right-gutter z-10 inline-flex -translate-y-1/2 items-center gap-1 rounded-sm bg-background px-1.5 text-[0.65rem] font-semibold text-muted-foreground/70 sm:hidden">
         <span>SCROLL</span>
@@ -484,7 +484,7 @@ function ProductCategoryNav({
       </div>
       <div className="mx-auto max-w-7xl px-gutter">
         <nav
-          aria-label="商品カテゴリー"
+          aria-label="商品カテゴリ"
           className="-mb-px flex min-w-0 gap-2 overflow-x-auto"
         >
           {items.map((item) => {

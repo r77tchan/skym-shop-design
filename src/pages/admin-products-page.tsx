@@ -326,14 +326,14 @@ export function AdminProductsPage() {
     <>
       <ProductsPageHeader />
 
-      <section className="grid min-w-0 max-w-full grid-cols-[minmax(0,1fr)] overflow-hidden rounded-lg border bg-card">
+      <section className="grid max-w-full min-w-0 grid-cols-[minmax(0,1fr)] overflow-hidden rounded-lg border bg-card">
         <AdminCategoryFilterNav
           activeValue={categoryFilter}
           items={adminCategoryFilterItems}
           onChange={setCategoryFilter}
         />
 
-        <div className="grid w-full min-w-0 max-w-full grid-cols-[minmax(0,1fr)] gap-4 overflow-hidden p-4">
+        <div className="grid w-full max-w-full min-w-0 grid-cols-[minmax(0,1fr)] gap-4 overflow-hidden p-4">
           <div className="flex w-full min-w-0 flex-col gap-3 lg:flex-row lg:flex-wrap lg:items-end admin-top-nav:flex-row admin-top-nav:flex-wrap admin-top-nav:items-end">
             <label className="grid w-full min-w-0 grid-cols-[minmax(0,1fr)] gap-1.5 lg:w-[min(32rem,40vw)] admin-top-nav:w-[min(32rem,40vw)]">
               <span className="text-xs font-medium text-muted-foreground">
@@ -431,9 +431,9 @@ function AdminCategoryFilterNav({
   onChange: (value: CategoryFilterValue) => void
 }) {
   return (
-    <div className="border-b" aria-label="商品カテゴリー">
+    <div className="border-b" aria-label="商品カテゴリ">
       <nav
-        aria-label="商品カテゴリー"
+        aria-label="商品カテゴリ"
         className="-mb-px flex min-w-0 gap-2 overflow-x-auto px-4"
       >
         {items.map((item) => {
@@ -1116,7 +1116,7 @@ function BulkEditDialogContent({
               />
             </BulkEditField>
 
-            <BulkEditField label="カテゴリー">
+            <BulkEditField label="カテゴリ">
               <BulkEditSelect
                 onChange={setCategoryValue}
                 options={bulkCategoryOptions}

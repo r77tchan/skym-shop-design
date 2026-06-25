@@ -771,7 +771,7 @@ export function getEditableProductSpecs(product: Product) {
 export function getProductSpecRows(product: Product) {
   return [
     { label: 'ブランド', value: product.brand },
-    { label: 'カテゴリー', value: product.category },
+    { label: 'カテゴリ', value: product.category },
     ...getEditableProductSpecs(product),
   ]
 }
