@@ -25,6 +25,7 @@ import {
   AdminSettingsCategoriesPage,
   AdminSettingsNewsTagsPage,
 } from '@/pages/admin-settings-master-pages'
+import { AdminSettingsFetchRangePage } from '@/pages/admin-settings-fetch-range-page'
 import { AdminSettingsPage } from '@/pages/admin-settings-page'
 import { CommercialTransactionsPage } from '@/pages/commercial-transactions-page'
 import { ContactPage } from '@/pages/contact-page'
@@ -82,6 +83,10 @@ export function App() {
         <Route
           element={<AdminSettingsNewsTagsPage />}
           path="settings/news-tags"
+        />
+        <Route
+          element={<AdminSettingsFetchRangePage />}
+          path="settings/fetch-range"
         />
         <Route element={<AdminNotFoundPage />} path="*" />
       </Route>

@@ -1,4 +1,5 @@
 import {
+  CalendarRangeIcon,
   ChevronRightIcon,
   NewspaperIcon,
   PackageIcon,
@@ -31,6 +32,12 @@ const settingsNavItems = [
     description: 'お知らせに設定するタグ',
     path: '/admin/settings/news-tags',
     icon: NewspaperIcon,
+  },
+  {
+    title: '取得範囲',
+    description: '注文・お問い合わせ・顧客の一時取得範囲',
+    path: '/admin/settings/fetch-range',
+    icon: CalendarRangeIcon,
   },
 ]
 
