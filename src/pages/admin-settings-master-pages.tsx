@@ -1,18 +1,25 @@
 import {
   ArrowLeftIcon,
+  ChevronDownIcon,
   PencilIcon,
   PlusIcon,
   Trash2Icon,
   XIcon,
 } from 'lucide-react'
 import { Dialog } from 'radix-ui'
-import { type FormEvent, useState } from 'react'
+import { type FormEvent, useRef, useState } from 'react'
 import { Link } from 'react-router'
 
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
 import { adminNewsLabelOptions } from '@/lib/admin-news'
-import { productBrands, productCategoryItems } from '@/lib/shop-content'
+import {
+  productBrands,
+  productCategoryItems,
+  type ProductCategorySpec,
+  type ProductSpecInputType,
+} from '@/lib/shop-content'
 
 type NameMasterItem = {
   id: number
@@ -22,7 +29,14 @@ type NameMasterItem = {
 type CategoryMasterItem = {
   id: number
   name: string
+  specs: readonly CategoryMasterSpec[]
   slug: string
+}
+
+type CategoryMasterSpec = ProductCategorySpec & {
+  id: string
+  options: readonly string[]
+  unit: string
 }
 
 const brandMasterItems: NameMasterItem[] = productBrands.map((name, index) => ({
@@ -34,6 +48,9 @@ const categoryMasterItems: CategoryMasterItem[] = productCategoryItems.map(
   (item, index) => ({
     id: index + 1,
     name: item.label,
+    specs: item.specs.map((spec, specIndex) =>
+      createCategoryMasterSpec(spec, specIndex),
+    ),
     slug: item.slug,
   }),
 )
@@ -46,6 +63,15 @@ const newsTagMasterItems: NameMasterItem[] = adminNewsLabelOptions.map(
 )
 
 const slugPattern = /^[a-z0-9]+(?:-[a-z0-9]+)*$/
+const specKeyPattern = /^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$/
+const specInputTypeOptions = [
+  { label: 'テキスト', value: 'text' },
+  { label: '選択式', value: 'select' },
+  { label: '数値', value: 'number' },
+] as const satisfies ReadonlyArray<{
+  label: string
+  value: ProductSpecInputType
+}>
 
 export function AdminSettingsBrandsPage() {
   return (
@@ -276,6 +302,7 @@ function CategoryMasterSettingsPage({
       {
         id: getNextMasterId(current),
         name: normalizedName,
+        specs: [],
         slug: normalizedSlug,
       },
       ...current,
@@ -303,7 +330,7 @@ function CategoryMasterSettingsPage({
         <div className="min-w-0">
           <h2 className="font-heading text-base font-semibold">カテゴリ</h2>
           <p className="mt-1 text-sm leading-6 text-muted-foreground">
-            商品カテゴリとカテゴリページのURLスラッグを管理します。
+            商品カテゴリ、カテゴリページのURLスラッグ、商品スペックを管理します。
           </p>
         </div>
 
@@ -457,12 +484,13 @@ function CategoryMasterList({
   return (
     <div className="min-w-0 overflow-hidden rounded-lg border">
       <div className="min-w-0 overflow-x-auto">
-        <div className="min-w-[736px]">
-          <div className="grid grid-cols-[48px_64px_minmax(160px,1fr)_minmax(180px,1fr)_48px_48px] items-center gap-3 border-b bg-muted/35 px-4 py-2 text-xs font-medium text-muted-foreground">
+        <div className="min-w-[960px]">
+          <div className="grid grid-cols-[48px_64px_minmax(140px,0.8fr)_minmax(160px,0.8fr)_minmax(240px,1.2fr)_48px_48px] items-center gap-3 border-b bg-muted/35 px-4 py-2 text-xs font-medium text-muted-foreground">
             <span>No</span>
             <span>ID</span>
             <span>カテゴリ名</span>
             <span>スラッグ</span>
+            <span>スペック</span>
             <span>編集</span>
             <span>削除</span>
           </div>
@@ -470,7 +498,7 @@ function CategoryMasterList({
           <div className="divide-y">
             {items.map((item, index) => (
               <article
-                className="grid grid-cols-[48px_64px_minmax(160px,1fr)_minmax(180px,1fr)_48px_48px] items-center gap-3 px-4 py-3"
+                className="grid grid-cols-[48px_64px_minmax(140px,0.8fr)_minmax(160px,0.8fr)_minmax(240px,1.2fr)_48px_48px] items-center gap-3 px-4 py-3"
                 key={item.id}
               >
                 <span className="text-sm font-medium tabular-nums">
@@ -485,6 +513,7 @@ function CategoryMasterList({
                 <span className="truncate text-sm font-medium text-muted-foreground">
                   {item.slug}
                 </span>
+                <CategorySpecSummary specs={item.specs} />
                 <Button
                   aria-label={`${item.name}を編集`}
                   className="justify-self-start"
@@ -511,6 +540,41 @@ function CategoryMasterList({
         </div>
       </div>
     </div>
+  )
+}
+
+function CategorySpecSummary({
+  specs,
+}: {
+  specs: ReadonlyArray<CategoryMasterSpec>
+}) {
+  if (specs.length === 0) {
+    return (
+      <span className="text-sm font-medium text-muted-foreground">
+        設定なし
+      </span>
+    )
+  }
+
+  return (
+    <span className="flex min-w-0 flex-wrap items-center gap-1.5">
+      <span className="text-xs font-medium text-muted-foreground">
+        {specs.length}件
+      </span>
+      {specs.slice(0, 3).map((spec) => (
+        <span
+          className="inline-flex h-6 max-w-24 items-center rounded-md border bg-background px-2 text-xs font-medium"
+          key={spec.id}
+        >
+          <span className="truncate">{spec.label}</span>
+        </span>
+      ))}
+      {specs.length > 3 ? (
+        <span className="text-xs font-medium text-muted-foreground">
+          +{specs.length - 3}
+        </span>
+      ) : null}
+    </span>
   )
 }
 
@@ -646,8 +710,12 @@ function CategoryMasterEditDialogContent({
 }) {
   const [nameInput, setNameInput] = useState(item.name)
   const [slugInput, setSlugInput] = useState(item.slug)
+  const [specs, setSpecs] = useState<CategoryMasterSpec[]>(() =>
+    item.specs.map((spec, index) => createCategoryMasterSpec(spec, index)),
+  )
   const normalizedName = nameInput.trim()
   const normalizedSlug = slugInput.trim().toLowerCase()
+  const normalizedSpecs = normalizeCategorySpecs(specs)
   const isDuplicateName = items.some(
     (currentItem) =>
       currentItem.id !== item.id &&
@@ -672,7 +740,8 @@ function CategoryMasterEditDialogContent({
             : isDuplicateSlug
               ? '同じスラッグが登録済みです'
               : null
-  const canSave = message === null
+  const specMessage = getCategorySpecsMessage(normalizedSpecs)
+  const canSave = message === null && specMessage === null
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
@@ -684,6 +753,7 @@ function CategoryMasterEditDialogContent({
     onSaveItem({
       ...item,
       name: normalizedName,
+      specs: normalizedSpecs,
       slug: normalizedSlug,
     })
   }
@@ -753,12 +823,23 @@ function CategoryMasterEditDialogContent({
               />
             </label>
 
+            <CategorySpecsEditor specs={specs} onChange={setSpecs} />
+
             {message ? (
               <p
                 className="text-sm font-medium text-destructive"
                 id="category-master-edit-message"
               >
                 {message}
+              </p>
+            ) : null}
+
+            {specMessage ? (
+              <p
+                className="text-sm font-medium text-destructive"
+                id="category-specs-edit-message"
+              >
+                {specMessage}
               </p>
             ) : null}
           </div>
@@ -779,6 +860,208 @@ function CategoryMasterEditDialogContent({
   )
 }
 
+function CategorySpecsEditor({
+  onChange,
+  specs,
+}: {
+  onChange: (specs: CategoryMasterSpec[]) => void
+  specs: CategoryMasterSpec[]
+}) {
+  const nextSpecIndex = useRef(specs.length)
+
+  function addSpec() {
+    const nextIndex = nextSpecIndex.current
+    nextSpecIndex.current += 1
+    onChange([...specs, createEmptyCategorySpec(nextIndex)])
+  }
+
+  function removeSpec(specId: string) {
+    onChange(specs.filter((spec) => spec.id !== specId))
+  }
+
+  function updateSpec(
+    specId: string,
+    values: Partial<Omit<CategoryMasterSpec, 'id'>>,
+  ) {
+    onChange(
+      specs.map((spec) => (spec.id === specId ? { ...spec, ...values } : spec)),
+    )
+  }
+
+  return (
+    <section className="grid min-w-0 gap-3 rounded-lg border bg-muted/25 p-3">
+      <div className="min-w-0">
+        <h3 className="font-heading text-sm font-semibold">スペック</h3>
+      </div>
+
+      {specs.length === 0 ? (
+        <div className="rounded-lg border bg-background px-3 py-4 text-sm font-medium text-muted-foreground">
+          設定なし
+        </div>
+      ) : (
+        <div className="grid gap-3">
+          {specs.map((spec, index) => (
+            <div
+              className="grid min-w-0 gap-3 rounded-lg border bg-background p-3"
+              key={spec.id}
+            >
+              <div className="flex min-w-0 items-center justify-between gap-2">
+                <span className="text-xs font-medium text-muted-foreground">
+                  スペック {index + 1}
+                </span>
+                <Button
+                  aria-label={`スペック ${index + 1} を削除`}
+                  onClick={() => removeSpec(spec.id)}
+                  size="icon-sm"
+                  type="button"
+                  variant="ghost"
+                >
+                  <Trash2Icon aria-hidden="true" />
+                </Button>
+              </div>
+
+              <div className="grid gap-3 sm:grid-cols-2">
+                <label className="grid min-w-0 gap-1.5">
+                  <span className="text-xs font-medium text-muted-foreground">
+                    キー
+                  </span>
+                  <Input
+                    className="bg-background"
+                    onChange={(event) =>
+                      updateSpec(spec.id, {
+                        key: event.currentTarget.value,
+                      })
+                    }
+                    type="text"
+                    value={spec.key}
+                  />
+                </label>
+
+                <label className="grid min-w-0 gap-1.5">
+                  <span className="text-xs font-medium text-muted-foreground">
+                    項目名
+                  </span>
+                  <Input
+                    className="bg-background"
+                    onChange={(event) =>
+                      updateSpec(spec.id, {
+                        label: event.currentTarget.value,
+                      })
+                    }
+                    type="text"
+                    value={spec.label}
+                  />
+                </label>
+
+                <label className="grid min-w-0 gap-1.5">
+                  <span className="text-xs font-medium text-muted-foreground">
+                    入力形式
+                  </span>
+                  <span className="relative">
+                    <select
+                      className="h-11 w-full cursor-pointer appearance-none rounded-lg border border-input bg-background px-3 pr-9 text-sm font-medium outline-none hover:bg-accent/55 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                      onChange={(event) =>
+                        updateSpec(spec.id, {
+                          inputType: event.currentTarget
+                            .value as ProductSpecInputType,
+                        })
+                      }
+                      value={spec.inputType}
+                    >
+                      {specInputTypeOptions.map((option) => (
+                        <option key={option.value} value={option.value}>
+                          {option.label}
+                        </option>
+                      ))}
+                    </select>
+                    <ChevronDownIcon
+                      aria-hidden="true"
+                      className="pointer-events-none absolute top-1/2 right-3 size-4 -translate-y-1/2 text-muted-foreground"
+                    />
+                  </span>
+                </label>
+
+                <label className="grid min-w-0 gap-1.5">
+                  <span className="text-xs font-medium text-muted-foreground">
+                    単位
+                  </span>
+                  <Input
+                    className="bg-background"
+                    onChange={(event) =>
+                      updateSpec(spec.id, {
+                        unit: event.currentTarget.value,
+                      })
+                    }
+                    type="text"
+                    value={spec.unit}
+                  />
+                </label>
+              </div>
+
+              {spec.inputType === 'select' ? (
+                <label className="grid min-w-0 gap-1.5">
+                  <span className="text-xs font-medium text-muted-foreground">
+                    選択肢
+                  </span>
+                  <Textarea
+                    className="min-h-24 bg-background"
+                    onChange={(event) =>
+                      updateSpec(spec.id, {
+                        options: event.currentTarget.value.split('\n'),
+                      })
+                    }
+                    value={spec.options.join('\n')}
+                  />
+                </label>
+              ) : null}
+
+              <div className="flex flex-wrap gap-3">
+                <label className="inline-flex min-h-8 items-center gap-2 text-sm font-medium">
+                  <input
+                    checked={Boolean(spec.filterable)}
+                    className="size-4 accent-primary"
+                    onChange={(event) =>
+                      updateSpec(spec.id, {
+                        filterable: event.currentTarget.checked,
+                      })
+                    }
+                    type="checkbox"
+                  />
+                  一覧フィルタ
+                </label>
+
+                <label className="inline-flex min-h-8 items-center gap-2 text-sm font-medium">
+                  <input
+                    checked={Boolean(spec.required)}
+                    className="size-4 accent-primary"
+                    onChange={(event) =>
+                      updateSpec(spec.id, {
+                        required: event.currentTarget.checked,
+                      })
+                    }
+                    type="checkbox"
+                  />
+                  必須
+                </label>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      <Button
+        className="h-10 w-full border-dashed"
+        onClick={addSpec}
+        type="button"
+        variant="outline"
+      >
+        <PlusIcon data-icon="inline-start" />
+        スペックを追加
+      </Button>
+    </section>
+  )
+}
+
 function MasterDisplayField({
   label,
   value,
@@ -794,6 +1077,87 @@ function MasterDisplayField({
       </div>
     </div>
   )
+}
+
+function createCategoryMasterSpec(
+  spec: ProductCategorySpec,
+  index: number,
+): CategoryMasterSpec {
+  return {
+    ...spec,
+    filterable: Boolean(spec.filterable),
+    id: `spec-${spec.key}-${index}`,
+    options: spec.options ?? [],
+    required: Boolean(spec.required),
+    unit: spec.unit ?? '',
+  }
+}
+
+function createEmptyCategorySpec(index: number): CategoryMasterSpec {
+  return {
+    id: `spec-${index}`,
+    inputType: 'text',
+    key: '',
+    label: '',
+    options: [],
+    unit: '',
+  }
+}
+
+function normalizeCategorySpecs(specs: ReadonlyArray<CategoryMasterSpec>) {
+  return specs.flatMap((spec) => {
+    const options = spec.options.map((option) => option.trim()).filter(Boolean)
+    const normalizedSpec = {
+      ...spec,
+      key: spec.key.trim().toLowerCase(),
+      label: spec.label.trim(),
+      options,
+      unit: spec.unit.trim(),
+    }
+    const hasValue =
+      normalizedSpec.key.length > 0 ||
+      normalizedSpec.label.length > 0 ||
+      normalizedSpec.unit.length > 0 ||
+      normalizedSpec.options.length > 0 ||
+      Boolean(normalizedSpec.filterable) ||
+      Boolean(normalizedSpec.required)
+
+    return hasValue ? [normalizedSpec] : []
+  })
+}
+
+function getCategorySpecsMessage(specs: ReadonlyArray<CategoryMasterSpec>) {
+  const keyCounts = new Map<string, number>()
+
+  for (const spec of specs) {
+    keyCounts.set(spec.key, (keyCounts.get(spec.key) ?? 0) + 1)
+  }
+
+  for (const [index, spec] of specs.entries()) {
+    const displayNumber = index + 1
+
+    if (!spec.label) {
+      return `スペック ${displayNumber} の項目名を入力してください`
+    }
+
+    if (!spec.key) {
+      return `スペック ${displayNumber} のキーを入力してください`
+    }
+
+    if (!specKeyPattern.test(spec.key)) {
+      return `スペック ${displayNumber} のキーは半角英数字とハイフンで入力してください`
+    }
+
+    if ((keyCounts.get(spec.key) ?? 0) > 1) {
+      return `スペック ${displayNumber} のキーが重複しています`
+    }
+
+    if (spec.inputType === 'select' && spec.options.length === 0) {
+      return `スペック ${displayNumber} の選択肢を入力してください`
+    }
+  }
+
+  return null
 }
 
 function getMasterDisplayId<TItem extends { id: number }>(

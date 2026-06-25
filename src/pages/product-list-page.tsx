@@ -15,8 +15,12 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { isOnSale, isSoldOut } from '@/lib/product-status'
 import {
+  getFilterableProductCategorySpecs,
+  getProductCategorySpec,
   getProductCategoryItemBySlug,
   getProductCategoryPath,
+  getProductSpecFilterOptions,
+  getProductSpecValue,
   productBrands,
   productCategoryItems,
   storefrontProducts,
@@ -31,6 +35,7 @@ const productPageSize = 12
 type StatusFilterValue = 'all' | 'sale'
 type CategoryFilterValue = typeof allFilterLabel | ProductCategory
 type BrandFilterValue = typeof allFilterLabel | (typeof productBrands)[number]
+type SpecFilterState = Record<string, string>
 
 const productOrderIndexes = new Map(
   storefrontProducts.map((product, index) => [product.id, index]),
@@ -57,11 +62,19 @@ type ShopProductFilterState = {
   brandFilter: BrandFilterValue
   categoryFilter: CategoryFilterValue
   searchValue: string
+  specFilters: SpecFilterState
   statusFilterValue: StatusFilterValue
 }
 
 function normalizeSearchText(value: string) {
   return value.trim().toLocaleLowerCase('ja-JP')
+}
+
+function omitSpecFilter(specFilters: SpecFilterState, specKey: string) {
+  const nextFilters = { ...specFilters }
+  delete nextFilters[specKey]
+
+  return nextFilters
 }
 
 function matchesShopProductFilters(
@@ -84,6 +97,21 @@ function matchesShopProductFilters(
 
   if (filters.statusFilterValue === 'sale' && !isOnSale(product)) {
     return false
+  }
+
+  for (const [specKey, filterValue] of Object.entries(filters.specFilters)) {
+    if (!filterValue || filterValue === allFilterLabel) {
+      continue
+    }
+
+    const specDefinition = getProductCategorySpec(product.category, specKey)
+
+    if (
+      !specDefinition ||
+      getProductSpecValue(product, specDefinition) !== filterValue
+    ) {
+      return false
+    }
   }
 
   const searchText = normalizeSearchText(filters.searchValue)
@@ -147,6 +175,7 @@ function ProductListContent({
   const [brandFilter, setBrandFilter] =
     useState<BrandFilterValue>(allFilterLabel)
   const [searchValue, setSearchValue] = useState('')
+  const [specFilters, setSpecFilters] = useState<SpecFilterState>({})
   const [statusFilterValue, setStatusFilterValue] =
     useState<StatusFilterValue>('all')
   const [loadMoreState, setLoadMoreState] = useState({ count: 1, key: '' })
@@ -156,11 +185,15 @@ function ProductListContent({
   const hasUnknownCategory = Boolean(categorySlug && !activeCategoryItem)
   const categoryFilter = activeCategoryItem?.label ?? allFilterLabel
   const categoryPath = getProductCategoryPath(activeCategoryItem?.label)
+  const activeCategorySpecs = activeCategoryItem
+    ? getFilterableProductCategorySpecs(activeCategoryItem.label)
+    : []
   const requestedPageNumber = getPageNumber(searchParams.get('page'))
   const currentFilters = {
     brandFilter,
     categoryFilter,
     searchValue,
+    specFilters,
     statusFilterValue,
   } satisfies ShopProductFilterState
   const loadMoreKey = [
@@ -168,6 +201,9 @@ function ProductListContent({
     categoryFilter,
     requestedPageNumber,
     searchValue,
+    Object.entries(specFilters)
+      .map(([key, value]) => `${key}:${value}`)
+      .join(','),
     statusFilterValue,
   ].join('|')
   const loadedPageCount =
@@ -214,6 +250,7 @@ function ProductListContent({
         brandFilter: allFilterLabel,
         categoryFilter,
         searchValue,
+        specFilters,
         statusFilterValue,
       }).length,
     },
@@ -222,12 +259,14 @@ function ProductListContent({
         brandFilter: brand,
         categoryFilter,
         searchValue: '',
+        specFilters: {},
         statusFilterValue: 'all',
       }).length
       const count = getFilteredProducts({
         brandFilter: brand,
         categoryFilter,
         searchValue,
+        specFilters,
         statusFilterValue,
       }).length
 
@@ -277,7 +316,20 @@ function ProductListContent({
   const handleResetFilters = () => {
     setBrandFilter(allFilterLabel)
     setSearchValue('')
+    setSpecFilters({})
     setStatusFilterValue('all')
+  }
+  const handleSpecFilterChange = (specKey: string, value: string) => {
+    setSpecFilters((current) => {
+      if (value === allFilterLabel) {
+        return omitSpecFilter(current, specKey)
+      }
+
+      return {
+        ...current,
+        [specKey]: value,
+      }
+    })
   }
   const handleLoadMoreClick = (event: MouseEvent<HTMLAnchorElement>) => {
     event.preventDefault()
@@ -387,6 +439,50 @@ function ProductListContent({
               onChange={setStatusFilterValue}
               value={statusFilterValue}
             />
+
+            {activeCategoryItem
+              ? activeCategorySpecs.map((spec) => {
+                  const currentSpecValue =
+                    specFilters[spec.key] ?? allFilterLabel
+                  const specFilterItems = [
+                    {
+                      label: allFilterLabel,
+                      value: allFilterLabel,
+                      count: getFilteredProducts({
+                        ...currentFilters,
+                        specFilters: omitSpecFilter(specFilters, spec.key),
+                      }).length,
+                    },
+                    ...getProductSpecFilterOptions(
+                      activeCategoryItem.label,
+                      spec,
+                    ).map((value) => ({
+                      label: value,
+                      value,
+                      count: getFilteredProducts({
+                        ...currentFilters,
+                        specFilters: {
+                          ...specFilters,
+                          [spec.key]: value,
+                        },
+                      }).length,
+                    })),
+                  ]
+
+                  return (
+                    <FilterSelect
+                      className="lg:w-48"
+                      items={specFilterItems}
+                      key={spec.key}
+                      label={spec.label}
+                      onChange={(value) =>
+                        handleSpecFilterChange(spec.key, value)
+                      }
+                      value={currentSpecValue}
+                    />
+                  )
+                })
+              : null}
 
             <div className="flex justify-end lg:justify-start">
               <Button

@@ -85,13 +85,65 @@ export type ProductCategory = Exclude<
   '全て'
 >
 
+export type ProductSpecInputType = 'text' | 'select' | 'number'
+
+export type ProductCategorySpec = {
+  aliases?: readonly string[]
+  key: string
+  label: string
+  inputType: ProductSpecInputType
+  filterable?: boolean
+  options?: readonly string[]
+  required?: boolean
+  unit?: string
+}
+
 export const productCategoryItems = [
-  { label: 'スプーン', slug: 'spoons' },
-  { label: 'プラグ', slug: 'plugs' },
-  { label: 'ロッド＆リール', slug: 'rods-reels' },
-  { label: 'フック', slug: 'hooks' },
+  {
+    label: 'スプーン',
+    slug: 'spoons',
+    specs: [
+      {
+        key: 'weight',
+        label: 'ウエイト',
+        inputType: 'text',
+        filterable: true,
+        required: true,
+      },
+    ],
+  },
+  {
+    label: 'プラグ',
+    slug: 'plugs',
+    specs: [
+      {
+        aliases: ['サイズ'],
+        key: 'length',
+        label: 'レングス',
+        inputType: 'text',
+        filterable: true,
+      },
+      {
+        key: 'weight',
+        label: 'ウエイト',
+        inputType: 'text',
+        filterable: true,
+      },
+    ],
+  },
+  {
+    label: 'ロッド＆リール',
+    slug: 'rods-reels',
+    specs: [],
+  },
+  {
+    label: 'フック',
+    slug: 'hooks',
+    specs: [],
+  },
 ] as const satisfies ReadonlyArray<{
   label: ProductCategory
+  specs: readonly ProductCategorySpec[]
   slug: string
 }>
 
@@ -127,6 +179,7 @@ export type Product = {
   summary: string
   description: readonly string[]
   specs: readonly {
+    key?: string
     label: string
     value: string
   }[]
@@ -760,19 +813,80 @@ export function isProductPublished(product: Product) {
 
 export const storefrontProducts = products.filter(isProductPublished)
 
-const hiddenEditableProductSpecLabels = new Set(['タイプ', '状態'])
+const productSpecCollator = new Intl.Collator('ja-JP', { numeric: true })
 
-export function getEditableProductSpecs(product: Product) {
-  return product.specs.filter(
-    (spec) => !hiddenEditableProductSpecLabels.has(spec.label),
+export function getProductCategorySpecs(category?: ProductCategory) {
+  if (!category) {
+    return []
+  }
+
+  return (getProductCategoryItem(category)?.specs ??
+    []) as readonly ProductCategorySpec[]
+}
+
+export function getProductCategorySpec(
+  category: ProductCategory,
+  specKey: string,
+) {
+  return getProductCategorySpecs(category).find((spec) => spec.key === specKey)
+}
+
+export function getFilterableProductCategorySpecs(category?: ProductCategory) {
+  return getProductCategorySpecs(category).filter((spec) => spec.filterable)
+}
+
+export function getProductSpecValue(
+  product: Product,
+  specDefinition: ProductCategorySpec,
+) {
+  const specLabels = new Set([
+    specDefinition.label,
+    ...(specDefinition.aliases ?? []),
+  ])
+
+  return (
+    product.specs.find(
+      (spec) => spec.key === specDefinition.key || specLabels.has(spec.label),
+    )?.value ?? ''
   )
 }
 
+export function getProductCategorySpecRows(product: Product) {
+  return getProductCategorySpecs(product.category).flatMap((specDefinition) => {
+    const value = getProductSpecValue(product, specDefinition)
+
+    return value ? [{ ...specDefinition, value }] : []
+  })
+}
+
+export function getProductSpecFilterOptions(
+  category: ProductCategory,
+  specDefinition: ProductCategorySpec,
+) {
+  const values = new Set<string>()
+
+  for (const product of storefrontProducts) {
+    if (product.category !== category) {
+      continue
+    }
+
+    const value = getProductSpecValue(product, specDefinition)
+
+    if (value) {
+      values.add(value)
+    }
+  }
+
+  return [...values].sort(productSpecCollator.compare)
+}
+
 export function getProductSpecRows(product: Product) {
+  const categorySpecRows = getProductCategorySpecRows(product)
+
   return [
     { label: 'ブランド', value: product.brand },
     { label: 'カテゴリ', value: product.category },
-    ...getEditableProductSpecs(product),
+    ...categorySpecRows,
   ]
 }
 

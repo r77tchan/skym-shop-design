@@ -27,13 +27,15 @@ import { assetUrl } from '@/lib/asset-url'
 import { getProductStatuses } from '@/lib/product-status'
 import { getProductStock } from '@/lib/product-stock'
 import {
-  getEditableProductSpecs,
+  getProductCategorySpecs,
   getProductPath,
+  getProductSpecValue,
   isProductPublished,
   productBrands,
   productCategories,
   products,
   type Product,
+  type ProductCategory,
 } from '@/lib/shop-content'
 
 const fieldWrapperClassName = 'grid min-w-0 content-start gap-1.5'
@@ -79,7 +81,10 @@ function AdminProductFormPage({
   const salePrice = product?.sale ? getPriceInputValue(product.price) : ''
   const description = product?.description.join('\n\n') ?? ''
   const imageUrls = product?.images ?? []
-  const specs = product ? getEditableProductSpecs(product) : []
+  const [selectedCategory, setSelectedCategory] = useState<ProductCategory>(
+    product?.category ?? 'スプーン',
+  )
+  const selectedCategorySpecs = getProductCategorySpecs(selectedCategory)
   const isPublished = product ? isProductPublished(product) : false
   const productStatuses = product ? getProductStatuses(product) : []
   const pageTitle = isNew ? '商品登録' : (product?.name ?? '商品詳細')
@@ -162,7 +167,14 @@ function AdminProductFormPage({
 
               <label className={fieldWrapperClassName}>
                 <span className={fieldLabelClassName}>カテゴリ</span>
-                <SelectField defaultValue={product?.category}>
+                <SelectField
+                  onChange={(event) =>
+                    setSelectedCategory(
+                      event.currentTarget.value as ProductCategory,
+                    )
+                  }
+                  value={selectedCategory}
+                >
                   {editableProductCategories.map((category) => (
                     <option key={category}>{category}</option>
                   ))}
@@ -189,13 +201,21 @@ function AdminProductFormPage({
             </label>
           </section>
 
-          <section className="grid min-w-0 gap-4 rounded-lg border bg-card p-4">
-            <div className="min-w-0">
-              <h2 className="font-heading text-base font-semibold">スペック</h2>
-            </div>
+          {selectedCategorySpecs.length > 0 ? (
+            <section className="grid min-w-0 gap-4 rounded-lg border bg-card p-4">
+              <div className="min-w-0">
+                <h2 className="font-heading text-base font-semibold">
+                  スペック
+                </h2>
+              </div>
 
-            <ProductSpecsField key={product?.id ?? 'new'} specs={specs} />
-          </section>
+              <ProductSpecsField
+                category={selectedCategory}
+                key={`${product?.id ?? 'new'}-${selectedCategory}`}
+                product={product}
+              />
+            </section>
+          ) : null}
         </div>
 
         <aside className="grid min-w-0 content-start gap-5">
@@ -571,13 +591,22 @@ function PublishStateToggle({
 function SelectField({
   children,
   defaultValue,
+  onChange,
+  value,
 }: {
   children: React.ReactNode
   defaultValue?: string
+  onChange?: React.ChangeEventHandler<HTMLSelectElement>
+  value?: string
 }) {
   return (
     <span className="relative">
-      <select className={selectFieldClassName} defaultValue={defaultValue}>
+      <select
+        className={selectFieldClassName}
+        defaultValue={defaultValue}
+        onChange={onChange}
+        value={value}
+      >
         {children}
       </select>
       <ChevronDownIcon
@@ -590,124 +619,113 @@ function SelectField({
 
 type ProductSpecSlot = {
   id: string
+  inputType: 'number' | 'select' | 'text'
   label: string
+  options: readonly string[]
+  required?: boolean
+  unit?: string
   value: string
 }
 
-function createSpecSlots(specs: Product['specs']): ProductSpecSlot[] {
-  const sourceSpecs = specs.length > 0 ? specs : [{ label: '', value: '' }]
-
-  return sourceSpecs.map((spec, index) => ({
-    id: `spec-${index}`,
+function createSpecSlots(
+  category: ProductCategory,
+  product?: Product,
+): ProductSpecSlot[] {
+  return getProductCategorySpecs(category).map((spec) => ({
+    id: spec.key,
+    inputType: spec.inputType,
     label: spec.label,
-    value: spec.value,
+    options: spec.options ?? [],
+    required: spec.required,
+    unit: spec.unit,
+    value: product ? getProductSpecValue(product, spec) : '',
   }))
 }
 
-function createEmptySpecSlot(index: number): ProductSpecSlot {
-  return {
-    id: `spec-${index}`,
-    label: '',
-    value: '',
-  }
-}
+function ProductSpecsField({
+  category,
+  product,
+}: {
+  category: ProductCategory
+  product?: Product
+}) {
+  const [specSlots, setSpecSlots] = useState(() =>
+    createSpecSlots(category, product),
+  )
 
-function ProductSpecsField({ specs }: { specs: Product['specs'] }) {
-  const [specSlots, setSpecSlots] = useState(() => createSpecSlots(specs))
-  const nextSlotIndex = useRef(specSlots.length)
-
-  function addSpecSlot() {
-    const nextIndex = nextSlotIndex.current
-    nextSlotIndex.current += 1
-
-    setSpecSlots((current) => [...current, createEmptySpecSlot(nextIndex)])
-  }
-
-  function removeSpecSlot(slotId: string) {
-    setSpecSlots((current) => {
-      const nextSlots = current.filter((slot) => slot.id !== slotId)
-
-      return nextSlots.length > 0 ? nextSlots : [createEmptySpecSlot(0)]
-    })
-  }
-
-  function updateSpecSlot(
-    slotId: string,
-    field: 'label' | 'value',
-    value: string,
-  ) {
+  function updateSpecSlot(slotId: string, value: string) {
     setSpecSlots((current) =>
-      current.map((slot) =>
-        slot.id === slotId ? { ...slot, [field]: value } : slot,
-      ),
+      current.map((slot) => (slot.id === slotId ? { ...slot, value } : slot)),
     )
   }
 
   return (
     <div className="grid min-w-0 gap-3">
       {specSlots.map((slot, index) => {
-        const canRemove =
-          specSlots.length > 1 || Boolean(slot.label || slot.value)
+        const optionValues =
+          slot.value && !slot.options.includes(slot.value)
+            ? [slot.value, ...slot.options]
+            : slot.options
 
         return (
           <div
             className="grid min-w-0 gap-3 rounded-lg border bg-muted/35 p-3"
             key={slot.id}
           >
-            <div className="flex min-w-0 items-center justify-between gap-2">
+            <div className="flex min-w-0 flex-wrap items-center gap-2">
               <span className={fieldLabelClassName}>スペック {index + 1}</span>
-
-              <Button
-                aria-hidden={!canRemove}
-                aria-label={`スペック ${index + 1} を削除`}
-                className={canRemove ? undefined : 'invisible'}
-                disabled={!canRemove}
-                onClick={() => removeSpecSlot(slot.id)}
-                size="icon"
-                tabIndex={canRemove ? undefined : -1}
-                type="button"
-                variant="ghost"
-              >
-                <Trash2Icon aria-hidden="true" />
-              </Button>
+              {slot.required ? (
+                <span className="inline-flex h-5 items-center rounded-md bg-primary/10 px-1.5 text-[0.68rem] font-semibold text-primary">
+                  必須
+                </span>
+              ) : null}
             </div>
 
-            <div className="grid gap-3 sm:grid-cols-[minmax(160px,0.36fr)_minmax(0,1fr)]">
-              <label className={fieldWrapperClassName}>
-                <span className={fieldLabelClassName}>項目</span>
-                <Input
-                  onChange={(event) =>
-                    updateSpecSlot(slot.id, 'label', event.currentTarget.value)
-                  }
-                  type="text"
-                  value={slot.label}
-                />
-              </label>
-
-              <label className={fieldWrapperClassName}>
-                <span className={fieldLabelClassName}>値</span>
-                <Input
-                  onChange={(event) =>
-                    updateSpecSlot(slot.id, 'value', event.currentTarget.value)
-                  }
-                  type="text"
-                  value={slot.value}
-                />
-              </label>
-            </div>
+            <label className={fieldWrapperClassName}>
+              <span className={fieldLabelClassName}>{slot.label}</span>
+              {slot.inputType === 'select' ? (
+                <span className="relative">
+                  <select
+                    className={selectFieldClassName}
+                    onChange={(event) =>
+                      updateSpecSlot(slot.id, event.currentTarget.value)
+                    }
+                    value={slot.value}
+                  >
+                    <option value="">未選択</option>
+                    {optionValues.map((option) => (
+                      <option key={option} value={option}>
+                        {option}
+                      </option>
+                    ))}
+                  </select>
+                  <ChevronDownIcon
+                    aria-hidden="true"
+                    className="pointer-events-none absolute top-1/2 right-3 size-4 -translate-y-1/2 text-muted-foreground"
+                  />
+                </span>
+              ) : (
+                <span className="relative">
+                  <Input
+                    className={slot.unit ? 'pr-12' : undefined}
+                    onChange={(event) =>
+                      updateSpecSlot(slot.id, event.currentTarget.value)
+                    }
+                    required={slot.required}
+                    type={slot.inputType === 'number' ? 'number' : 'text'}
+                    value={slot.value}
+                  />
+                  {slot.unit ? (
+                    <span className="pointer-events-none absolute top-1/2 right-3 -translate-y-1/2 text-xs font-medium text-muted-foreground">
+                      {slot.unit}
+                    </span>
+                  ) : null}
+                </span>
+              )}
+            </label>
           </div>
         )
       })}
-
-      <Button
-        className="h-10 w-full border-dashed"
-        onClick={addSpecSlot}
-        type="button"
-        variant="outline"
-      >
-        <PlusIcon data-icon="inline-start" />
-        スペックを追加
-      </Button>
     </div>
   )
 }

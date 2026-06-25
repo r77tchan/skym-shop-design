@@ -23,7 +23,7 @@ const settingsNavItems = [
   },
   {
     title: 'カテゴリ',
-    description: '商品カテゴリとURLスラッグ',
+    description: '商品カテゴリとURLスラッグ・スペック',
     path: '/admin/settings/categories',
     icon: PackageIcon,
   },
