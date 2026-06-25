@@ -194,9 +194,10 @@ function AllowedEmailsTable({
       </div>
 
       <div className="hidden min-w-0 overflow-x-auto lg:block admin-top-nav:block">
-        <div className="min-w-[720px]">
-          <div className="grid grid-cols-[48px_minmax(280px,1fr)_104px_112px_72px] items-center gap-3 border-y bg-muted/35 px-4 py-2 text-xs font-medium text-muted-foreground">
+        <div className="min-w-[784px]">
+          <div className="grid grid-cols-[48px_64px_minmax(280px,1fr)_104px_112px_72px] items-center gap-3 border-y bg-muted/35 px-4 py-2 text-xs font-medium text-muted-foreground">
             <span>No</span>
+            <span>ID</span>
             <span>メールアドレス</span>
             <span>状態</span>
             <span>追加日</span>
@@ -206,6 +207,7 @@ function AllowedEmailsTable({
           <div className="divide-y">
             {emails.map((item, index) => (
               <AllowedEmailTableRow
+                displayId={emails.length - index}
                 displayNo={index + 1}
                 item={item}
                 key={item.email}
@@ -219,6 +221,7 @@ function AllowedEmailsTable({
       <div className="grid divide-y lg:hidden admin-top-nav:hidden">
         {emails.map((item, index) => (
           <AllowedEmailMobileCard
+            displayId={emails.length - index}
             displayNo={index + 1}
             item={item}
             key={item.email}
@@ -231,17 +234,20 @@ function AllowedEmailsTable({
 }
 
 function AllowedEmailTableRow({
+  displayId,
   displayNo,
   item,
   onDeleteEmail,
 }: {
+  displayId: number
   displayNo: number
   item: AllowedAdminEmail
   onDeleteEmail: (email: string) => void
 }) {
   return (
-    <article className="grid grid-cols-[48px_minmax(280px,1fr)_104px_112px_72px] items-center gap-3 px-4 py-3">
+    <article className="grid grid-cols-[48px_64px_minmax(280px,1fr)_104px_112px_72px] items-center gap-3 px-4 py-3">
       <span className="text-sm font-medium tabular-nums">{displayNo}</span>
+      <span className="text-sm font-medium tabular-nums">{displayId}</span>
       <span className="truncate text-sm font-medium">{item.email}</span>
       <AllowedEmailStatusBadge status={item.status} />
       <span className="text-sm font-medium">{item.addedAt}</span>
@@ -260,10 +266,12 @@ function AllowedEmailTableRow({
 }
 
 function AllowedEmailMobileCard({
+  displayId,
   displayNo,
   item,
   onDeleteEmail,
 }: {
+  displayId: number
   displayNo: number
   item: AllowedAdminEmail
   onDeleteEmail: (email: string) => void
@@ -273,7 +281,7 @@ function AllowedEmailMobileCard({
       <div className="grid min-w-0 gap-3">
         <div className="grid min-w-0 gap-1">
           <span className="text-xs font-medium text-muted-foreground tabular-nums">
-            No {displayNo}
+            No {displayNo} / ID {displayId}
           </span>
           <span className="truncate text-sm font-semibold">{item.email}</span>
         </div>
