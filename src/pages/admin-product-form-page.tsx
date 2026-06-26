@@ -27,23 +27,26 @@ import { assetUrl } from '@/lib/asset-url'
 import { getProductStatuses } from '@/lib/product-status'
 import { getProductStock } from '@/lib/product-stock'
 import {
-  getProductCategorySpecs,
+  getProductCategoryBrands,
+  getProductCategorySpecDefinitions,
   getProductPath,
-  getProductSpecValue,
   isProductPublished,
-  productBrands,
-  productCategories,
+  productCategoryMasters,
   products,
   type Product,
+  type ProductBrand,
   type ProductCategory,
+  type ProductCategorySpecDefinition,
+  type ProductCategorySpecOption,
+  type ProductSpecValueType,
 } from '@/lib/shop-content'
 
 const fieldWrapperClassName = 'grid min-w-0 content-start gap-1.5'
 const fieldLabelClassName = 'text-xs font-medium text-muted-foreground'
 const selectFieldClassName =
-  'h-11 w-full min-w-0 cursor-pointer appearance-none rounded-lg border border-input bg-background py-0 pr-10 pl-3 text-base font-medium outline-none hover:bg-accent/55 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 md:text-sm'
-const editableProductCategories = productCategories.filter(
-  (category) => category !== '全て',
+  'h-11 w-full min-w-0 cursor-pointer appearance-none rounded-lg border border-input bg-background py-0 pr-10 pl-3 text-base font-medium outline-none hover:bg-accent/55 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-background md:text-sm'
+const editableProductCategories = productCategoryMasters.map(
+  (category) => category.label,
 )
 
 function getPriceInputValue(price?: string) {
@@ -81,13 +84,35 @@ function AdminProductFormPage({
   const salePrice = product?.sale ? getPriceInputValue(product.price) : ''
   const description = product?.description.join('\n\n') ?? ''
   const imageUrls = product?.images ?? []
-  const [selectedCategory, setSelectedCategory] = useState<ProductCategory>(
-    product?.category ?? 'スプーン',
+  const [selectedCategory, setSelectedCategory] = useState<
+    ProductCategory | ''
+  >(product?.category ?? '')
+  const [selectedBrand, setSelectedBrand] = useState<ProductBrand | ''>(
+    product?.brand ?? '',
   )
-  const selectedCategorySpecs = getProductCategorySpecs(selectedCategory)
+  const selectedCategorySpecs = selectedCategory
+    ? getProductCategorySpecDefinitions(selectedCategory)
+    : []
+  const selectableBrands = selectedCategory
+    ? getProductCategoryBrands(selectedCategory)
+    : []
+  const brandOptions =
+    selectedBrand && !selectableBrands.includes(selectedBrand)
+      ? [selectedBrand, ...selectableBrands]
+      : selectableBrands
   const isPublished = product ? isProductPublished(product) : false
   const productStatuses = product ? getProductStatuses(product) : []
   const pageTitle = isNew ? '商品登録' : (product?.name ?? '商品詳細')
+
+  function handleCategoryChange(category: ProductCategory | '') {
+    setSelectedCategory(category)
+
+    const nextBrands = category ? getProductCategoryBrands(category) : []
+
+    setSelectedBrand((current) =>
+      current && nextBrands.includes(current) ? current : '',
+    )
+  }
 
   return (
     <>
@@ -157,26 +182,40 @@ function AdminProductFormPage({
               </label>
 
               <label className={fieldWrapperClassName}>
-                <span className={fieldLabelClassName}>ブランド</span>
-                <SelectField defaultValue={product?.brand}>
-                  {productBrands.map((brand) => (
-                    <option key={brand}>{brand}</option>
+                <span className={fieldLabelClassName}>カテゴリ</span>
+                <SelectField
+                  onChange={(event) =>
+                    handleCategoryChange(
+                      event.currentTarget.value as ProductCategory | '',
+                    )
+                  }
+                  value={selectedCategory}
+                >
+                  <option value="" />
+                  {editableProductCategories.map((category) => (
+                    <option key={category} value={category}>
+                      {category}
+                    </option>
                   ))}
                 </SelectField>
               </label>
 
               <label className={fieldWrapperClassName}>
-                <span className={fieldLabelClassName}>カテゴリ</span>
+                <span className={fieldLabelClassName}>ブランド</span>
                 <SelectField
+                  disabled={!selectedCategory}
                   onChange={(event) =>
-                    setSelectedCategory(
-                      event.currentTarget.value as ProductCategory,
+                    setSelectedBrand(
+                      event.currentTarget.value as ProductBrand | '',
                     )
                   }
-                  value={selectedCategory}
+                  value={selectedBrand}
                 >
-                  {editableProductCategories.map((category) => (
-                    <option key={category}>{category}</option>
+                  <option value="" />
+                  {brandOptions.map((brand) => (
+                    <option key={brand} value={brand}>
+                      {brand}
+                    </option>
                   ))}
                 </SelectField>
               </label>
@@ -201,7 +240,7 @@ function AdminProductFormPage({
             </label>
           </section>
 
-          {selectedCategorySpecs.length > 0 ? (
+          {selectedCategory && selectedCategorySpecs.length > 0 ? (
             <section className="grid min-w-0 gap-4 rounded-lg border bg-card p-4">
               <div className="min-w-0">
                 <h2 className="font-heading text-base font-semibold">
@@ -591,11 +630,13 @@ function PublishStateToggle({
 function SelectField({
   children,
   defaultValue,
+  disabled,
   onChange,
   value,
 }: {
   children: React.ReactNode
   defaultValue?: string
+  disabled?: boolean
   onChange?: React.ChangeEventHandler<HTMLSelectElement>
   value?: string
 }) {
@@ -604,6 +645,7 @@ function SelectField({
       <select
         className={selectFieldClassName}
         defaultValue={defaultValue}
+        disabled={disabled}
         onChange={onChange}
         value={value}
       >
@@ -619,27 +661,34 @@ function SelectField({
 
 type ProductSpecSlot = {
   id: string
-  inputType: 'number' | 'select' | 'text'
   label: string
-  options: readonly string[]
+  options: readonly ProductCategorySpecOption[]
   required?: boolean
   unit?: string
   value: string
+  valueType: ProductSpecValueType
 }
 
 function createSpecSlots(
   category: ProductCategory,
   product?: Product,
 ): ProductSpecSlot[] {
-  return getProductCategorySpecs(category).map((spec) => ({
-    id: spec.key,
-    inputType: spec.inputType,
-    label: spec.label,
-    options: spec.options ?? [],
-    required: spec.required,
-    unit: spec.unit,
-    value: product ? getProductSpecValue(product, spec) : '',
-  }))
+  return getProductCategorySpecDefinitions(category).map((spec) => {
+    const value = product ? getProductSpecDefinitionValue(product, spec) : ''
+
+    return {
+      id: spec.slug,
+      label: spec.label,
+      options: spec.options ?? [],
+      required: spec.isRequired,
+      unit: spec.unit,
+      value:
+        spec.valueType === 'number'
+          ? getNumberSpecInputValue(value, spec.unit)
+          : value,
+      valueType: spec.valueType,
+    }
+  })
 }
 
 function ProductSpecsField({
@@ -662,10 +711,11 @@ function ProductSpecsField({
   return (
     <div className="grid min-w-0 gap-3">
       {specSlots.map((slot, index) => {
+        const optionLabels = slot.options.map((option) => option.label)
         const optionValues =
-          slot.value && !slot.options.includes(slot.value)
-            ? [slot.value, ...slot.options]
-            : slot.options
+          slot.value && !optionLabels.includes(slot.value)
+            ? [slot.value, ...optionLabels]
+            : optionLabels
 
         return (
           <div
@@ -683,13 +733,14 @@ function ProductSpecsField({
 
             <label className={fieldWrapperClassName}>
               <span className={fieldLabelClassName}>{slot.label}</span>
-              {slot.inputType === 'select' ? (
+              {slot.valueType === 'option' ? (
                 <span className="relative">
                   <select
                     className={selectFieldClassName}
                     onChange={(event) =>
                       updateSpecSlot(slot.id, event.currentTarget.value)
                     }
+                    required={slot.required}
                     value={slot.value}
                   >
                     <option value="">未選択</option>
@@ -712,7 +763,7 @@ function ProductSpecsField({
                       updateSpecSlot(slot.id, event.currentTarget.value)
                     }
                     required={slot.required}
-                    type={slot.inputType === 'number' ? 'number' : 'text'}
+                    type={slot.valueType === 'number' ? 'number' : 'text'}
                     value={slot.value}
                   />
                   {slot.unit ? (
@@ -728,6 +779,29 @@ function ProductSpecsField({
       })}
     </div>
   )
+}
+
+function getProductSpecDefinitionValue(
+  product: Product,
+  specDefinition: ProductCategorySpecDefinition,
+) {
+  const specLabels = new Set([
+    specDefinition.label,
+    ...(specDefinition.aliases ?? []),
+  ])
+
+  return (
+    product.specs.find(
+      (spec) => spec.key === specDefinition.slug || specLabels.has(spec.label),
+    )?.value ?? ''
+  )
+}
+
+function getNumberSpecInputValue(value: string, unit?: string) {
+  const unitlessValue = unit ? value.replace(unit, '') : value
+  const numericValue = unitlessValue.match(/-?\d+(?:\.\d+)?/)?.[0]
+
+  return numericValue ?? unitlessValue
 }
 
 function ProductNotFound({ productId }: { productId?: string }) {

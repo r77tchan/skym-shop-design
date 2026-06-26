@@ -168,6 +168,7 @@ export type ProductCategorySpecOption = {
 }
 
 export type ProductCategorySpecDefinition = {
+  aliases?: readonly string[]
   label: string
   slug: string
   valueType: ProductSpecValueType
@@ -227,6 +228,7 @@ export const productCategoryMasters = [
     brands: ['1089工房', 'RODIO CRAFT', 'JACKALL', 'DAYSPROUT'],
     specs: [
       {
+        aliases: ['サイズ'],
         label: 'レングス',
         slug: 'length',
         valueType: 'number',
@@ -1001,10 +1003,52 @@ export function getProductSpecRows(product: Product) {
   const categorySpecRows = getProductCategorySpecRows(product)
 
   return [
-    { label: 'ブランド', value: product.brand },
     { label: 'カテゴリ', value: product.category },
+    { label: 'ブランド', value: product.brand },
     ...categorySpecRows,
   ]
+}
+
+export function getProductCategoryMaster(
+  category: ProductCategory,
+): ProductCategoryMaster | undefined {
+  return productCategoryMasters.find((item) => item.label === category)
+}
+
+export function getProductCategorySpecDefinitions(
+  category?: ProductCategory,
+): readonly ProductCategorySpecDefinition[] {
+  if (!category) {
+    return []
+  }
+
+  return getProductCategoryMaster(category)?.specs ?? []
+}
+
+export function getProductCategoryBrands(
+  category?: ProductCategory,
+): readonly ProductBrand[] {
+  if (!category) {
+    return []
+  }
+
+  return getProductCategoryMaster(category)?.brands ?? []
+}
+
+export function getProductSpecDefinitionValue(
+  product: Product,
+  specDefinition: ProductCategorySpecDefinition,
+) {
+  const specLabels = new Set([
+    specDefinition.label,
+    ...(specDefinition.aliases ?? []),
+  ])
+
+  return (
+    product.specs.find(
+      (spec) => spec.key === specDefinition.slug || specLabels.has(spec.label),
+    )?.value ?? ''
+  )
 }
 
 export function getProductCategoryItem(category: ProductCategory) {
