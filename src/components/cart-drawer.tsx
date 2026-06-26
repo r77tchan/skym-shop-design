@@ -83,16 +83,16 @@ export function CartDrawer({ buttonClassName }: CartDrawerProps) {
                   <div className="flex items-center justify-between gap-4">
                     <dt className="text-muted-foreground">送料</dt>
                     <dd className="text-xs font-medium text-muted-foreground">
-                      決済時に確認
+                      決済時に選択
                     </dd>
                   </div>
                 </dl>
                 <p className="mt-3 text-xs leading-5 text-muted-foreground">
-                  表示価格には消費税が含まれています。別途送料がかかります。
+                  表示価格には消費税が含まれています。別途送料を決済時に選択します。決済には外部サービスのStripeを使用しています。
                 </p>
                 <Button className="mt-4 h-12 w-full text-base" type="button">
                   <CreditCardIcon data-icon="inline-start" />
-                  レジに進む
+                  決済画面へ
                 </Button>
               </div>
 
