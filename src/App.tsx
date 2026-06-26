@@ -21,6 +21,8 @@ import { AdminOrdersPage } from '@/pages/admin-orders-page'
 import { AdminProductsPage } from '@/pages/admin-products-page'
 import { AdminSettingsAuthPage } from '@/pages/admin-settings-auth-page'
 import {
+  AdminSettingsCategoryDetailPage,
+  AdminSettingsCategoryNewPage,
   AdminSettingsBrandsPage,
   AdminSettingsCategoriesPage,
   AdminSettingsNewsTagsPage,
@@ -79,6 +81,14 @@ export function App() {
         <Route
           element={<AdminSettingsCategoriesPage />}
           path="settings/categories"
+        />
+        <Route
+          element={<AdminSettingsCategoryNewPage />}
+          path="settings/categories/new"
+        />
+        <Route
+          element={<AdminSettingsCategoryDetailPage />}
+          path="settings/categories/:categoryId"
         />
         <Route
           element={<AdminSettingsNewsTagsPage />}

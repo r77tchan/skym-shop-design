@@ -159,8 +159,125 @@ export const productBrands = [
   'SKYM',
 ] as const
 
-export type ProductStatus = 'SOLD OUT' | 'SALE' | 'NEW'
 export type ProductBrand = (typeof productBrands)[number]
+export type ProductSpecValueType = 'text' | 'number' | 'option'
+
+export type ProductCategorySpecOption = {
+  label: string
+  slug?: string
+}
+
+export type ProductCategorySpecDefinition = {
+  label: string
+  slug: string
+  valueType: ProductSpecValueType
+  isFilterable?: boolean
+  isRequired?: boolean
+  options?: readonly ProductCategorySpecOption[]
+  unit?: string
+}
+
+export type ProductCategoryMaster = {
+  brands: readonly ProductBrand[]
+  label: ProductCategory
+  slug: string
+  specs: readonly ProductCategorySpecDefinition[]
+}
+
+export const productCategoryMasters = [
+  {
+    label: 'スプーン',
+    slug: 'spoons',
+    brands: [
+      'VELVET ARTS',
+      'ValkeIN',
+      'RODIO CRAFT',
+      '1089工房',
+      'YARIE',
+      'sauribu',
+    ],
+    specs: [
+      {
+        label: 'ウエイト',
+        slug: 'weight',
+        valueType: 'option',
+        isFilterable: true,
+        isRequired: true,
+        options: [
+          { label: '0.6g', slug: '0-6g' },
+          { label: '1.1g', slug: '1-1g' },
+          { label: '1.6g', slug: '1-6g' },
+          { label: '1.8g', slug: '1-8g' },
+          { label: '2.1g', slug: '2-1g' },
+          { label: '2.3g', slug: '2-3g' },
+          { label: '2.4g', slug: '2-4g' },
+          { label: '2.5g', slug: '2-5g' },
+        ],
+      },
+      {
+        label: 'カラー',
+        slug: 'color',
+        valueType: 'text',
+      },
+    ],
+  },
+  {
+    label: 'プラグ',
+    slug: 'plugs',
+    brands: ['1089工房', 'RODIO CRAFT', 'JACKALL', 'DAYSPROUT'],
+    specs: [
+      {
+        label: 'レングス',
+        slug: 'length',
+        valueType: 'number',
+        unit: 'mm',
+      },
+      {
+        label: 'ウエイト',
+        slug: 'weight',
+        valueType: 'option',
+        isFilterable: true,
+        options: [
+          { label: '2.0g', slug: '2-0g' },
+          { label: '2.4g', slug: '2-4g' },
+          { label: '3.7g', slug: '3-7g' },
+        ],
+      },
+      {
+        label: 'レンジ',
+        slug: 'range',
+        valueType: 'option',
+        isFilterable: true,
+        options: [
+          { label: '表層', slug: 'surface' },
+          { label: '中層', slug: 'middle' },
+          { label: 'ボトム', slug: 'bottom' },
+        ],
+      },
+    ],
+  },
+  {
+    label: 'ロッド＆リール',
+    slug: 'rods-reels',
+    brands: ['SKYM'],
+    specs: [],
+  },
+  {
+    label: 'フック',
+    slug: 'hooks',
+    brands: ['SKYM'],
+    specs: [
+      {
+        label: 'タイプ',
+        slug: 'type',
+        valueType: 'option',
+        options: [{ label: '交換フック' }, { label: 'セット' }],
+      },
+    ],
+  },
+] as const satisfies readonly ProductCategoryMaster[]
+
+export type ProductStatus = 'SOLD OUT' | 'SALE' | 'NEW'
 
 export type ProductSale = {
   originalPrice: string
