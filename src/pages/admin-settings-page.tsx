@@ -8,6 +8,8 @@ import {
 } from 'lucide-react'
 import { Link } from 'react-router'
 
+import { AdminPageHeader } from '@/components/admin/admin-page-header'
+
 const settingsNavItems = [
   {
     title: '認証設定',
@@ -44,7 +46,7 @@ const settingsNavItems = [
 export function AdminSettingsPage() {
   return (
     <>
-      <SettingsPageHeader />
+      <AdminPageHeader title="設定" />
 
       <section className="grid min-w-0 gap-4 md:grid-cols-2">
         {settingsNavItems.map((item) => {
@@ -76,19 +78,5 @@ export function AdminSettingsPage() {
         })}
       </section>
     </>
-  )
-}
-
-function SettingsPageHeader() {
-  return (
-    <section className="border-b pb-5">
-      <div className="flex h-10 items-end justify-between gap-4">
-        <div className="min-w-0">
-          <h1 className="font-heading text-2xl font-semibold tracking-normal sm:text-3xl">
-            設定
-          </h1>
-        </div>
-      </div>
-    </section>
   )
 }

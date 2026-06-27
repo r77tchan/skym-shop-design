@@ -1,9 +1,6 @@
 import {
   ArrowUpDownIcon,
-  CheckIcon,
   ChevronDownIcon,
-  CircleCheckIcon,
-  EyeOffIcon,
   PencilIcon,
   PlusIcon,
   RotateCcwIcon,
@@ -11,9 +8,17 @@ import {
   XIcon,
 } from 'lucide-react'
 import { Dialog } from 'radix-ui'
-import { useState, type ReactNode } from 'react'
+import { useState } from 'react'
 import { Link } from 'react-router'
 
+import { AdminPageHeader } from '@/components/admin/admin-page-header'
+import {
+  BulkEditField,
+  BulkEditSegmentedControl,
+} from '@/components/admin/bulk-edit-field'
+import { PublishStateBadge } from '@/components/admin/publish-state-badge'
+import { SegmentedFilter } from '@/components/admin/segmented-filter'
+import { SelectionCheckbox } from '@/components/admin/selection-checkbox'
 import { ProductPrice } from '@/components/product-price'
 import { ProductStatusBadge } from '@/components/product-status-badge'
 import { Button } from '@/components/ui/button'
@@ -371,7 +376,17 @@ export function AdminProductsPage() {
 
   return (
     <>
-      <ProductsPageHeader />
+      <AdminPageHeader
+        action={
+          <Button asChild className="h-10 px-3">
+            <Link to="/admin/products/new">
+              <PlusIcon data-icon="inline-start" />
+              商品登録
+            </Link>
+          </Button>
+        }
+        title="商品"
+      />
 
       <section className="grid max-w-full min-w-0 grid-cols-[minmax(0,1fr)] overflow-hidden rounded-lg border bg-card">
         <AdminCategoryFilterNav
@@ -412,7 +427,8 @@ export function AdminProductsPage() {
               value={brandFilter}
             />
 
-            <AdminSegmentedFilter
+            <SegmentedFilter
+              variant="wrap"
               label="セール"
               onChange={setSaleFilter}
               options={saleFilterOptions}
@@ -439,19 +455,22 @@ export function AdminProductsPage() {
           </div>
 
           <div className="flex w-full min-w-0 flex-col gap-3 border-t pt-4 sm:flex-row sm:flex-wrap sm:items-end">
-            <AdminSegmentedFilter
+            <SegmentedFilter
+              variant="wrap"
               label="公開状態"
               onChange={setVisibilityFilter}
               options={visibilityFilterOptions}
               value={visibilityFilter}
             />
-            <AdminSegmentedFilter
+            <SegmentedFilter
+              variant="wrap"
               label="NEWタグ"
               onChange={setNewBadgeFilter}
               options={newBadgeFilterOptions}
               value={newBadgeFilter}
             />
-            <AdminSegmentedFilter
+            <SegmentedFilter
+              variant="wrap"
               label="在庫"
               onChange={setInventoryFilter}
               options={inventoryFilterOptions}
@@ -599,83 +618,6 @@ function AdminSortSelect({
         />
       </span>
     </label>
-  )
-}
-
-function AdminSegmentedFilter<TValue extends string>({
-  label,
-  onChange,
-  options,
-  value,
-}: {
-  label: string
-  onChange: (value: TValue) => void
-  options: ReadonlyArray<{ label: string; value: TValue; count: number }>
-  value: TValue
-}) {
-  return (
-    <div className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-1.5">
-      <p className="text-xs font-medium text-muted-foreground">{label}</p>
-      <div
-        aria-label={label}
-        className="flex min-h-11 w-fit max-w-full flex-wrap rounded-lg border bg-background p-1"
-        role="group"
-      >
-        {options.map((option) => {
-          const active = option.value === value
-
-          return (
-            <button
-              aria-pressed={active ? 'true' : 'false'}
-              className={cn(
-                'inline-flex h-9 min-w-20 items-center justify-center gap-1.5 rounded-md px-3 text-sm font-medium whitespace-nowrap',
-                active
-                  ? 'bg-primary text-primary-foreground'
-                  : 'text-muted-foreground hover:bg-accent/55 hover:text-foreground',
-              )}
-              key={option.value}
-              onClick={() => onChange(option.value)}
-              type="button"
-            >
-              <span className="truncate">{option.label}</span>
-              <span
-                className={cn(
-                  'inline-block w-[3ch] shrink-0 text-right text-[0.68rem] tabular-nums',
-                  active
-                    ? 'text-primary-foreground/75'
-                    : 'text-muted-foreground',
-                )}
-              >
-                {option.count}
-              </span>
-            </button>
-          )
-        })}
-      </div>
-    </div>
-  )
-}
-
-function ProductsPageHeader() {
-  return (
-    <section className="border-b pb-5">
-      <div className="flex h-10 items-end justify-between gap-4">
-        <div className="min-w-0">
-          <h1 className="font-heading text-2xl font-semibold tracking-normal sm:text-3xl">
-            商品
-          </h1>
-        </div>
-
-        <div className="flex shrink-0 items-center gap-2">
-          <Button asChild className="h-10 px-3">
-            <Link to="/admin/products/new">
-              <PlusIcon data-icon="inline-start" />
-              商品登録
-            </Link>
-          </Button>
-        </div>
-      </div>
-    </section>
   )
 }
 
@@ -1101,6 +1043,7 @@ function BulkEditDialogContent({
 
             <BulkEditField label="公開状態">
               <BulkEditSegmentedControl
+                variant="wrap"
                 onChange={setVisibilityValue}
                 options={bulkVisibilityOptions}
                 value={visibilityValue}
@@ -1109,6 +1052,7 @@ function BulkEditDialogContent({
 
             <BulkEditField label="NEWタグ">
               <BulkEditSegmentedControl
+                variant="wrap"
                 onChange={setNewBadgeValue}
                 options={bulkNewBadgeOptions}
                 value={newBadgeValue}
@@ -1118,6 +1062,7 @@ function BulkEditDialogContent({
             <BulkEditField label="セール">
               <div className="grid min-w-0 gap-3">
                 <BulkEditSegmentedControl
+                  variant="wrap"
                   onChange={setSaleValue}
                   options={bulkSaleOptions}
                   value={saleValue}
@@ -1222,21 +1167,6 @@ function BulkEditDialogContent({
   )
 }
 
-function BulkEditField({
-  children,
-  label,
-}: {
-  children: ReactNode
-  label: string
-}) {
-  return (
-    <div className="grid min-w-0 gap-2 lg:grid-cols-[112px_minmax(0,1fr)] lg:items-start">
-      <p className="pt-2 text-xs font-medium text-muted-foreground">{label}</p>
-      <div className="min-w-0">{children}</div>
-    </div>
-  )
-}
-
 function BulkEditSelect<TValue extends string>({
   onChange,
   options,
@@ -1266,84 +1196,6 @@ function BulkEditSelect<TValue extends string>({
         aria-hidden="true"
         className="pointer-events-none absolute top-1/2 right-3 size-4 -translate-y-1/2 text-muted-foreground"
       />
-    </span>
-  )
-}
-
-function BulkEditSegmentedControl<TValue extends string>({
-  onChange,
-  options,
-  value,
-}: {
-  onChange: (value: TValue) => void
-  options: ReadonlyArray<{ label: string; value: TValue }>
-  value: TValue
-}) {
-  return (
-    <div className="flex w-fit max-w-full flex-wrap rounded-lg border bg-background p-0.5">
-      {options.map((option) => {
-        const active = option.value === value
-
-        return (
-          <button
-            aria-pressed={active ? 'true' : 'false'}
-            className={cn(
-              'inline-flex h-8 min-w-20 items-center justify-center rounded-md px-2 text-xs font-medium whitespace-nowrap',
-              active
-                ? 'bg-primary text-primary-foreground'
-                : 'text-muted-foreground hover:bg-muted hover:text-foreground',
-            )}
-            key={option.value}
-            onClick={() => onChange(option.value)}
-            type="button"
-          >
-            {option.label}
-          </button>
-        )
-      })}
-    </div>
-  )
-}
-
-function SelectionCheckbox({
-  ariaLabel,
-  checked,
-  onCheckedChange,
-}: {
-  ariaLabel: string
-  checked: boolean
-  onCheckedChange: (checked: boolean) => void
-}) {
-  return (
-    <label className="grid size-8 cursor-pointer place-items-center rounded-md hover:bg-accent/55">
-      <input
-        aria-label={ariaLabel}
-        checked={checked}
-        className="peer sr-only"
-        onChange={(event) => onCheckedChange(event.currentTarget.checked)}
-        type="checkbox"
-      />
-      <span className="grid size-5 place-items-center rounded border border-input bg-background text-transparent peer-checked:border-primary peer-checked:bg-primary peer-checked:text-primary-foreground peer-focus-visible:ring-2 peer-focus-visible:ring-ring peer-focus-visible:ring-offset-2">
-        <CheckIcon aria-hidden="true" className="size-3.5" />
-      </span>
-    </label>
-  )
-}
-
-function PublishStateBadge({ isPublished }: { isPublished: boolean }) {
-  const Icon = isPublished ? CircleCheckIcon : EyeOffIcon
-
-  return (
-    <span
-      className={cn(
-        'inline-flex h-7 min-w-20 items-center justify-center gap-1.5 rounded-full border px-2 text-xs font-semibold',
-        isPublished
-          ? 'border-primary/40 bg-primary/15 text-primary'
-          : 'border-muted-foreground/35 bg-muted-foreground/15 text-foreground',
-      )}
-    >
-      <Icon aria-hidden="true" className="size-3.5" />
-      {isPublished ? '公開' : '非公開'}
     </span>
   )
 }

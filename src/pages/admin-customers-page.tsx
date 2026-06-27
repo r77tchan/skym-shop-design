@@ -2,6 +2,7 @@ import { RotateCcwIcon, SearchIcon } from 'lucide-react'
 import { useState } from 'react'
 import { Link } from 'react-router'
 
+import { AdminPageHeader } from '@/components/admin/admin-page-header'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import {
@@ -55,7 +56,7 @@ export function AdminCustomersPage() {
 
   return (
     <>
-      <CustomersPageHeader />
+      <AdminPageHeader title="顧客" />
 
       <section className="grid max-w-full min-w-0 grid-cols-[minmax(0,1fr)] overflow-hidden rounded-lg border bg-card">
         <div className="grid w-full max-w-full min-w-0 grid-cols-[minmax(0,1fr)] gap-4 overflow-hidden p-4">
@@ -99,20 +100,6 @@ export function AdminCustomersPage() {
 
       <CustomersTable rows={filteredCustomerRows} />
     </>
-  )
-}
-
-function CustomersPageHeader() {
-  return (
-    <section className="border-b pb-5">
-      <div className="flex h-10 items-end justify-between gap-4">
-        <div className="min-w-0">
-          <h1 className="font-heading text-2xl font-semibold tracking-normal sm:text-3xl">
-            顧客
-          </h1>
-        </div>
-      </div>
-    </section>
   )
 }
 

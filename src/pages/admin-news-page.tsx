@@ -1,7 +1,4 @@
 import {
-  CheckIcon,
-  CircleCheckIcon,
-  EyeOffIcon,
   ImageOffIcon,
   PencilIcon,
   PlusIcon,
@@ -10,9 +7,17 @@ import {
   XIcon,
 } from 'lucide-react'
 import { Dialog } from 'radix-ui'
-import { useState, type ReactNode } from 'react'
+import { useState } from 'react'
 import { Link } from 'react-router'
 
+import { AdminPageHeader } from '@/components/admin/admin-page-header'
+import {
+  BulkEditField,
+  BulkEditSegmentedControl,
+} from '@/components/admin/bulk-edit-field'
+import { PublishStateBadge } from '@/components/admin/publish-state-badge'
+import { SegmentedFilter } from '@/components/admin/segmented-filter'
+import { SelectionCheckbox } from '@/components/admin/selection-checkbox'
 import { NewsLabelBadge } from '@/components/news-label-badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -178,7 +183,17 @@ export function AdminNewsPage() {
 
   return (
     <>
-      <NewsPageHeader />
+      <AdminPageHeader
+        action={
+          <Button asChild className="h-10 px-3">
+            <Link to="/admin/news/new">
+              <PlusIcon data-icon="inline-start" />
+              新規作成
+            </Link>
+          </Button>
+        }
+        title="お知らせ"
+      />
 
       <section className="grid max-w-full min-w-0 grid-cols-[minmax(0,1fr)] overflow-hidden rounded-lg border bg-card">
         <div className="grid w-full max-w-full min-w-0 grid-cols-[minmax(0,1fr)] gap-4 overflow-hidden p-4">
@@ -205,7 +220,8 @@ export function AdminNewsPage() {
               </span>
             </label>
 
-            <NewsSegmentedFilter
+            <SegmentedFilter
+              columns={3}
               label="公開状態"
               onChange={setVisibilityFilter}
               options={visibilityFilterOptions}
@@ -235,83 +251,6 @@ export function AdminNewsPage() {
         visibleSelectedNewsCount={visibleSelectedNewsCount}
       />
     </>
-  )
-}
-
-function NewsSegmentedFilter<TValue extends string>({
-  label,
-  onChange,
-  options,
-  value,
-}: {
-  label: string
-  onChange: (value: TValue) => void
-  options: ReadonlyArray<{ label: string; value: TValue; count: number }>
-  value: TValue
-}) {
-  return (
-    <div className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-1.5">
-      <p className="text-xs font-medium text-muted-foreground">{label}</p>
-      <div
-        aria-label={label}
-        className="grid h-11 w-full max-w-full grid-cols-3 rounded-lg border bg-background p-1 sm:w-fit"
-        role="group"
-      >
-        {options.map((option) => {
-          const active = option.value === value
-
-          return (
-            <button
-              aria-pressed={active ? 'true' : 'false'}
-              className={cn(
-                'inline-flex h-full min-w-0 items-center justify-center gap-1 rounded-md px-1.5 text-xs font-medium whitespace-nowrap sm:min-w-20 sm:gap-1.5 sm:px-3 sm:text-sm',
-                active
-                  ? 'bg-primary text-primary-foreground'
-                  : 'text-muted-foreground hover:bg-accent/55 hover:text-foreground',
-              )}
-              key={option.value}
-              onClick={() => onChange(option.value)}
-              type="button"
-            >
-              <span className="truncate">{option.label}</span>
-              <span
-                className={cn(
-                  'inline-block w-[2ch] shrink-0 text-right text-[0.68rem] tabular-nums sm:w-[3ch]',
-                  active
-                    ? 'text-primary-foreground/75'
-                    : 'text-muted-foreground',
-                )}
-              >
-                {option.count}
-              </span>
-            </button>
-          )
-        })}
-      </div>
-    </div>
-  )
-}
-
-function NewsPageHeader() {
-  return (
-    <section className="border-b pb-5">
-      <div className="flex h-10 items-end justify-between gap-4">
-        <div className="min-w-0">
-          <h1 className="font-heading text-2xl font-semibold tracking-normal sm:text-3xl">
-            お知らせ
-          </h1>
-        </div>
-
-        <div className="flex shrink-0 items-center gap-2">
-          <Button asChild className="h-10 px-3">
-            <Link to="/admin/news/new">
-              <PlusIcon data-icon="inline-start" />
-              新規作成
-            </Link>
-          </Button>
-        </div>
-      </div>
-    </section>
   )
 }
 
@@ -540,56 +479,6 @@ function BulkEditDialogContent({
   )
 }
 
-function BulkEditField({
-  children,
-  label,
-}: {
-  children: ReactNode
-  label: string
-}) {
-  return (
-    <div className="grid min-w-0 gap-2 lg:grid-cols-[112px_minmax(0,1fr)] lg:items-start">
-      <p className="pt-2 text-xs font-medium text-muted-foreground">{label}</p>
-      <div className="min-w-0">{children}</div>
-    </div>
-  )
-}
-
-function BulkEditSegmentedControl<TValue extends string>({
-  onChange,
-  options,
-  value,
-}: {
-  onChange: (value: TValue) => void
-  options: ReadonlyArray<{ label: string; value: TValue }>
-  value: TValue
-}) {
-  return (
-    <div className="grid w-full max-w-full grid-cols-2 gap-1 rounded-lg border bg-background p-1 sm:flex sm:w-fit">
-      {options.map((option) => {
-        const active = option.value === value
-
-        return (
-          <button
-            aria-pressed={active ? 'true' : 'false'}
-            className={cn(
-              'inline-flex h-8 min-w-0 items-center justify-center rounded-md px-2 text-xs font-medium whitespace-nowrap sm:min-w-20',
-              active
-                ? 'bg-primary text-primary-foreground'
-                : 'text-muted-foreground hover:bg-muted hover:text-foreground',
-            )}
-            key={option.value}
-            onClick={() => onChange(option.value)}
-            type="button"
-          >
-            {option.label}
-          </button>
-        )
-      })}
-    </div>
-  )
-}
-
 function NewsTableRow({
   isPublished,
   isSelected,
@@ -715,48 +604,5 @@ function NewsMobileCard({
         <PublishStateBadge isPublished={isPublished} />
       </div>
     </article>
-  )
-}
-
-function SelectionCheckbox({
-  ariaLabel,
-  checked,
-  onCheckedChange,
-}: {
-  ariaLabel: string
-  checked: boolean
-  onCheckedChange: (checked: boolean) => void
-}) {
-  return (
-    <label className="grid size-8 cursor-pointer place-items-center rounded-md hover:bg-accent/55">
-      <input
-        aria-label={ariaLabel}
-        checked={checked}
-        className="peer sr-only"
-        onChange={(event) => onCheckedChange(event.currentTarget.checked)}
-        type="checkbox"
-      />
-      <span className="grid size-5 place-items-center rounded border border-input bg-background text-transparent peer-checked:border-primary peer-checked:bg-primary peer-checked:text-primary-foreground peer-focus-visible:ring-2 peer-focus-visible:ring-ring peer-focus-visible:ring-offset-2">
-        <CheckIcon aria-hidden="true" className="size-3.5" />
-      </span>
-    </label>
-  )
-}
-
-function PublishStateBadge({ isPublished }: { isPublished: boolean }) {
-  const Icon = isPublished ? CircleCheckIcon : EyeOffIcon
-
-  return (
-    <span
-      className={cn(
-        'inline-flex h-7 min-w-20 items-center justify-center gap-1.5 rounded-full border px-2 text-xs font-semibold',
-        isPublished
-          ? 'border-primary/40 bg-primary/15 text-primary'
-          : 'border-muted-foreground/35 bg-muted-foreground/15 text-foreground',
-      )}
-    >
-      <Icon aria-hidden="true" className="size-3.5" />
-      {isPublished ? '公開' : '非公開'}
-    </span>
   )
 }
