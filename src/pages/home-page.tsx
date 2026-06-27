@@ -1,6 +1,7 @@
 import { ArrowRightIcon } from 'lucide-react'
 import { Link } from 'react-router'
 
+import { NewsImage } from '@/components/news-image'
 import { NewsLabelBadge } from '@/components/news-label-badge'
 import { ProductCard } from '@/components/product-card'
 import { SiteFooter } from '@/components/site-footer'
@@ -118,22 +119,31 @@ export function HomePage() {
               <Link
                 className={cn(
                   interactiveCardLinkClassName,
-                  'grid gap-2 p-4 sm:grid-cols-[auto_auto_minmax(0,1fr)] sm:items-center',
+                  'grid grid-cols-[auto_minmax(0,1fr)] items-center gap-3 p-3',
                 )}
-                key={item.title}
+                key={item.id}
                 to={getNewsItemPath(item)}
               >
-                <span className="text-xs font-medium text-muted-foreground">
-                  {item.date}
-                </span>
-                <NewsLabelBadge label={item.label} />
-                <span
-                  className={cn(
-                    'min-w-0 text-sm font-medium',
-                    interactiveCardTitleClassName,
-                  )}
-                >
-                  {item.title}
+                <NewsImage
+                  alt=""
+                  className="size-14 rounded-md border"
+                  src={item.mainImageUrl}
+                />
+                <span className="grid min-w-0 gap-1.5">
+                  <span className="flex flex-wrap items-center gap-2">
+                    <span className="text-xs font-medium text-muted-foreground">
+                      {item.publishedOn}
+                    </span>
+                    {item.tag ? <NewsLabelBadge label={item.tag} /> : null}
+                  </span>
+                  <span
+                    className={cn(
+                      'min-w-0 truncate text-sm font-medium',
+                      interactiveCardTitleClassName,
+                    )}
+                  >
+                    {item.title}
+                  </span>
                 </span>
               </Link>
             ))}

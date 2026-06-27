@@ -13,7 +13,7 @@ import { Link, Navigate, useNavigate, useParams } from 'react-router'
 
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { adminNewsLabelOptions } from '@/lib/admin-news'
+import { adminNewsTagOptions } from '@/lib/admin-news'
 import {
   productBrandItems,
   productCategoryMasters,
@@ -79,7 +79,7 @@ const categoryMasterItems: CategoryMasterItem[] = productCategoryMasters.map(
   }),
 )
 
-const newsTagMasterItems: NameMasterItem[] = adminNewsLabelOptions.map(
+const newsTagMasterItems: NameMasterItem[] = adminNewsTagOptions.map(
   (name, index) => ({
     id: index + 1,
     name,
@@ -140,7 +140,6 @@ export function AdminSettingsCategoryDetailPage() {
 export function AdminSettingsNewsTagsPage() {
   return (
     <NameMasterSettingsPage
-      description="お知らせ作成時に選択するタグを管理します。"
       initialItems={newsTagMasterItems}
       inputLabel="タグ名"
       messageId="news-tag-master-message"
@@ -377,13 +376,11 @@ function BrandMasterSettingsPage({
 }
 
 function NameMasterSettingsPage({
-  description,
   initialItems,
   inputLabel,
   messageId,
   title,
 }: {
-  description: string
   initialItems: ReadonlyArray<NameMasterItem>
   inputLabel: string
   messageId: string
@@ -438,12 +435,7 @@ function NameMasterSettingsPage({
       <SettingsDetailHeader title={title} />
 
       <section className="grid min-w-0 content-start gap-5 rounded-lg border bg-card p-4">
-        <div className="min-w-0">
-          <h2 className="font-heading text-base font-semibold">{title}</h2>
-          <p className="mt-1 text-sm leading-6 text-muted-foreground">
-            {description}
-          </p>
-        </div>
+        <h2 className="font-heading text-base font-semibold">{title}登録</h2>
 
         <form
           className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end"
@@ -476,6 +468,12 @@ function NameMasterSettingsPage({
             {message}
           </p>
         ) : null}
+      </section>
+
+      <section className="grid min-w-0 content-start gap-5 rounded-lg border bg-card p-4">
+        <h2 className="font-heading text-base font-semibold">
+          登録済み{title}
+        </h2>
 
         <NameMasterList
           items={items}
@@ -494,7 +492,7 @@ function NameMasterSettingsPage({
       >
         {editingItem ? (
           <NameMasterEditDialogContent
-            displayId={getMasterDisplayId(items, editingItem.id)}
+            displayId={editingItem.id}
             inputLabel={inputLabel}
             item={editingItem}
             items={items}
@@ -635,9 +633,7 @@ function NameMasterList({
             <span className="text-sm font-medium tabular-nums">
               {index + 1}
             </span>
-            <span className="text-sm font-medium tabular-nums">
-              {items.length - index}
-            </span>
+            <span className="text-sm font-medium tabular-nums">{item.id}</span>
             <span className="truncate text-sm font-semibold">{item.name}</span>
             <Button
               aria-label={`${item.name}を編集`}
@@ -988,8 +984,6 @@ function NameMasterEditDialogContent({
           onSubmit={handleSubmit}
         >
           <div className="grid min-h-0 min-w-0 content-start gap-4 overflow-y-auto p-5">
-            <MasterDisplayField label="ID" value={String(displayId)} />
-
             <label className="grid min-w-0 gap-1.5">
               <span className="text-xs font-medium text-muted-foreground">
                 {inputLabel}
@@ -1817,15 +1811,6 @@ function getNextOptionIndex(options: readonly CategoryMasterSpecOption[]) {
   })
 
   return Math.max(-1, ...indexes) + 1
-}
-
-function getMasterDisplayId<TItem extends { id: number }>(
-  items: ReadonlyArray<TItem>,
-  itemId: number,
-) {
-  const index = items.findIndex((item) => item.id === itemId)
-
-  return index === -1 ? itemId : items.length - index
 }
 
 function getNextMasterId<TItem extends { id: number }>(

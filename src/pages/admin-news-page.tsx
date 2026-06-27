@@ -2,6 +2,7 @@ import {
   CheckIcon,
   CircleCheckIcon,
   EyeOffIcon,
+  ImageOffIcon,
   PencilIcon,
   PlusIcon,
   RotateCcwIcon,
@@ -18,8 +19,10 @@ import { Input } from '@/components/ui/input'
 import {
   adminNewsItems,
   getAdminNewsRows,
+  type AdminNewsItem,
   type AdminNewsRow,
 } from '@/lib/admin-news'
+import { assetUrl } from '@/lib/asset-url'
 import { cn } from '@/lib/utils'
 
 type VisibilityFilterValue = 'all' | 'published' | 'unpublished'
@@ -52,13 +55,53 @@ function matchesAdminNewsFilters(
     searchValue &&
     !String(row.item.id).includes(searchValue) &&
     !row.item.title.toLocaleLowerCase().includes(searchValue) &&
-    !row.item.label.toLocaleLowerCase().includes(searchValue) &&
+    !(row.item.tag ?? '').toLocaleLowerCase().includes(searchValue) &&
     !row.summary.toLocaleLowerCase().includes(searchValue)
   ) {
     return false
   }
 
   return true
+}
+
+function NewsTagBadge({ tag }: { tag: string | null }) {
+  if (!tag) {
+    return (
+      <span className="text-xs font-medium text-muted-foreground">なし</span>
+    )
+  }
+
+  return <NewsLabelBadge label={tag} />
+}
+
+function NewsThumbnail({
+  className,
+  item,
+}: {
+  className?: string
+  item: AdminNewsItem
+}) {
+  return (
+    <span
+      className={cn(
+        'grid shrink-0 place-items-center overflow-hidden rounded-md border bg-muted',
+        className,
+      )}
+    >
+      {item.mainImageUrl ? (
+        <img
+          alt=""
+          className="size-full object-cover"
+          src={assetUrl(item.mainImageUrl)}
+        />
+      ) : (
+        <ImageOffIcon
+          aria-hidden="true"
+          className="size-4 text-muted-foreground"
+        />
+      )}
+    </span>
+  )
 }
 
 function getFilteredAdminNewsRows(filters: AdminNewsFilterState) {
@@ -455,7 +498,7 @@ function BulkEditDialogContent({
                     </p>
                   </div>
                   <div className="flex shrink-0 flex-wrap items-center gap-2 sm:justify-end">
-                    <NewsLabelBadge label={row.item.label} />
+                    <NewsTagBadge tag={row.item.tag} />
                     <PublishStateBadge
                       isPublished={publishedNewsIds.has(row.item.id)}
                     />
@@ -572,14 +615,17 @@ function NewsTableRow({
           {item.id}
         </span>
         <span className="flex min-w-0 items-center">
-          <NewsLabelBadge label={item.label} />
+          <NewsTagBadge tag={item.tag} />
         </span>
-        <span className="min-w-0">
-          <span className="block truncate text-sm font-semibold">
-            {item.title}
-          </span>
-          <span className="mt-1 block truncate text-xs text-muted-foreground">
-            {summary}
+        <span className="flex min-w-0 items-center gap-3">
+          <NewsThumbnail className="size-12" item={item} />
+          <span className="min-w-0">
+            <span className="block truncate text-sm font-semibold">
+              {item.title}
+            </span>
+            <span className="mt-1 block truncate text-xs text-muted-foreground">
+              {summary}
+            </span>
           </span>
         </span>
         <span className="truncate text-sm font-medium tabular-nums">
@@ -633,12 +679,15 @@ function NewsMobileCard({
             </span>
           </span>
           <span className="shrink-0">
-            <NewsLabelBadge label={item.label} />
+            <NewsTagBadge tag={item.tag} />
           </span>
         </span>
 
-        <span className="line-clamp-2 text-sm leading-6 text-muted-foreground">
-          {summary}
+        <span className="flex min-w-0 items-start gap-3">
+          <NewsThumbnail className="size-16" item={item} />
+          <span className="line-clamp-2 text-sm leading-6 text-muted-foreground">
+            {summary}
+          </span>
         </span>
 
         <span className="grid min-w-0 gap-1 text-sm">

@@ -3,24 +3,36 @@ import {
   ChevronDownIcon,
   ExternalLinkIcon,
   EyeIcon,
+  ImagePlusIcon,
+  PencilIcon,
   SaveIcon,
+  Trash2Icon,
 } from 'lucide-react'
 import { useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router'
 
+import { NewsMarkdown } from '@/components/news-markdown'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import {
-  adminNewsLabelOptions,
+  adminNewsTagOptions,
   findAdminNewsById,
-  getAdminNewsContentValue,
   getAdminNewsDateInputValue,
   getAdminNewsPublicPath,
   type AdminNewsItem,
 } from '@/lib/admin-news'
+import { assetUrl } from '@/lib/asset-url'
 import { cn } from '@/lib/utils'
+
+// デザイン確認用のダミー画像（実アップロードは未実装）。
+const sampleMainImagePath =
+  '/skym-shop-assets/images/products/daysprout-pico-chatakura-md-ss-front.jpg'
+const sampleBodyImageMarkdown =
+  '![画像の説明](/skym-shop-assets/images/products/161b25ac6ba3c56743cad57b38ad7ee5.jpg)'
+
+const noTagValue = ''
 
 const fieldWrapperClassName = 'grid min-w-0 content-start gap-1.5'
 const fieldLabelClassName = 'text-xs font-medium text-muted-foreground'
@@ -52,14 +64,15 @@ function AdminNewsFormPage({
   const navigate = useNavigate()
   const isNew = mode === 'new'
   const [titleValue, setTitleValue] = useState(item?.title ?? '')
-  const [labelValue, setLabelValue] = useState(
-    item?.label ?? adminNewsLabelOptions[0] ?? '',
-  )
-  const [contentValue, setContentValue] = useState(
-    item ? getAdminNewsContentValue(item) : '',
+  const [tagValue, setTagValue] = useState(item?.tag ?? noTagValue)
+  const [bodyValue, setBodyValue] = useState(item?.body ?? '')
+  const [mainImageUrl, setMainImageUrl] = useState<string | null>(
+    item?.mainImageUrl ?? null,
   )
   const [publishedAtValue, setPublishedAtValue] = useState(
-    item ? getAdminNewsDateInputValue(item.date) : getTodayDateInputValue(),
+    item
+      ? getAdminNewsDateInputValue(item.publishedOn)
+      : getTodayDateInputValue(),
   )
   const [isPublished, setIsPublished] = useState(item?.published ?? false)
   const pageTitle = isNew ? 'お知らせ作成' : (item?.title ?? 'お知らせ詳細')
@@ -135,24 +148,32 @@ function AdminNewsFormPage({
               <label className={fieldWrapperClassName}>
                 <span className={fieldLabelClassName}>ラベル</span>
                 <SelectField
-                  onChange={setLabelValue}
-                  options={adminNewsLabelOptions}
-                  value={labelValue}
+                  onChange={setTagValue}
+                  options={adminNewsTagOptions}
+                  placeholder="（なし）"
+                  value={tagValue}
                 />
               </label>
             </div>
 
-            <label className={fieldWrapperClassName}>
-              <span className={fieldLabelClassName}>本文</span>
-              <Textarea
-                onChange={(event) => setContentValue(event.currentTarget.value)}
-                value={contentValue}
-              />
-            </label>
+            <MarkdownBodyField onChange={setBodyValue} value={bodyValue} />
           </section>
         </div>
 
         <aside className="grid min-w-0 content-start gap-5">
+          <section className="grid min-w-0 gap-4 rounded-lg border bg-card p-4">
+            <div className="min-w-0">
+              <h2 className="font-heading text-base font-semibold">
+                メイン画像
+              </h2>
+              <p className="mt-1 text-xs leading-5 text-muted-foreground">
+                一覧と詳細で表示する画像です（本文中の画像とは別）。
+              </p>
+            </div>
+
+            <MainImagePicker onChange={setMainImageUrl} value={mainImageUrl} />
+          </section>
+
           <section className="grid min-w-0 gap-4 rounded-lg border bg-card p-4">
             <div className="min-w-0">
               <h2 className="font-heading text-base font-semibold">公開設定</h2>
@@ -187,10 +208,12 @@ function AdminNewsFormPage({
 function SelectField({
   onChange,
   options,
+  placeholder,
   value,
 }: {
   onChange: (value: string) => void
   options: ReadonlyArray<string>
+  placeholder?: string
   value: string
 }) {
   return (
@@ -200,6 +223,7 @@ function SelectField({
         onChange={(event) => onChange(event.currentTarget.value)}
         value={value}
       >
+        {placeholder ? <option value="">{placeholder}</option> : null}
         {options.map((option) => (
           <option key={option}>{option}</option>
         ))}
@@ -209,6 +233,147 @@ function SelectField({
         className="pointer-events-none absolute top-1/2 right-3 size-4 -translate-y-1/2 text-muted-foreground"
       />
     </span>
+  )
+}
+
+function MarkdownBodyField({
+  onChange,
+  value,
+}: {
+  onChange: (value: string) => void
+  value: string
+}) {
+  const [showPreview, setShowPreview] = useState(false)
+
+  const handleInsertImage = () => {
+    const snippet = value.trim()
+      ? `${value.trimEnd()}\n\n${sampleBodyImageMarkdown}\n`
+      : `${sampleBodyImageMarkdown}\n`
+
+    onChange(snippet)
+  }
+
+  return (
+    <div className={fieldWrapperClassName}>
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <span className={fieldLabelClassName}>本文（Markdown）</span>
+        <div className="flex items-center gap-1.5">
+          <Button
+            className="h-8 px-2.5 text-xs"
+            onClick={handleInsertImage}
+            type="button"
+            variant="outline"
+          >
+            <ImagePlusIcon data-icon="inline-start" />
+            画像を挿入
+          </Button>
+          <Button
+            className="h-8 px-2.5 text-xs"
+            onClick={() => setShowPreview((current) => !current)}
+            type="button"
+            variant="outline"
+          >
+            {showPreview ? (
+              <>
+                <PencilIcon data-icon="inline-start" />
+                編集
+              </>
+            ) : (
+              <>
+                <EyeIcon data-icon="inline-start" />
+                プレビュー
+              </>
+            )}
+          </Button>
+        </div>
+      </div>
+
+      {showPreview ? (
+        <div className="min-h-44 rounded-lg border bg-background p-4">
+          {value.trim() ? (
+            <NewsMarkdown body={value} />
+          ) : (
+            <p className="text-sm text-muted-foreground">
+              プレビューする内容がありません
+            </p>
+          )}
+        </div>
+      ) : (
+        <Textarea
+          className="min-h-44"
+          onChange={(event) => onChange(event.currentTarget.value)}
+          value={value}
+        />
+      )}
+
+      <p className="text-xs leading-5 text-muted-foreground">
+        空行で段落を分け、<code>![説明](画像URL)</code>{' '}
+        で本文中に画像を埋め込めます。
+      </p>
+    </div>
+  )
+}
+
+function MainImagePicker({
+  onChange,
+  value,
+}: {
+  onChange: (value: string | null) => void
+  value: string | null
+}) {
+  if (value) {
+    return (
+      <div className="grid min-w-0 gap-3">
+        <div className="overflow-hidden rounded-lg border bg-muted">
+          <img
+            alt="メイン画像プレビュー"
+            className="aspect-[16/9] w-full object-cover"
+            src={assetUrl(value)}
+          />
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <Button
+            className="h-9 px-3 text-xs"
+            onClick={() => onChange(sampleMainImagePath)}
+            type="button"
+            variant="outline"
+          >
+            <ImagePlusIcon data-icon="inline-start" />
+            画像を変更
+          </Button>
+          <Button
+            className="h-9 px-3 text-xs"
+            onClick={() => onChange(null)}
+            type="button"
+            variant="outline"
+          >
+            <Trash2Icon data-icon="inline-start" />
+            削除
+          </Button>
+        </div>
+        <p className="text-xs leading-5 text-muted-foreground">
+          ※ デザイン確認用のダミーです。
+        </p>
+      </div>
+    )
+  }
+
+  return (
+    <div className="grid min-w-0 gap-2">
+      <button
+        className="grid aspect-[16/9] w-full place-items-center gap-2 rounded-lg border border-dashed bg-background text-muted-foreground outline-none hover:bg-accent/55 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+        onClick={() => onChange(sampleMainImagePath)}
+        type="button"
+      >
+        <ImagePlusIcon aria-hidden="true" className="size-6" />
+        <span className="text-sm font-medium">
+          画像をアップロード（ダミー）
+        </span>
+      </button>
+      <p className="text-xs leading-5 text-muted-foreground">
+        ※ デザイン確認用のダミーです。
+      </p>
+    </div>
   )
 }
 

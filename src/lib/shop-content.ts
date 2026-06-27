@@ -3,70 +3,91 @@ export const companyUrl = 'https://skym.co.jp/'
 
 export const shopDescription = `${companyName} が運営するフィッシングタックル オンラインストア。トラウトを中心に、フィールドを愛するアングラーへ確かな道具をお届けします。`
 
-export const newsItems = [
+// お知らせタグのマスタ（/admin/settings/news-tags で管理する想定）。
+export const newsTags = ['お知らせ', '入荷', 'NEW', 'SALE', 'EVENT'] as const
+
+export type NewsItem = {
+  id: number
+  publishedOn: string
+  tag: string | null
+  mainImageUrl: string | null
+  title: string
+  body: string
+}
+
+export const newsItems: readonly NewsItem[] = [
   {
     id: 6,
-    date: '2026.06.01',
-    label: '入荷',
+    publishedOn: '2026.06.01',
+    tag: '入荷',
+    mainImageUrl:
+      '/skym-shop-assets/images/products/valkein-astrar-2-4g-front.jpg',
     title: 'ValkeINスプーン 入荷しました',
-    content: [
+    body: [
       '人気のValkeINスプーンが各カラー再入荷しました。シーズンを問わず使いやすい定番色を中心に、フィールドでの反応を見ながらローテーションしやすいラインナップを揃えています。',
+      '![入荷したValkeINスプーン](/skym-shop-assets/images/products/valkein-astrar-2-4g-back.jpg)',
       '在庫数には限りがあります。気になるカラーがある場合は、商品一覧より在庫状況をご確認ください。',
-    ],
+    ].join('\n\n'),
   },
   {
     id: 5,
-    date: '2026.05.28',
-    label: '入荷',
+    publishedOn: '2026.05.28',
+    tag: '入荷',
+    mainImageUrl:
+      '/skym-shop-assets/images/products/rodio-drift-spin-37-chart-front.jpg',
     title: 'ロデオクラフト ドリフトスピン 入荷しました',
-    content: [
+    body: [
       '高実績のドリフトスピンが入荷しました。スプーンで届かないレンジや、魚の追いが弱い場面のローテーションにおすすめです。',
       '入荷カラーは順次追加予定です。販売開始後は在庫が変動しやすいため、購入前に商品ページをご確認ください。',
-    ],
+    ].join('\n\n'),
   },
   {
     id: 4,
-    date: '2026.05.25',
-    label: 'SALE',
+    publishedOn: '2026.05.25',
+    tag: 'SALE',
+    mainImageUrl: null,
     title: 'サマーセール開催中',
-    content: [
+    body: [
       '対象のルアーを期間限定価格で販売しています。カラー補充やシーズン前の買い足しにご利用ください。',
       'セール対象商品は予告なく変更となる場合があります。完売後の再入荷や価格変更については、各商品ページでご案内します。',
-    ],
+    ].join('\n\n'),
   },
   {
     id: 3,
-    date: '2026.05.18',
-    label: 'お知らせ',
+    publishedOn: '2026.05.18',
+    tag: 'お知らせ',
+    mainImageUrl: null,
     title: '発送スケジュールについて',
-    content: [
+    body: [
       'ご注文状況により、発送まで通常よりお時間をいただく場合があります。発送完了後は追跡番号をメールでお送りします。',
       'お急ぎの場合は、購入前に発送予定日をご確認ください。配送方法や地域によって到着までの日数が異なります。',
-    ],
+    ].join('\n\n'),
   },
   {
     id: 2,
-    date: '2026.05.10',
-    label: 'NEW',
+    publishedOn: '2026.05.10',
+    tag: 'NEW',
+    mainImageUrl:
+      '/skym-shop-assets/images/products/rodio-noa-b-2-2g-front.jpg',
     title: 'オリジナルカラー販売開始',
-    content: [
+    body: [
       'フィールドでの視認性と食わせを意識したオリジナルカラーを追加しました。晴天時、曇天時、濁りのある水質でも使い分けしやすいカラー展開です。',
       '数量限定のため、在庫がなくなり次第終了です。再販売の予定がある場合は、改めてお知らせします。',
-    ],
+    ].join('\n\n'),
   },
   {
     id: 1,
-    date: '2026.04.30',
-    label: 'EVENT',
+    publishedOn: '2026.04.30',
+    tag: 'EVENT',
+    mainImageUrl:
+      '/skym-shop-assets/images/products/jackall-tapdancer-daigo-front.jpg',
     title: 'SKYM トラウトカップ 2026 受付開始',
-    content: [
+    body: [
       'トラウトアングラー向けイベントの受付を開始しました。参加方法、開催場所、当日のスケジュールは順次ご案内します。',
       '定員に達し次第、受付を終了する場合があります。参加をご希望の方は、最新のお知らせをご確認ください。',
-    ],
+    ].join('\n\n'),
   },
 ]
-
-export type NewsItem = (typeof newsItems)[number]
 
 export function getNewsItemPath(item: NewsItem) {
   return `/news/${item.id}`

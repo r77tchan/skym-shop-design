@@ -178,3 +178,46 @@ DB以外で保証するルール:
 - 値の種類が `option` のスペックは、選択肢IDを使用する。
 - `category_spec_option_id` を使う場合、その選択肢は同じ `category_spec_definition_id` に紐づくものだけ使用する。
 - 商品一覧フィルタ対象にする定型値は、原則として値の種類を `option` にする。
+
+## news
+
+お知らせ。
+
+| カラム名       | 型          | NULL | デフォルト | 制約                     | 説明                                  |
+| -------------- | ----------- | ---: | ---------- | ------------------------ | ------------------------------------- |
+| id             | bigint      |   NO | 自動採番   | 主キー                   | お知らせID                            |
+| news_tag_id    | bigint      |  YES | -          | 外部キー（news_tags.id） | タグID                                |
+| title          | text        |   NO | -          | 空文字不可               | タイトル                              |
+| body           | text        |   NO | -          | 空文字不可               | 本文（Markdown）                      |
+| main_image_url | text        |  YES | -          | 空文字不可               | メイン画像URL（一覧・詳細用、R2想定） |
+| published_on   | date        |   NO | -          | -                        | 公開日（表示用）                      |
+| is_published   | boolean     |   NO | false      | -                        | 公開状態                              |
+| created_at     | timestamptz |   NO | now()      | -                        | 作成日時                              |
+| updated_at     | timestamptz |   NO | now()      | -                        | 更新日時                              |
+
+テーブル制約:
+
+- タグ削除時は参照を `NULL` にする（`news_tag_id` は ON DELETE SET NULL）。
+
+DB以外で保証するルール:
+
+- 本文は Markdown（CommonMark 想定）で保存し、表示側でレンダリングする。本文中に画像（`![alt](url)`）を埋め込める。
+- `main_image_url` は一覧・詳細で表示するメイン画像で、本文中の Markdown 画像とは別。画像がない場合は、UI側で画像なし表示にする。
+- `published_on` は表示用の日付で、公開可否は `is_published` で制御する（公開予約はしない）。
+- 一覧は `published_on` の降順（同日は `id` 降順）で表示する。
+
+## news_tags
+
+お知らせタグ。`/admin/settings/news-tags` で管理し、お知らせ作成時に選択する。
+
+| カラム名   | 型          | NULL | デフォルト | 制約             | 説明     |
+| ---------- | ----------- | ---: | ---------- | ---------------- | -------- |
+| id         | bigint      |   NO | 自動採番   | 主キー           | タグID   |
+| name       | text        |   NO | -          | 一意, 空文字不可 | タグ名   |
+| sort_order | integer     |   NO | 0          | 一意, 0以上      | 表示順   |
+| created_at | timestamptz |   NO | now()      | -                | 作成日時 |
+| updated_at | timestamptz |   NO | now()      | -                | 更新日時 |
+
+テーブル制約:
+
+- タグ名は大文字小文字を区別せずに重複不可（`lower(name)` のユニークインデックス）。

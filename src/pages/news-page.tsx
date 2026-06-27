@@ -1,6 +1,7 @@
 import { ArrowRightIcon } from 'lucide-react'
 import { Link } from 'react-router'
 
+import { NewsImage } from '@/components/news-image'
 import { NewsLabelBadge } from '@/components/news-label-badge'
 import { SiteFooter } from '@/components/site-footer'
 import { SiteHeader } from '@/components/site-header'
@@ -53,22 +54,28 @@ export function NewsPage() {
               aria-label={`${item.title}の詳細へ`}
               className={cn(
                 interactiveCardLinkClassName,
-                'grid gap-3 p-5 sm:grid-cols-[9rem_minmax(0,1fr)_2rem] sm:items-center sm:gap-5',
+                'grid grid-cols-[auto_minmax(0,1fr)] items-center gap-4 p-4 sm:grid-cols-[auto_minmax(0,1fr)_2rem] sm:gap-5',
               )}
-              key={item.title}
+              key={item.id}
               to={getNewsItemPath(item)}
             >
-              <div className="flex items-center gap-3 sm:grid sm:gap-3">
-                <time
-                  className="text-xs font-medium text-muted-foreground"
-                  dateTime={item.date.replaceAll('.', '-')}
-                >
-                  {item.date}
-                </time>
-                <NewsLabelBadge label={item.label} />
-              </div>
+              <NewsImage
+                alt=""
+                className="size-24 rounded-md border sm:size-28"
+                src={item.mainImageUrl}
+              />
 
-              <div className="min-w-0">
+              <div className="grid min-w-0 gap-2">
+                <div className="flex flex-wrap items-center gap-3">
+                  <time
+                    className="text-xs font-medium text-muted-foreground"
+                    dateTime={item.publishedOn.replaceAll('.', '-')}
+                  >
+                    {item.publishedOn}
+                  </time>
+                  {item.tag ? <NewsLabelBadge label={item.tag} /> : null}
+                </div>
+
                 <h2
                   className={cn(
                     'text-base leading-6 font-semibold',
@@ -81,7 +88,7 @@ export function NewsPage() {
 
               <ArrowRightIcon
                 aria-hidden="true"
-                className="size-4 text-muted-foreground group-hover:text-primary sm:justify-self-end"
+                className="hidden size-4 text-muted-foreground group-hover:text-primary sm:block sm:justify-self-end"
               />
             </Link>
           ))}

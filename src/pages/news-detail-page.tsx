@@ -2,9 +2,11 @@ import { ArrowLeftIcon } from 'lucide-react'
 import { Link, Navigate, useParams } from 'react-router'
 
 import { NewsLabelBadge } from '@/components/news-label-badge'
+import { NewsMarkdown } from '@/components/news-markdown'
 import { SiteFooter } from '@/components/site-footer'
 import { SiteHeader } from '@/components/site-header'
 import { Button } from '@/components/ui/button'
+import { assetUrl } from '@/lib/asset-url'
 import { newsItems } from '@/lib/shop-content'
 import { backButtonClassName } from '@/lib/ui-styles'
 
@@ -59,11 +61,11 @@ export function NewsDetailPage() {
               <div className="flex flex-wrap items-center gap-3">
                 <time
                   className="text-xs font-medium text-muted-foreground"
-                  dateTime={item.date.replaceAll('.', '-')}
+                  dateTime={item.publishedOn.replaceAll('.', '-')}
                 >
-                  {item.date}
+                  {item.publishedOn}
                 </time>
-                <NewsLabelBadge label={item.label} />
+                {item.tag ? <NewsLabelBadge label={item.tag} /> : null}
               </div>
               <h1 className="mt-4 font-heading text-3xl leading-tight font-semibold sm:text-4xl">
                 {item.title}
@@ -73,15 +75,15 @@ export function NewsDetailPage() {
         </section>
 
         <section>
-          <div className="mx-auto grid max-w-4xl gap-5 px-gutter py-10 sm:py-14">
-            {item.content.map((paragraph) => (
-              <p
-                className="text-sm leading-8 text-foreground/86 sm:text-base"
-                key={paragraph}
-              >
-                {paragraph}
-              </p>
-            ))}
+          <div className="mx-auto grid max-w-4xl gap-8 px-gutter py-10 sm:py-14">
+            {item.mainImageUrl ? (
+              <img
+                alt={item.title}
+                className="w-full rounded-lg border bg-muted"
+                src={assetUrl(item.mainImageUrl)}
+              />
+            ) : null}
+            <NewsMarkdown body={item.body} />
           </div>
         </section>
       </article>
