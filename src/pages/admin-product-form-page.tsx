@@ -46,11 +46,13 @@ import {
   type ProductNewBadgeMode,
   type ProductSpecValueType,
 } from '@/lib/shop-content'
+import {
+  fieldLabelClassName,
+  fieldWrapperClassName,
+  selectFieldClassName as baseSelectFieldClassName,
+} from '@/lib/ui-styles'
 
-const fieldWrapperClassName = 'grid min-w-0 content-start gap-1.5'
-const fieldLabelClassName = 'text-xs font-medium text-muted-foreground'
-const selectFieldClassName =
-  'h-11 w-full min-w-0 cursor-pointer appearance-none rounded-lg border border-input bg-background py-0 pr-10 pl-3 text-base font-medium outline-none hover:bg-accent/55 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-background md:text-sm'
+const selectFieldClassName = `${baseSelectFieldClassName} disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-background`
 const editableProductCategories = productCategoryMasters.map(
   (category) => category.label,
 )

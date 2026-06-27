@@ -24,6 +24,11 @@ import {
   type AdminNewsItem,
 } from '@/lib/admin-news'
 import { assetUrl } from '@/lib/asset-url'
+import {
+  fieldLabelClassName,
+  fieldWrapperClassName,
+  selectFieldClassName,
+} from '@/lib/ui-styles'
 import { cn } from '@/lib/utils'
 
 // デザイン確認用のダミー画像（実アップロードは未実装）。
@@ -34,10 +39,6 @@ const sampleBodyImageMarkdown =
 
 const noTagValue = ''
 
-const fieldWrapperClassName = 'grid min-w-0 content-start gap-1.5'
-const fieldLabelClassName = 'text-xs font-medium text-muted-foreground'
-const selectFieldClassName =
-  'h-11 w-full min-w-0 cursor-pointer appearance-none rounded-lg border border-input bg-background py-0 pr-10 pl-3 text-base font-medium outline-none hover:bg-accent/55 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 md:text-sm'
 
 export function AdminNewsNewPage() {
   return <AdminNewsFormPage mode="new" />

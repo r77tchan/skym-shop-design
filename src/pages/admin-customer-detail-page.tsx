@@ -12,9 +12,9 @@ import {
   getAdminOrderStatusClassName,
   type AdminOrder,
 } from '@/lib/admin-orders'
+import { fieldLabelClassName } from '@/lib/ui-styles'
 import { cn } from '@/lib/utils'
 
-const fieldLabelClassName = 'text-xs font-medium text-muted-foreground'
 
 export function AdminCustomerDetailPage() {
   const { customerId } = useParams()
