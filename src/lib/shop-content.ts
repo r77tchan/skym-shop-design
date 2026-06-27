@@ -147,19 +147,24 @@ export const productCategoryItems = [
   slug: string
 }>
 
-export const productBrands = [
-  'VELVET ARTS',
-  'ValkeIN',
-  'RODIO CRAFT',
-  '1089工房',
-  'YARIE',
-  'sauribu',
-  'JACKALL',
-  'DAYSPROUT',
-  'SKYM',
+export const productBrandItems = [
+  { label: 'VELVET ARTS', slug: 'velvet-arts' },
+  { label: 'ValkeIN', slug: 'valkein' },
+  { label: 'RODIO CRAFT', slug: 'rodio-craft' },
+  { label: '1089工房', slug: '1089-koubou' },
+  { label: 'YARIE', slug: 'yarie' },
+  { label: 'sauribu', slug: 'sauribu' },
+  { label: 'JACKALL', slug: 'jackall' },
+  { label: 'DAYSPROUT', slug: 'daysprout' },
+  { label: 'SKYM', slug: 'skym' },
 ] as const
 
-export type ProductBrand = (typeof productBrands)[number]
+export type ProductBrand = (typeof productBrandItems)[number]['label']
+export type ProductBrandSlug = (typeof productBrandItems)[number]['slug']
+
+export const productBrands = productBrandItems.map(
+  (brand) => brand.label,
+) as readonly ProductBrand[]
 export type ProductSpecValueType = 'text' | 'number' | 'option'
 
 export type ProductCategorySpecOption = {

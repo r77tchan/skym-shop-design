@@ -743,7 +743,7 @@ function ProductSpecsField({
                     required={slot.required}
                     value={slot.value}
                   >
-                    <option value="">未選択</option>
+                    <option aria-label="空白" value="" />
                     {optionValues.map((option) => (
                       <option key={option} value={option}>
                         {option}

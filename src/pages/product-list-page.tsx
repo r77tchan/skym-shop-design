@@ -5,7 +5,7 @@ import {
   RotateCcwIcon,
   SearchIcon,
 } from 'lucide-react'
-import { useRef, useState, type MouseEvent } from 'react'
+import { useEffect, useRef, useState, type MouseEvent } from 'react'
 import { Link, Navigate, useParams, useSearchParams } from 'react-router'
 
 import { ProductCard } from '@/components/product-card'
@@ -20,10 +20,12 @@ import {
   getProductCategoryPath,
   getProductCategorySpecDefinitions,
   getProductSpecDefinitionValue,
+  productBrandItems,
   productBrands,
   productCategoryItems,
   storefrontProducts,
   type Product,
+  type ProductBrand,
   type ProductCategory,
   type ProductCategorySpecDefinition,
 } from '@/lib/shop-content'
@@ -41,6 +43,13 @@ type FilterItem<TValue extends string> = {
   value: TValue
   count: number
 }
+
+const saleSearchParamValue = 'true'
+const filterSearchParamNavigateOptions = {
+  preventScrollReset: true,
+  replace: true,
+  state: { preserveScroll: true },
+} as const
 
 const productOrderIndexes = new Map(
   storefrontProducts.map((product, index) => [product.id, index]),
@@ -91,6 +100,47 @@ function getProductSpecOptionFilterValue(
       (option) => (option.slug ?? option.label) === optionValue,
     )?.label ?? optionValue
   )
+}
+
+function getProductBrandBySlug(brandSlug: string | null) {
+  return productBrandItems.find((brand) => brand.slug === brandSlug)?.label
+}
+
+function getProductBrandSlug(brand: ProductBrand) {
+  return productBrandItems.find((item) => item.label === brand)?.slug
+}
+
+function getBrandFilterFromSearchParams(
+  searchParams: URLSearchParams,
+  brandCandidates: readonly ProductBrand[],
+): BrandFilterValue {
+  const requestedBrand = getProductBrandBySlug(searchParams.get('brand'))
+
+  return requestedBrand && brandCandidates.includes(requestedBrand)
+    ? requestedBrand
+    : allFilterLabel
+}
+
+function getSpecFiltersFromSearchParams(
+  searchParams: URLSearchParams,
+  specDefinitions: readonly ProductCategorySpecDefinition[],
+) {
+  const specFilters: SpecFilterState = {}
+
+  for (const specDefinition of specDefinitions) {
+    const requestedValue = searchParams.get(specDefinition.slug)
+
+    if (
+      requestedValue &&
+      specDefinition.options?.some(
+        (option) => (option.slug ?? option.label) === requestedValue,
+      )
+    ) {
+      specFilters[specDefinition.slug] = requestedValue
+    }
+  }
+
+  return specFilters
 }
 
 function matchesShopProductFilters(
@@ -219,14 +269,8 @@ function ProductListContent({
   searchParams: URLSearchParams
 }) {
   const [, setSearchParams] = useSearchParams()
-  const [brandFilter, setBrandFilter] =
-    useState<BrandFilterValue>(allFilterLabel)
-  const [searchValue, setSearchValue] = useState(
-    searchParams.get('keyword') ?? '',
-  )
-  const [specFilters, setSpecFilters] = useState<SpecFilterState>({})
-  const [statusFilterValue, setStatusFilterValue] =
-    useState<StatusFilterValue>('all')
+  const searchParamKeyword = searchParams.get('keyword') ?? ''
+  const [searchValue, setSearchValue] = useState(searchParamKeyword)
   const [loadMoreState, setLoadMoreState] = useState({ count: 1, key: '' })
   const searchCompositionRef = useRef(false)
   const activeCategoryItem = categorySlug
@@ -243,7 +287,27 @@ function ProductListContent({
           (spec.options?.length ?? 0) > 0,
       )
     : []
+  const brandFilterCandidates = activeCategoryItem
+    ? getProductCategoryBrands(activeCategoryItem.label)
+    : productBrands
+  const brandFilter = getBrandFilterFromSearchParams(
+    searchParams,
+    brandFilterCandidates,
+  )
+  const specFilters = getSpecFiltersFromSearchParams(
+    searchParams,
+    activeCategorySpecs,
+  )
+  const statusFilterValue: StatusFilterValue =
+    searchParams.get('sale') === saleSearchParamValue ? 'sale' : 'all'
   const requestedPageNumber = getPageNumber(searchParams.get('page'))
+
+  useEffect(() => {
+    if (!searchCompositionRef.current) {
+      setSearchValue(searchParamKeyword)
+    }
+  }, [searchParamKeyword])
+
   const currentFilters = {
     brandFilter,
     categoryFilter,
@@ -307,9 +371,6 @@ function ProductListContent({
     path: string
     value: CategoryFilterValue
   }>
-  const brandFilterCandidates = activeCategoryItem
-    ? getProductCategoryBrands(activeCategoryItem.label)
-    : productBrands
   const brandFilterItems = (
     [
       {
@@ -367,24 +428,65 @@ function ProductListContent({
   const soldOutProductCount = visibleProducts.filter((product) =>
     isSoldOut(product),
   ).length
+  const createCanonicalSearchParams = () => {
+    const nextSearchParams = new URLSearchParams(searchParams)
+
+    if (brandFilter === allFilterLabel) {
+      nextSearchParams.delete('brand')
+    } else {
+      const brandSlug = getProductBrandSlug(brandFilter)
+
+      if (brandSlug) {
+        nextSearchParams.set('brand', brandSlug)
+      }
+    }
+
+    if (statusFilterValue === 'sale') {
+      nextSearchParams.set('sale', saleSearchParamValue)
+    } else {
+      nextSearchParams.delete('sale')
+    }
+
+    for (const spec of activeCategorySpecs) {
+      const specValue = specFilters[spec.slug]
+
+      if (specValue) {
+        nextSearchParams.set(spec.slug, specValue)
+      } else {
+        nextSearchParams.delete(spec.slug)
+      }
+    }
+
+    return nextSearchParams
+  }
+  const updateFilterSearchParams = (
+    updateSearchParams: (nextSearchParams: URLSearchParams) => void,
+  ) => {
+    const nextSearchParams = createCanonicalSearchParams()
+
+    nextSearchParams.delete('page')
+    updateSearchParams(nextSearchParams)
+
+    setSearchParams(nextSearchParams, filterSearchParamNavigateOptions)
+  }
   const handleResetFilters = () => {
-    setBrandFilter(allFilterLabel)
     setSearchValue('')
-    setSpecFilters({})
-    setStatusFilterValue('all')
 
     const nextSearchParams = new URLSearchParams(searchParams)
 
+    for (const spec of activeCategorySpecs) {
+      nextSearchParams.delete(spec.slug)
+    }
+
+    nextSearchParams.delete('brand')
     nextSearchParams.delete('keyword')
     nextSearchParams.delete('page')
-    setSearchParams(nextSearchParams, {
-      preventScrollReset: true,
-      replace: true,
-      state: { preserveScroll: true },
-    })
+    nextSearchParams.delete('sale')
+
+    setSearchParams(nextSearchParams, filterSearchParamNavigateOptions)
   }
   const syncKeywordSearchParam = (value: string) => {
-    const nextSearchParams = new URLSearchParams(searchParams)
+    const nextSearchParams = createCanonicalSearchParams()
 
     nextSearchParams.delete('page')
 
@@ -394,11 +496,7 @@ function ProductListContent({
       nextSearchParams.delete('keyword')
     }
 
-    setSearchParams(nextSearchParams, {
-      preventScrollReset: true,
-      replace: true,
-      state: { preserveScroll: true },
-    })
+    setSearchParams(nextSearchParams, filterSearchParamNavigateOptions)
   }
   const replaceKeywordUrl = (value: string) => {
     const nextUrl = new URL(window.location.href)
@@ -427,16 +525,37 @@ function ProductListContent({
 
     syncKeywordSearchParam(value)
   }
-  const handleSpecFilterChange = (specKey: string, value: string) => {
-    setSpecFilters((current) => {
+  const handleBrandFilterChange = (value: BrandFilterValue) => {
+    updateFilterSearchParams((nextSearchParams) => {
       if (value === allFilterLabel) {
-        return omitSpecFilter(current, specKey)
+        nextSearchParams.delete('brand')
+        return
       }
 
-      return {
-        ...current,
-        [specKey]: value,
+      const brandSlug = getProductBrandSlug(value)
+
+      if (brandSlug) {
+        nextSearchParams.set('brand', brandSlug)
       }
+    })
+  }
+  const handleStatusFilterChange = (value: StatusFilterValue) => {
+    updateFilterSearchParams((nextSearchParams) => {
+      if (value === 'sale') {
+        nextSearchParams.set('sale', saleSearchParamValue)
+      } else {
+        nextSearchParams.delete('sale')
+      }
+    })
+  }
+  const handleSpecFilterChange = (specKey: string, value: string) => {
+    updateFilterSearchParams((nextSearchParams) => {
+      if (value === allFilterLabel) {
+        nextSearchParams.delete(specKey)
+        return
+      }
+
+      nextSearchParams.set(specKey, value)
     })
   }
 
@@ -551,7 +670,7 @@ function ProductListContent({
                 className="lg:w-52"
                 items={brandFilterItems}
                 label="ブランド"
-                onChange={setBrandFilter}
+                onChange={handleBrandFilterChange}
                 value={brandFilter}
               />
             ) : null}
@@ -559,7 +678,7 @@ function ProductListContent({
             {statusFilterOptions.length > 1 || statusFilterValue !== 'all' ? (
               <ProductStatusFilter
                 options={statusFilterOptions}
-                onChange={setStatusFilterValue}
+                onChange={handleStatusFilterChange}
                 value={statusFilterValue}
               />
             ) : null}

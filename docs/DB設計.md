@@ -66,6 +66,7 @@ DB以外で保証するルール:
 | ---------- | ----------- | ---: | ---------- | ---------------- | ---------- |
 | id         | bigint      |   NO | 自動採番   | 主キー           | ブランドID |
 | name       | text        |   NO | -          | 一意, 空文字不可 | ブランド名 |
+| slug       | text        |   NO | -          | 一意, 空文字不可 | URL用      |
 | sort_order | integer     |   NO | 0          | 一意, 0以上      | 表示順     |
 | created_at | timestamptz |   NO | now()      | -                | 作成日時   |
 | updated_at | timestamptz |   NO | now()      | -                | 更新日時   |

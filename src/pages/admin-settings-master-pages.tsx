@@ -15,6 +15,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { adminNewsLabelOptions } from '@/lib/admin-news'
 import {
+  productBrandItems,
   productCategoryMasters,
   productBrands,
   type ProductBrand,
@@ -26,6 +27,10 @@ import {
 type NameMasterItem = {
   id: number
   name: string
+}
+
+type BrandMasterItem = NameMasterItem & {
+  slug: string
 }
 
 type CategoryMasterItem = {
@@ -54,10 +59,13 @@ type CategoryMasterSpec = Omit<
   unit: string
 }
 
-const brandMasterItems: NameMasterItem[] = productBrands.map((name, index) => ({
-  id: index + 1,
-  name,
-}))
+const brandMasterItems: BrandMasterItem[] = productBrandItems
+  .map((brand, index) => ({
+    id: index + 1,
+    name: brand.label,
+    slug: brand.slug,
+  }))
+  .reverse()
 
 const categoryMasterItems: CategoryMasterItem[] = productCategoryMasters.map(
   (item, index) => ({
@@ -89,15 +97,7 @@ const specValueTypeOptions = [
 }>
 
 export function AdminSettingsBrandsPage() {
-  return (
-    <NameMasterSettingsPage
-      description="商品登録や商品一覧の絞り込みで使うブランドを管理します。"
-      initialItems={brandMasterItems}
-      inputLabel="ブランド名"
-      messageId="brand-master-message"
-      title="ブランド"
-    />
-  )
+  return <BrandMasterSettingsPage initialItems={brandMasterItems} />
 }
 
 export function AdminSettingsCategoriesPage() {
@@ -178,6 +178,201 @@ function SettingsDetailHeader({
         </div>
       </div>
     </section>
+  )
+}
+
+function getBrandMasterMessage({
+  itemId,
+  items,
+  name,
+  shouldValidate,
+  slug,
+}: {
+  itemId?: number
+  items: ReadonlyArray<BrandMasterItem>
+  name: string
+  shouldValidate: boolean
+  slug: string
+}) {
+  if (!shouldValidate) {
+    return null
+  }
+
+  const isDuplicateName = items.some(
+    (item) =>
+      item.id !== itemId &&
+      item.name.toLocaleLowerCase() === name.toLocaleLowerCase(),
+  )
+  const isDuplicateSlug = items.some(
+    (item) => item.id !== itemId && item.slug === slug,
+  )
+
+  if (name.length === 0 && slug.length === 0) {
+    return 'ブランド名とブランドスラッグを入力してください'
+  }
+
+  if (name.length === 0) {
+    return 'ブランド名を入力してください'
+  }
+
+  if (slug.length === 0) {
+    return 'ブランドスラッグを入力してください'
+  }
+
+  if (!slugPattern.test(slug)) {
+    return 'ブランドスラッグは半角英数字とハイフンで入力してください'
+  }
+
+  if (isDuplicateName) {
+    return '同じブランド名が登録済みです'
+  }
+
+  if (isDuplicateSlug) {
+    return '同じブランドスラッグが登録済みです'
+  }
+
+  return null
+}
+
+function BrandMasterSettingsPage({
+  initialItems,
+}: {
+  initialItems: ReadonlyArray<BrandMasterItem>
+}) {
+  const messageId = 'brand-master-message'
+  const [nameInput, setNameInput] = useState('')
+  const [slugInput, setSlugInput] = useState('')
+  const [items, setItems] = useState<ReadonlyArray<BrandMasterItem>>(
+    () => initialItems,
+  )
+  const [editingItem, setEditingItem] = useState<BrandMasterItem | null>(null)
+  const normalizedName = nameInput.trim()
+  const normalizedSlug = slugInput.trim().toLowerCase()
+  const requiredMessage = getBrandMasterMessage({
+    items,
+    name: normalizedName,
+    shouldValidate: true,
+    slug: normalizedSlug,
+  })
+  const shouldShowMessage =
+    normalizedName.length > 0 || normalizedSlug.length > 0
+  const message = shouldShowMessage ? requiredMessage : null
+  const canAdd = requiredMessage === null
+
+  const handleAddItem = () => {
+    if (!canAdd) {
+      return
+    }
+
+    setItems((current) => [
+      {
+        id: getNextMasterId(current),
+        name: normalizedName,
+        slug: normalizedSlug,
+      },
+      ...current,
+    ])
+    setNameInput('')
+    setSlugInput('')
+  }
+
+  const handleDeleteItem = (id: number) => {
+    setItems((current) => current.filter((item) => item.id !== id))
+  }
+
+  const handleUpdateItem = (updatedItem: BrandMasterItem) => {
+    setItems((current) =>
+      current.map((item) => (item.id === updatedItem.id ? updatedItem : item)),
+    )
+    setEditingItem(null)
+  }
+
+  return (
+    <>
+      <SettingsDetailHeader title="ブランド" />
+
+      <section className="grid min-w-0 content-start gap-5 rounded-lg border bg-card p-4">
+        <h2 className="font-heading text-base font-semibold">ブランド登録</h2>
+
+        <form
+          className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] sm:items-end"
+          onSubmit={(event) => {
+            event.preventDefault()
+            handleAddItem()
+          }}
+        >
+          <label className="grid min-w-0 gap-1.5">
+            <span className="text-xs font-medium text-muted-foreground">
+              ブランド名
+            </span>
+            <Input
+              aria-describedby={message ? messageId : undefined}
+              aria-invalid={message ? 'true' : undefined}
+              className="bg-background"
+              onChange={(event) => setNameInput(event.currentTarget.value)}
+              type="text"
+              value={nameInput}
+            />
+          </label>
+
+          <label className="grid min-w-0 gap-1.5">
+            <span className="text-xs font-medium text-muted-foreground">
+              ブランドスラッグ
+            </span>
+            <Input
+              aria-describedby={message ? messageId : undefined}
+              aria-invalid={message ? 'true' : undefined}
+              className="bg-background"
+              onChange={(event) => setSlugInput(event.currentTarget.value)}
+              type="text"
+              value={slugInput}
+            />
+          </label>
+
+          <Button className="h-11 px-3" disabled={!canAdd} type="submit">
+            <PlusIcon data-icon="inline-start" />
+            追加
+          </Button>
+        </form>
+
+        {message ? (
+          <p className="text-sm font-medium text-destructive" id={messageId}>
+            {message}
+          </p>
+        ) : null}
+      </section>
+
+      <section className="grid min-w-0 content-start gap-5 rounded-lg border bg-card p-4">
+        <h2 className="font-heading text-base font-semibold">
+          登録済みブランド
+        </h2>
+
+        <BrandMasterList
+          items={items}
+          onDeleteItem={handleDeleteItem}
+          onEditItem={setEditingItem}
+        />
+      </section>
+
+      <Dialog.Root
+        onOpenChange={(open) => {
+          if (!open) {
+            setEditingItem(null)
+          }
+        }}
+        open={editingItem !== null}
+      >
+        {editingItem ? (
+          <BrandMasterEditDialogContent
+            displayId={editingItem.id}
+            item={editingItem}
+            items={items}
+            key={editingItem.id}
+            onSaveItem={handleUpdateItem}
+          />
+        ) : null}
+      </Dialog.Root>
+    </>
   )
 }
 
@@ -340,6 +535,75 @@ function CategoryMasterSettingsPage({
         <CategoryMasterList items={initialItems} />
       </section>
     </>
+  )
+}
+
+function BrandMasterList({
+  items,
+  onDeleteItem,
+  onEditItem,
+}: {
+  items: ReadonlyArray<BrandMasterItem>
+  onDeleteItem: (id: number) => void
+  onEditItem: (item: BrandMasterItem) => void
+}) {
+  return (
+    <div className="min-w-0 overflow-hidden rounded-lg border">
+      <div className="min-w-0 overflow-x-auto">
+        <div className="min-w-[760px]">
+          <div className="grid grid-cols-[48px_64px_minmax(160px,1fr)_minmax(180px,1fr)_48px_48px] items-center gap-3 border-b bg-muted/35 px-4 py-2 text-xs font-medium text-muted-foreground">
+            <span>No</span>
+            <span>ID</span>
+            <span>ブランド名</span>
+            <span>ブランドスラッグ</span>
+            <span>編集</span>
+            <span>削除</span>
+          </div>
+
+          <div className="divide-y">
+            {items.map((item, index) => (
+              <article
+                className="grid grid-cols-[48px_64px_minmax(160px,1fr)_minmax(180px,1fr)_48px_48px] items-center gap-3 px-4 py-3"
+                key={item.id}
+              >
+                <span className="text-sm font-medium tabular-nums">
+                  {index + 1}
+                </span>
+                <span className="text-sm font-medium tabular-nums">
+                  {item.id}
+                </span>
+                <span className="truncate text-sm font-semibold">
+                  {item.name}
+                </span>
+                <span className="truncate text-sm font-medium text-muted-foreground">
+                  {item.slug}
+                </span>
+                <Button
+                  aria-label={`${item.name}を編集`}
+                  className="justify-self-start"
+                  onClick={() => onEditItem(item)}
+                  size="icon-sm"
+                  type="button"
+                  variant="outline"
+                >
+                  <PencilIcon aria-hidden="true" />
+                </Button>
+                <Button
+                  aria-label={`${item.name}を削除`}
+                  className="justify-self-start"
+                  onClick={() => onDeleteItem(item.id)}
+                  size="icon-sm"
+                  type="button"
+                  variant="outline"
+                >
+                  <Trash2Icon aria-hidden="true" />
+                </Button>
+              </article>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
   )
 }
 
@@ -518,6 +782,134 @@ function CategoryBrandSummary({
         </span>
       ) : null}
     </span>
+  )
+}
+
+function BrandMasterEditDialogContent({
+  displayId,
+  item,
+  items,
+  onSaveItem,
+}: {
+  displayId: number
+  item: BrandMasterItem
+  items: ReadonlyArray<BrandMasterItem>
+  onSaveItem: (item: BrandMasterItem) => void
+}) {
+  const [nameInput, setNameInput] = useState(item.name)
+  const [slugInput, setSlugInput] = useState(item.slug)
+  const normalizedName = nameInput.trim()
+  const normalizedSlug = slugInput.trim().toLowerCase()
+  const message = getBrandMasterMessage({
+    itemId: item.id,
+    items,
+    name: normalizedName,
+    shouldValidate: true,
+    slug: normalizedSlug,
+  })
+  const canSave = message === null
+
+  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+
+    if (!canSave) {
+      return
+    }
+
+    onSaveItem({
+      ...item,
+      name: normalizedName,
+      slug: normalizedSlug,
+    })
+  }
+
+  return (
+    <Dialog.Portal>
+      <Dialog.Overlay className="fixed inset-0 z-[70] bg-black/45" />
+      <Dialog.Content className="fixed top-1/2 left-1/2 z-[80] grid max-h-[calc(100svh-2rem)] w-[min(calc(100vw-2rem),34rem)] -translate-x-1/2 -translate-y-1/2 grid-rows-[auto_minmax(0,1fr)] overflow-hidden rounded-lg border bg-background shadow-2xl outline-none">
+        <div className="flex min-w-0 items-start justify-between gap-4 border-b p-5">
+          <div className="min-w-0">
+            <Dialog.Title className="font-heading text-xl font-semibold">
+              ブランドを編集
+            </Dialog.Title>
+            <Dialog.Description className="mt-2 text-sm leading-6 text-muted-foreground">
+              ID {displayId} の内容を更新します。
+            </Dialog.Description>
+          </div>
+
+          <Dialog.Close asChild>
+            <Button
+              aria-label="閉じる"
+              size="icon"
+              type="button"
+              variant="ghost"
+            >
+              <XIcon aria-hidden="true" />
+            </Button>
+          </Dialog.Close>
+        </div>
+
+        <form
+          className="grid min-h-0 min-w-0 grid-rows-[minmax(0,1fr)_auto]"
+          onSubmit={handleSubmit}
+        >
+          <div className="grid min-h-0 min-w-0 content-start gap-4 overflow-y-auto p-5">
+            <label className="grid min-w-0 gap-1.5">
+              <span className="text-xs font-medium text-muted-foreground">
+                ブランド名
+              </span>
+              <Input
+                aria-describedby={
+                  message ? 'brand-master-edit-message' : undefined
+                }
+                aria-invalid={message ? 'true' : undefined}
+                className="bg-background"
+                onChange={(event) => setNameInput(event.currentTarget.value)}
+                type="text"
+                value={nameInput}
+              />
+            </label>
+
+            <label className="grid min-w-0 gap-1.5">
+              <span className="text-xs font-medium text-muted-foreground">
+                ブランドスラッグ
+              </span>
+              <Input
+                aria-describedby={
+                  message ? 'brand-master-edit-message' : undefined
+                }
+                aria-invalid={message ? 'true' : undefined}
+                className="bg-background"
+                onChange={(event) => setSlugInput(event.currentTarget.value)}
+                type="text"
+                value={slugInput}
+              />
+            </label>
+
+            {message ? (
+              <p
+                className="text-sm font-medium text-destructive"
+                id="brand-master-edit-message"
+              >
+                {message}
+              </p>
+            ) : null}
+          </div>
+
+          <div className="flex flex-col-reverse gap-2 border-t p-5 sm:flex-row sm:items-center sm:justify-end">
+            <Dialog.Close asChild>
+              <Button type="button" variant="outline">
+                キャンセル
+              </Button>
+            </Dialog.Close>
+            <Button disabled={!canSave} type="submit">
+              <SaveIcon data-icon="inline-start" />
+              保存
+            </Button>
+          </div>
+        </form>
+      </Dialog.Content>
+    </Dialog.Portal>
   )
 }
 

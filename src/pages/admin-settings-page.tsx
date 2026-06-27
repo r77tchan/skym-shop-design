@@ -17,7 +17,7 @@ const settingsNavItems = [
   },
   {
     title: 'ブランド',
-    description: '商品に設定するブランド',
+    description: '商品に設定するブランドとURLスラッグ',
     path: '/admin/settings/brands',
     icon: TagsIcon,
   },
