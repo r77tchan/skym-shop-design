@@ -1,6 +1,11 @@
 import { Badge } from '@/components/ui/badge'
 import { isOnSale } from '@/lib/product-status'
-import type { Product } from '@/lib/shop-content'
+import {
+  getProductDiscountRate,
+  getProductPrice,
+  getProductRegularPrice,
+  type Product,
+} from '@/lib/shop-content'
 import { cn } from '@/lib/utils'
 
 type ProductPriceVariant = 'card' | 'detail' | 'rail'
@@ -33,9 +38,15 @@ export function ProductPrice({
     muted ? 'text-muted-foreground' : 'text-foreground',
   )
 
-  if (!isOnSale(product) || !product.sale) {
-    return <p className={cn(priceClassName, className)}>{product.price}</p>
+  if (!isOnSale(product)) {
+    return (
+      <p className={cn(priceClassName, className)}>
+        {getProductPrice(product)}
+      </p>
+    )
   }
+
+  const discountRate = getProductDiscountRate(product)
 
   return (
     <div
@@ -51,13 +62,13 @@ export function ProductPrice({
           'text-muted-foreground line-through decoration-muted-foreground/70',
         )}
       >
-        {product.sale.originalPrice}
+        {getProductRegularPrice(product)}
       </p>
       <div className="flex flex-wrap items-center gap-2">
-        <p className={priceClassName}>{product.price}</p>
-        {variant === 'detail' ? (
+        <p className={priceClassName}>{getProductPrice(product)}</p>
+        {variant === 'detail' && discountRate ? (
           <Badge className="bg-product-sale text-product-sale-foreground">
-            {product.sale.discountRate} OFF
+            {discountRate} OFF
           </Badge>
         ) : null}
       </div>

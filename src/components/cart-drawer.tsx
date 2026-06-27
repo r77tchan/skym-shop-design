@@ -15,7 +15,11 @@ import { useCart } from '@/hooks/use-cart'
 import { assetUrl } from '@/lib/asset-url'
 import type { CartLine } from '@/lib/cart-context'
 import { getProductStock } from '@/lib/product-stock'
-import { getProductPath, type Product } from '@/lib/shop-content'
+import {
+  getProductBrand,
+  getProductPath,
+  getProductPriceNumber,
+} from '@/lib/shop-content'
 import { cn } from '@/lib/utils'
 
 type CartDrawerProps = {
@@ -143,6 +147,7 @@ function CartLineItem({
   const productPath = getProductPath(product)
   const lineTotal = getProductPriceNumber(product) * quantity
   const stock = getProductStock(product)
+  const brand = getProductBrand(product)
 
   return (
     <li className="grid grid-cols-[5.25rem_minmax(0,1fr)] gap-3 py-4">
@@ -163,7 +168,7 @@ function CartLineItem({
       <div className="grid min-w-0 content-start gap-3">
         <div className="min-w-0">
           <p className="truncate text-xs font-medium text-muted-foreground">
-            {product.brand}
+            {brand}
           </p>
           <Dialog.Close asChild>
             <Link
@@ -222,10 +227,6 @@ function CartLineItem({
       </div>
     </li>
   )
-}
-
-function getProductPriceNumber(product: Product) {
-  return Number(product.price.replace(/[^\d]/g, ''))
 }
 
 function formatYen(value: number) {

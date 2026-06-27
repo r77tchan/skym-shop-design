@@ -6,7 +6,7 @@ import {
   type CartProviderState,
 } from '@/lib/cart-context'
 import { getProductStock } from '@/lib/product-stock'
-import { storefrontProducts } from '@/lib/shop-content'
+import { getProductPriceNumber, storefrontProducts } from '@/lib/shop-content'
 
 type CartProviderProps = {
   children: ReactNode
@@ -169,8 +169,4 @@ function clampCartQuantity(
   }
 
   return Math.min(Math.max(Math.trunc(quantity) || 1, 1), stock)
-}
-
-function getProductPriceNumber(product: (typeof storefrontProducts)[number]) {
-  return Number(product.price.replace(/[^\d]/g, ''))
 }

@@ -15,10 +15,12 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { isOnSale, isSoldOut } from '@/lib/product-status'
 import {
+  getProductBrand,
   getProductCategoryBrands,
   getProductCategoryItemBySlug,
   getProductCategoryPath,
   getProductCategorySpecDefinitions,
+  getProductCategory,
   getProductSpecDefinitionValue,
   productBrandItems,
   productBrands,
@@ -147,17 +149,17 @@ function matchesShopProductFilters(
   product: Product,
   filters: ShopProductFilterState,
 ) {
+  const category = getProductCategory(product)
+  const brand = getProductBrand(product)
+
   if (
     filters.categoryFilter !== allFilterLabel &&
-    product.category !== filters.categoryFilter
+    category !== filters.categoryFilter
   ) {
     return false
   }
 
-  if (
-    filters.brandFilter !== allFilterLabel &&
-    product.brand !== filters.brandFilter
-  ) {
+  if (filters.brandFilter !== allFilterLabel && brand !== filters.brandFilter) {
     return false
   }
 
@@ -170,9 +172,9 @@ function matchesShopProductFilters(
       continue
     }
 
-    const specDefinition = getProductCategorySpecDefinitions(
-      product.category,
-    ).find((spec) => spec.slug === specKey)
+    const specDefinition = getProductCategorySpecDefinitions(category).find(
+      (spec) => spec.slug === specKey,
+    )
     const specValue = specDefinition
       ? getProductSpecOptionFilterValue(specDefinition, filterValue)
       : filterValue
@@ -189,9 +191,7 @@ function matchesShopProductFilters(
 
   if (searchText) {
     const searchableText = normalizeSearchText(
-      [product.name, product.brand, product.category, product.summary].join(
-        ' ',
-      ),
+      [product.name, brand, category, product.catchPhrase].join(' '),
     )
 
     if (!searchableText.includes(searchText)) {

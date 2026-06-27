@@ -19,14 +19,24 @@ import { ProductStatusBadge } from '@/components/product-status-badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { assetUrl } from '@/lib/asset-url'
-import { getPrimaryProductStatus, isOnSale } from '@/lib/product-status'
+import {
+  getPrimaryProductStatus,
+  getProductNewBadgeMode,
+  isOnSale,
+} from '@/lib/product-status'
 import { getProductStock } from '@/lib/product-stock'
 import {
+  getProductBrand,
+  getProductCategory,
+  getProductPriceNumber,
   isProductPublished,
   productBrands,
   productCategories,
   products,
   type Product,
+  type ProductBrand,
+  type ProductCategory,
+  type ProductNewBadgeMode,
 } from '@/lib/shop-content'
 import { cn } from '@/lib/utils'
 
@@ -35,6 +45,7 @@ const allFilterLabel = '全て'
 type CategoryFilterValue = (typeof productCategories)[number]
 type BrandFilterValue = typeof allFilterLabel | (typeof productBrands)[number]
 type InventoryFilterValue = 'all' | 'in-stock' | 'out-of-stock'
+type NewBadgeFilterValue = 'all' | ProductNewBadgeMode
 type SaleFilterValue = 'all' | 'on-sale' | 'not-sale'
 type SortValue = 'new' | 'price-asc' | 'price-desc'
 type VisibilityFilterValue = 'all' | 'published' | 'unpublished'
@@ -59,9 +70,6 @@ const sortOptions: Array<{ label: string; value: SortValue }> = [
   { label: '価格の安い順', value: 'price-asc' },
   { label: '価格の高い順', value: 'price-desc' },
 ]
-function getProductPriceNumber(product: Product) {
-  return Number(product.price.replace(/[^\d]/g, ''))
-}
 
 function compareOriginalRowOrder(a: AdminProductRow, b: AdminProductRow) {
   return (
@@ -96,6 +104,7 @@ type AdminProductFilterState = {
   brandFilter: BrandFilterValue
   categoryFilter: CategoryFilterValue
   inventoryFilter: InventoryFilterValue
+  newBadgeFilter: NewBadgeFilterValue
   saleFilter: SaleFilterValue
   searchValue: string
   visibilityFilter: VisibilityFilterValue
@@ -105,17 +114,17 @@ function matchesAdminProductFilters(
   row: AdminProductRow,
   filters: AdminProductFilterState,
 ) {
+  const category = getProductCategory(row.product)
+  const brand = getProductBrand(row.product)
+
   if (
     filters.categoryFilter !== allFilterLabel &&
-    row.product.category !== filters.categoryFilter
+    category !== filters.categoryFilter
   ) {
     return false
   }
 
-  if (
-    filters.brandFilter !== allFilterLabel &&
-    row.product.brand !== filters.brandFilter
-  ) {
+  if (filters.brandFilter !== allFilterLabel && brand !== filters.brandFilter) {
     return false
   }
 
@@ -141,6 +150,13 @@ function matchesAdminProductFilters(
   }
 
   if (filters.saleFilter === 'not-sale' && isOnSale(row.product)) {
+    return false
+  }
+
+  if (
+    filters.newBadgeFilter !== 'all' &&
+    getProductNewBadgeMode(row.product) !== filters.newBadgeFilter
+  ) {
     return false
   }
 
@@ -171,6 +187,8 @@ export function AdminProductsPage() {
     useState<BrandFilterValue>(allFilterLabel)
   const [inventoryFilter, setInventoryFilter] =
     useState<InventoryFilterValue>('all')
+  const [newBadgeFilter, setNewBadgeFilter] =
+    useState<NewBadgeFilterValue>('all')
   const [saleFilter, setSaleFilter] = useState<SaleFilterValue>('all')
   const [searchValue, setSearchValue] = useState('')
   const [sortValue, setSortValue] = useState<SortValue>('new')
@@ -180,6 +198,7 @@ export function AdminProductsPage() {
     brandFilter,
     categoryFilter,
     inventoryFilter,
+    newBadgeFilter,
     saleFilter,
     searchValue,
     visibilityFilter,
@@ -198,6 +217,7 @@ export function AdminProductsPage() {
       brandFilter: brand,
       categoryFilter,
       inventoryFilter: 'all',
+      newBadgeFilter: 'all',
       saleFilter: 'all',
       searchValue: '',
       visibilityFilter: 'all',
@@ -266,6 +286,32 @@ export function AdminProductsPage() {
     value: SaleFilterValue
     count: number
   }>
+  const newBadgeFilterOptions = [
+    {
+      label: '全て',
+      value: 'all',
+      count: getFilterCount({ newBadgeFilter: 'all' }),
+    },
+    {
+      label: '自動',
+      value: 'auto',
+      count: getFilterCount({ newBadgeFilter: 'auto' }),
+    },
+    {
+      label: '表示',
+      value: 'show',
+      count: getFilterCount({ newBadgeFilter: 'show' }),
+    },
+    {
+      label: '非表示',
+      value: 'hide',
+      count: getFilterCount({ newBadgeFilter: 'hide' }),
+    },
+  ] as const satisfies ReadonlyArray<{
+    label: string
+    value: NewBadgeFilterValue
+    count: number
+  }>
   const visibilityFilterOptions = [
     {
       label: '全て',
@@ -300,6 +346,7 @@ export function AdminProductsPage() {
     setCategoryFilter(allFilterLabel)
     setBrandFilter(allFilterLabel)
     setInventoryFilter('all')
+    setNewBadgeFilter('all')
     setSaleFilter('all')
     setSearchValue('')
     setSortValue('new')
@@ -397,6 +444,12 @@ export function AdminProductsPage() {
               onChange={setVisibilityFilter}
               options={visibilityFilterOptions}
               value={visibilityFilter}
+            />
+            <AdminSegmentedFilter
+              label="NEWタグ"
+              onChange={setNewBadgeFilter}
+              options={newBadgeFilterOptions}
+              value={newBadgeFilter}
             />
             <AdminSegmentedFilter
               label="在庫"
@@ -565,7 +618,7 @@ function AdminSegmentedFilter<TValue extends string>({
       <p className="text-xs font-medium text-muted-foreground">{label}</p>
       <div
         aria-label={label}
-        className="flex h-11 w-fit max-w-full rounded-lg border bg-background p-1"
+        className="flex min-h-11 w-fit max-w-full flex-wrap rounded-lg border bg-background p-1"
         role="group"
       >
         {options.map((option) => {
@@ -575,7 +628,7 @@ function AdminSegmentedFilter<TValue extends string>({
             <button
               aria-pressed={active ? 'true' : 'false'}
               className={cn(
-                'inline-flex h-full min-w-20 items-center justify-center gap-1.5 rounded-md px-3 text-sm font-medium whitespace-nowrap',
+                'inline-flex h-9 min-w-20 items-center justify-center gap-1.5 rounded-md px-3 text-sm font-medium whitespace-nowrap',
                 active
                   ? 'bg-primary text-primary-foreground'
                   : 'text-muted-foreground hover:bg-accent/55 hover:text-foreground',
@@ -749,6 +802,8 @@ function ProductTableRow({
   stock: number
 }) {
   const primaryStatus = getPrimaryProductStatus(product)
+  const brand = getProductBrand(product)
+  const category = getProductCategory(product)
 
   return (
     <article className="grid grid-cols-[48px_64px_minmax(240px,1.35fr)_104px_112px_72px_112px_88px_36px] items-stretch gap-3 px-4">
@@ -772,11 +827,11 @@ function ProductTableRow({
               {product.name}
             </span>
             <span className="mt-1 block truncate text-xs text-muted-foreground">
-              {product.brand}
+              {brand}
             </span>
           </span>
         </span>
-        <span className="truncate text-sm">{product.category}</span>
+        <span className="truncate text-sm">{category}</span>
         <ProductPrice product={product} variant="rail" />
         <span className="text-sm tabular-nums">{stock}</span>
         <span className="flex items-center">
@@ -814,6 +869,8 @@ function ProductMobileCard({
   stock: number
 }) {
   const primaryStatus = getPrimaryProductStatus(product)
+  const brand = getProductBrand(product)
+  const category = getProductCategory(product)
 
   return (
     <article className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-3 p-4">
@@ -833,7 +890,7 @@ function ProductMobileCard({
               {product.name}
             </span>
             <span className="block truncate text-xs text-muted-foreground">
-              {product.brand}
+              {brand}
             </span>
           </span>
           <span className="shrink-0">
@@ -853,7 +910,7 @@ function ProductMobileCard({
                 カテゴリ
               </span>
               <span className="mt-1 block truncate font-medium">
-                {product.category}
+                {category}
               </span>
             </span>
             <span className="min-w-0">
@@ -891,10 +948,11 @@ function ProductMobileCard({
 }
 
 type BulkVisibilityValue = 'unchanged' | 'published' | 'unpublished'
+type BulkNewBadgeValue = 'unchanged' | ProductNewBadgeMode
 type BulkSaleValue = 'unchanged' | 'enable' | 'disable'
 type BulkSaleDiscountValue = '10' | '20' | '30' | 'custom'
-type BulkBrandValue = 'unchanged' | Product['brand']
-type BulkCategoryValue = 'unchanged' | Product['category']
+type BulkBrandValue = 'unchanged' | ProductBrand
+type BulkCategoryValue = 'unchanged' | ProductCategory
 
 const bulkVisibilityOptions: ReadonlyArray<{
   label: string
@@ -903,6 +961,16 @@ const bulkVisibilityOptions: ReadonlyArray<{
   { label: '変更しない', value: 'unchanged' },
   { label: '公開にする', value: 'published' },
   { label: '非公開にする', value: 'unpublished' },
+]
+
+const bulkNewBadgeOptions: ReadonlyArray<{
+  label: string
+  value: BulkNewBadgeValue
+}> = [
+  { label: '変更しない', value: 'unchanged' },
+  { label: '自動（非表示）', value: 'auto' },
+  { label: '表示する', value: 'show' },
+  { label: '表示しない', value: 'hide' },
 ]
 
 const bulkSaleOptions: ReadonlyArray<{
@@ -926,7 +994,7 @@ const bulkSaleDiscountOptions: ReadonlyArray<{
 
 const bulkBrandOptions = productBrands
 const bulkCategoryOptions = productCategories.filter(
-  (category) => category !== allFilterLabel,
+  (category): category is ProductCategory => category !== allFilterLabel,
 )
 
 function BulkEditDialogContent({
@@ -936,6 +1004,8 @@ function BulkEditDialogContent({
 }) {
   const [visibilityValue, setVisibilityValue] =
     useState<BulkVisibilityValue>('unchanged')
+  const [newBadgeValue, setNewBadgeValue] =
+    useState<BulkNewBadgeValue>('unchanged')
   const [saleValue, setSaleValue] = useState<BulkSaleValue>('unchanged')
   const [saleDiscountValue, setSaleDiscountValue] =
     useState<BulkSaleDiscountValue>('20')
@@ -957,6 +1027,7 @@ function BulkEditDialogContent({
   const canApply =
     !hasSaleValidationError &&
     (visibilityValue !== 'unchanged' ||
+      newBadgeValue !== 'unchanged' ||
       hasValidSaleChange ||
       brandValue !== 'unchanged' ||
       categoryValue !== 'unchanged')
@@ -1013,7 +1084,7 @@ function BulkEditDialogContent({
                     </p>
                     <div className="mt-0.5 flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
                       <span className="truncate">
-                        ID {row.product.id} / {row.product.brand}
+                        ID {row.product.id} / {getProductBrand(row.product)}
                       </span>
                       <ProductPrice product={row.product} variant="rail" />
                     </div>
@@ -1033,6 +1104,14 @@ function BulkEditDialogContent({
                 onChange={setVisibilityValue}
                 options={bulkVisibilityOptions}
                 value={visibilityValue}
+              />
+            </BulkEditField>
+
+            <BulkEditField label="NEWタグ">
+              <BulkEditSegmentedControl
+                onChange={setNewBadgeValue}
+                options={bulkNewBadgeOptions}
+                value={newBadgeValue}
               />
             </BulkEditField>
 
@@ -1201,7 +1280,7 @@ function BulkEditSegmentedControl<TValue extends string>({
   value: TValue
 }) {
   return (
-    <div className="flex w-fit max-w-full rounded-lg border bg-background p-0.5">
+    <div className="flex w-fit max-w-full flex-wrap rounded-lg border bg-background p-0.5">
       {options.map((option) => {
         const active = option.value === value
 

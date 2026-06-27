@@ -7,7 +7,11 @@ import { ProductStatusBadge } from '@/components/product-status-badge'
 import { assetUrl } from '@/lib/asset-url'
 import { getPrimaryProductStatus, isSoldOut } from '@/lib/product-status'
 import { getProductStockLabel } from '@/lib/product-stock'
-import { getProductPath, type Product } from '@/lib/shop-content'
+import {
+  getProductBrand,
+  getProductPath,
+  type Product,
+} from '@/lib/shop-content'
 import {
   interactiveCardLinkClassName,
   interactiveCardMutedTextClassName,
@@ -163,7 +167,7 @@ function ProductCardSummary({
           interactiveCardMutedTextClassName,
         )}
       >
-        {product.brand}
+        {getProductBrand(product)}
       </p>
       <Title className={cn(titleClassName, interactiveCardTitleClassName)}>
         {product.name}

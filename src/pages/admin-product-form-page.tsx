@@ -24,11 +24,16 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { assetUrl } from '@/lib/asset-url'
-import { getProductStatuses } from '@/lib/product-status'
+import {
+  getProductNewBadgeMode,
+  getProductStatuses,
+} from '@/lib/product-status'
 import { getProductStock } from '@/lib/product-stock'
 import {
   getProductCategoryBrands,
   getProductCategorySpecDefinitions,
+  getProductBrand,
+  getProductCategory,
   getProductPath,
   isProductPublished,
   productCategoryMasters,
@@ -38,6 +43,7 @@ import {
   type ProductCategory,
   type ProductCategorySpecDefinition,
   type ProductCategorySpecOption,
+  type ProductNewBadgeMode,
   type ProductSpecValueType,
 } from '@/lib/shop-content'
 
@@ -48,10 +54,14 @@ const selectFieldClassName =
 const editableProductCategories = productCategoryMasters.map(
   (category) => category.label,
 )
-
-function getPriceInputValue(price?: string) {
-  return price?.replace(/[^\d]/g, '')
-}
+const productNewBadgeModeOptions = [
+  { label: '自動', value: 'auto' },
+  { label: '表示', value: 'show' },
+  { label: '非表示', value: 'hide' },
+] as const satisfies ReadonlyArray<{
+  label: string
+  value: ProductNewBadgeMode
+}>
 
 export function AdminProductNewPage() {
   return <AdminProductFormPage mode="new" />
@@ -78,17 +88,19 @@ function AdminProductFormPage({
   const navigate = useNavigate()
   const isNew = mode === 'new'
   const stock = product ? getProductStock(product) : 0
-  const regularPrice = getPriceInputValue(
-    product?.sale?.originalPrice ?? product?.price,
-  )
-  const salePrice = product?.sale ? getPriceInputValue(product.price) : ''
-  const description = product?.description.join('\n\n') ?? ''
+  const description = product?.description ?? ''
   const imageUrls = product?.images ?? []
+  const [regularPriceValue, setRegularPriceValue] = useState(
+    product ? String(product.regularPrice) : '',
+  )
+  const [salePriceValue, setSalePriceValue] = useState(
+    product?.salePrice ? String(product.salePrice) : '',
+  )
   const [selectedCategory, setSelectedCategory] = useState<
     ProductCategory | ''
-  >(product?.category ?? '')
+  >(product ? getProductCategory(product) : '')
   const [selectedBrand, setSelectedBrand] = useState<ProductBrand | ''>(
-    product?.brand ?? '',
+    product ? getProductBrand(product) : '',
   )
   const selectedCategorySpecs = selectedCategory
     ? getProductCategorySpecDefinitions(selectedCategory)
@@ -102,6 +114,17 @@ function AdminProductFormPage({
       : selectableBrands
   const isPublished = product ? isProductPublished(product) : false
   const productStatuses = product ? getProductStatuses(product) : []
+  const newBadgeMode = product ? getProductNewBadgeMode(product) : 'auto'
+  const [newBadgeModeValue, setNewBadgeModeValue] =
+    useState<ProductNewBadgeMode>(newBadgeMode)
+  const regularPriceNumber = Number(regularPriceValue)
+  const salePriceNumber = Number(salePriceValue)
+  const hasSalePriceValidationError =
+    salePriceValue.trim() !== '' &&
+    regularPriceValue.trim() !== '' &&
+    Number.isFinite(regularPriceNumber) &&
+    Number.isFinite(salePriceNumber) &&
+    salePriceNumber >= regularPriceNumber
   const pageTitle = isNew ? '商品登録' : (product?.name ?? '商品詳細')
 
   function handleCategoryChange(category: ProductCategory | '') {
@@ -143,7 +166,11 @@ function AdminProductFormPage({
                 プレビュー
               </Button>
 
-              <Button className="h-10 px-3" type="button">
+              <Button
+                className="h-10 px-3"
+                disabled={hasSalePriceValidationError}
+                type="button"
+              >
                 <SaveIcon data-icon="inline-start" />
                 {isNew ? '登録' : '保存'}
               </Button>
@@ -179,6 +206,16 @@ function AdminProductFormPage({
               <label className={fieldWrapperClassName}>
                 <span className={fieldLabelClassName}>商品名</span>
                 <Input defaultValue={product?.name} type="text" />
+              </label>
+
+              <label className={fieldWrapperClassName}>
+                <span className={fieldLabelClassName}>自社管理コード</span>
+                <Input defaultValue={product?.sku} type="text" />
+              </label>
+
+              <label className={fieldWrapperClassName}>
+                <span className={fieldLabelClassName}>JANコード</span>
+                <Input defaultValue={product?.janCode} type="text" />
               </label>
 
               <label className={fieldWrapperClassName}>
@@ -227,11 +264,19 @@ function AdminProductFormPage({
                   disabled={isNew}
                 />
               </label>
+
+              <div className={fieldWrapperClassName}>
+                <span className={fieldLabelClassName}>NEWタグ表示</span>
+                <ProductNewBadgeModeToggle
+                  onChange={setNewBadgeModeValue}
+                  value={newBadgeModeValue}
+                />
+              </div>
             </div>
 
             <label className={fieldWrapperClassName}>
               <span className={fieldLabelClassName}>キャッチフレーズ</span>
-              <Input defaultValue={product?.summary} type="text" />
+              <Input defaultValue={product?.catchPhrase} type="text" />
             </label>
 
             <label className={fieldWrapperClassName}>
@@ -267,7 +312,10 @@ function AdminProductFormPage({
               <label className={fieldWrapperClassName}>
                 <span className={fieldLabelClassName}>通常価格</span>
                 <Input
-                  defaultValue={regularPrice}
+                  onChange={(event) =>
+                    setRegularPriceValue(event.currentTarget.value)
+                  }
+                  value={regularPriceValue}
                   min={1}
                   step={1}
                   type="number"
@@ -277,11 +325,26 @@ function AdminProductFormPage({
               <label className={fieldWrapperClassName}>
                 <span className={fieldLabelClassName}>セール価格</span>
                 <Input
-                  defaultValue={salePrice}
+                  aria-describedby={
+                    hasSalePriceValidationError ? 'sale-price-error' : undefined
+                  }
+                  aria-invalid={hasSalePriceValidationError}
+                  onChange={(event) =>
+                    setSalePriceValue(event.currentTarget.value)
+                  }
+                  value={salePriceValue}
                   min={1}
                   step={1}
                   type="number"
                 />
+                {hasSalePriceValidationError ? (
+                  <span
+                    className="text-xs font-medium text-destructive"
+                    id="sale-price-error"
+                  >
+                    セール価格は通常価格より低くしてください
+                  </span>
+                ) : null}
               </label>
 
               <label className={fieldWrapperClassName}>
@@ -624,6 +687,43 @@ function PublishStateToggle({
         />
       </span>
     </button>
+  )
+}
+
+function ProductNewBadgeModeToggle({
+  onChange,
+  value,
+}: {
+  onChange: (value: ProductNewBadgeMode) => void
+  value: ProductNewBadgeMode
+}) {
+  return (
+    <div
+      aria-label="NEWタグ表示"
+      className="grid min-h-11 grid-cols-3 gap-1 rounded-lg border bg-background p-1"
+      role="group"
+    >
+      {productNewBadgeModeOptions.map((option) => {
+        const active = option.value === value
+
+        return (
+          <button
+            aria-pressed={active ? 'true' : 'false'}
+            className={[
+              'inline-flex h-9 min-w-0 items-center justify-center rounded-md px-2 text-sm font-medium whitespace-nowrap outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
+              active
+                ? 'bg-primary text-primary-foreground'
+                : 'text-muted-foreground hover:bg-accent/55 hover:text-foreground',
+            ].join(' ')}
+            key={option.value}
+            onClick={() => onChange(option.value)}
+            type="button"
+          >
+            <span className="truncate">{option.label}</span>
+          </button>
+        )
+      })}
+    </div>
   )
 }
 

@@ -30,6 +30,9 @@ import { assetUrl } from '@/lib/asset-url'
 import { getProductStatuses, isSoldOut } from '@/lib/product-status'
 import { getProductStockLabel } from '@/lib/product-stock'
 import {
+  getProductBrand,
+  getProductCategory,
+  getProductDescriptionParagraphs,
   getProductSpecRows,
   getProductCategoryPath,
   storefrontProducts,
@@ -79,8 +82,10 @@ export function ProductDetailPage() {
 
   const soldOut = isSoldOut(product)
   const relatedProducts = getRelatedProducts(product)
-  const categoryPath = getProductCategoryPath(product.category)
+  const category = getProductCategory(product)
+  const categoryPath = getProductCategoryPath(category || undefined)
   const productSpecRows = getProductSpecRows(product)
+  const descriptionParagraphs = getProductDescriptionParagraphs(product)
   const locationState = location.state as { fromProductList?: boolean } | null
 
   function handleBackClick(event: MouseEvent<HTMLAnchorElement>) {
@@ -123,7 +128,7 @@ export function ProductDetailPage() {
                 className="underline decoration-foreground/35 underline-offset-4 hover:text-foreground hover:decoration-foreground"
                 to={categoryPath}
               >
-                {product.category}
+                {category}
               </Link>
               <span aria-hidden="true" className="text-border">
                 /
@@ -156,7 +161,7 @@ export function ProductDetailPage() {
             <div className="grid content-start gap-5">
               <SectionHeading eyebrow="DETAIL" title="商品説明" />
               <div className="grid gap-4">
-                {product.description.map((paragraph) => (
+                {descriptionParagraphs.map((paragraph) => (
                   <p
                     className="text-sm leading-8 text-foreground/86 sm:text-base"
                     key={paragraph}
@@ -322,6 +327,8 @@ function ProductPurchasePanel({
   const quantityOptions = getQuantityOptions(availableQuantity)
   const stockLabel = getProductStockLabel(product)
   const productStatuses = getProductStatuses(product)
+  const brand = getProductBrand(product)
+  const category = getProductCategory(product)
   const purchaseButtonLabel = getPurchaseButtonLabel(
     product.name,
     cartQuantity,
@@ -337,17 +344,15 @@ function ProductPurchasePanel({
     <div className="h-fit rounded-lg border bg-card p-5 lg:sticky lg:top-20">
       <div className="flex flex-wrap items-center gap-2">
         <ProductStatusBadges statuses={productStatuses} />
-        <Badge variant="outline">{product.category}</Badge>
+        <Badge variant="outline">{category}</Badge>
       </div>
 
-      <p className="mt-5 text-sm font-medium text-muted-foreground">
-        {product.brand}
-      </p>
+      <p className="mt-5 text-sm font-medium text-muted-foreground">{brand}</p>
       <h1 className="mt-1 font-heading text-2xl leading-tight font-semibold sm:text-3xl">
         {product.name}
       </h1>
       <p className="mt-3 text-sm leading-6 text-muted-foreground">
-        {product.summary}
+        {product.catchPhrase}
       </p>
 
       <div className="mt-6 border-y py-5">
@@ -464,17 +469,19 @@ function SectionHeading({
 }
 
 function getRelatedProducts(product: Product) {
+  const category = getProductCategory(product)
+
   return [
     ...storefrontProducts.filter(
       (item) =>
         item.id !== product.id &&
-        item.category === product.category &&
+        getProductCategory(item) === category &&
         !isSoldOut(item),
     ),
     ...storefrontProducts.filter(
       (item) =>
         item.id !== product.id &&
-        item.category !== product.category &&
+        getProductCategory(item) !== category &&
         !isSoldOut(item),
     ),
   ].slice(0, 4)

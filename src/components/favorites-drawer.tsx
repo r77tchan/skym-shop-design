@@ -9,7 +9,12 @@ import { useCart } from '@/hooks/use-cart'
 import { useFavorites } from '@/hooks/use-favorites'
 import { assetUrl } from '@/lib/asset-url'
 import { getPrimaryProductStatus, isSoldOut } from '@/lib/product-status'
-import { getProductPath, type Product } from '@/lib/shop-content'
+import {
+  getProductBrand,
+  getProductCategory,
+  getProductPath,
+  type Product,
+} from '@/lib/shop-content'
 import { cn } from '@/lib/utils'
 
 type FavoritesDrawerProps = {
@@ -121,6 +126,8 @@ function FavoriteProductItem({
   const productPath = getProductPath(product)
   const primaryStatus = getPrimaryProductStatus(product)
   const soldOut = isSoldOut(product)
+  const brand = getProductBrand(product)
+  const category = getProductCategory(product)
   const { addItem, getAvailableQuantity } = useCart()
   const canAddToCart = !soldOut && getAvailableQuantity(product.id) > 0
 
@@ -152,10 +159,10 @@ function FavoriteProductItem({
         <div className="min-w-0">
           <div className="flex items-center justify-between gap-2">
             <p className="truncate text-xs font-medium text-muted-foreground">
-              {product.brand}
+              {brand}
             </p>
             <span className="shrink-0 rounded-md bg-muted px-1.5 py-0.5 text-[0.68rem] leading-4 font-medium text-muted-foreground">
-              {product.category}
+              {category}
             </span>
           </div>
           <Dialog.Close asChild>
@@ -167,7 +174,7 @@ function FavoriteProductItem({
             </Link>
           </Dialog.Close>
           <p className="mt-1 line-clamp-2 text-xs leading-5 text-muted-foreground">
-            {product.summary}
+            {product.catchPhrase}
           </p>
         </div>
 

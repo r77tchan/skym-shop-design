@@ -1,4 +1,8 @@
-import type { Product, ProductStatus } from '@/lib/shop-content'
+import type {
+  Product,
+  ProductNewBadgeMode,
+  ProductStatus,
+} from '@/lib/shop-content'
 import { getProductStock } from '@/lib/product-stock'
 
 const productStatusPriority = [
@@ -16,7 +20,15 @@ export function isSoldOut(product: Product) {
 }
 
 export function isOnSale(product: Product) {
-  return Boolean(product.sale)
+  return typeof product.salePrice === 'number'
+}
+
+export function getProductNewBadgeMode(product: Product): ProductNewBadgeMode {
+  return product.newBadgeMode ?? 'auto'
+}
+
+export function shouldShowNewBadge(product: Product) {
+  return getProductNewBadgeMode(product) === 'show'
 }
 
 export function getProductStatuses(product: Product) {
@@ -30,7 +42,7 @@ export function getProductStatuses(product: Product) {
     statuses.push('SALE')
   }
 
-  if (product.isNew) {
+  if (shouldShowNewBadge(product)) {
     statuses.push('NEW')
   }
 
