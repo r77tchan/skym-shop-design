@@ -166,12 +166,12 @@ DB以外で保証するルール:
 
 ショップ側 IndexedDB の同期判定に使用するカタログ用メタ情報。常に1行だけ保持する。
 
-| カラム名                | 型          | NULL | デフォルト | 制約   | 説明                                   |
-| ----------------------- | ----------- | ---: | ---------- | ------ | -------------------------------------- |
-| id                      | smallint    |   NO | 1          | 主キー | 固定値。常に `1`                       |
-| data_updated_at         | timestamptz |   NO | now()      | -      | 公開カタログの追加・更新の最終日時     |
-| data_reload_required_at | timestamptz |   NO | now()      | -      | 公開カタログの全件再取得要求日時       |
-| cache_schema_updated_at | timestamptz |   NO | now()      | -      | キャッシュ構造の更新日時               |
+| カラム名                | 型          | NULL | デフォルト | 制約   | 説明                               |
+| ----------------------- | ----------- | ---: | ---------- | ------ | ---------------------------------- |
+| id                      | smallint    |   NO | 1          | 主キー | 固定値。常に `1`                   |
+| data_updated_at         | timestamptz |   NO | now()      | -      | 公開カタログの追加・更新の最終日時 |
+| data_reload_required_at | timestamptz |   NO | now()      | -      | 公開カタログの全件再取得要求日時   |
+| cache_schema_updated_at | timestamptz |   NO | now()      | -      | キャッシュ構造の更新日時           |
 
 テーブル制約:
 
@@ -188,6 +188,25 @@ DB以外で保証するルール:
 
 - ショップ側は `cache_schema_updated_at` がローカル保存値と異なる場合、IndexedDB のカタログキャッシュを削除して全件再取得する。
 - ショップ側は Supabase から取得した `catalog_meta` のコピーを IndexedDB に保持し、差分取得時はローカル保存済みの `data_updated_at` より新しいレコードを取得する。
+
+## admin_allowed_emails
+
+管理画面へのログインを許可するメールアドレス。認証自体は Supabase Auth + Google OAuth を使用し、このテーブルは管理画面への認可に使用する。
+
+| カラム名   | 型          | NULL | デフォルト | 制約             | 説明                   |
+| ---------- | ----------- | ---: | ---------- | ---------------- | ---------------------- |
+| id         | bigint      |   NO | 自動採番   | 主キー           | 許可メールID           |
+| email      | text        |   NO | -          | 一意, 空文字不可 | 許可するメールアドレス |
+| created_at | timestamptz |   NO | now()      | -                | 作成日時               |
+| updated_at | timestamptz |   NO | now()      | -                | 更新日時               |
+
+テーブル制約:
+
+- メールアドレスは小文字で保存する。
+
+DB以外で保証するルール:
+
+- 許可メールを削除した場合は、管理画面の削除処理で Supabase Admin API を使用し、同じメールアドレスの `auth.users` も削除する。
 
 ## news
 
