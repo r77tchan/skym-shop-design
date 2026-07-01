@@ -33,6 +33,13 @@
 テーブル制約:
 
 - セール価格を設定する場合は、通常価格より低くする。
+- `product_category_id` と `product_brand_id` の両方を設定する場合は、同じ組み合わせが `product_category_brands(product_category_id, product_brand_id)` に存在することを複合外部キーで保証する。
+
+DB以外で保証するルール:
+
+- 商品追加・商品編集画面では、カテゴリ未選択時はブランドを選択不可にし、カテゴリ選択後は `product_category_brands` に紐づくブランドだけを `product_brands.name` 昇順で表示する。
+- 商品追加・商品編集画面でカテゴリを変更した場合、現在のブランドが変更後カテゴリに紐づいていなければ `product_brand_id` を未選択に戻す。
+- 商品保存時は、DB制約エラーに任せず、リクエストされた `product_category_id` と `product_brand_id` の組み合わせをサーバー側でも検証する。
 
 ## shipping_methods
 
@@ -263,9 +270,12 @@ DB以外で保証するルール:
 | id         | bigint      |   NO | 自動採番   | 主キー           | ブランドID |
 | name       | text        |   NO | -          | 一意, 空文字不可 | ブランド名 |
 | slug       | text        |   NO | -          | 一意, 空文字不可 | URL用      |
-| sort_order | integer     |   NO | -          | 一意, 0以上      | 表示順     |
 | created_at | timestamptz |   NO | now()      | -                | 作成日時   |
 | updated_at | timestamptz |   NO | now()      | -                | 更新日時   |
+
+DB以外で保証するルール:
+
+- ブランドの表示順は `name` 昇順にする。ブランド個別の任意並び替え用 `sort_order` は持たない。
 
 ## product_categories
 
@@ -279,6 +289,30 @@ DB以外で保証するルール:
 | sort_order | integer     |   NO | -          | 一意, 0以上      | 表示順     |
 | created_at | timestamptz |   NO | now()      | -                | 作成日時   |
 | updated_at | timestamptz |   NO | now()      | -                | 更新日時   |
+
+## product_category_brands
+
+カテゴリとブランドの紐付け。商品追加・商品編集画面のブランド候補、および商品のカテゴリとブランドの整合性検証に使用する。
+
+| カラム名            | 型          | NULL | デフォルト | 制約                              | 説明       |
+| ------------------- | ----------- | ---: | ---------- | --------------------------------- | ---------- |
+| id                  | bigint      |   NO | 自動採番   | 主キー                            | 紐付けID   |
+| product_category_id | bigint      |   NO | -          | 外部キー（product_categories.id） | カテゴリID |
+| product_brand_id    | bigint      |   NO | -          | 外部キー（product_brands.id）     | ブランドID |
+| created_at          | timestamptz |   NO | now()      | -                                 | 作成日時   |
+| updated_at          | timestamptz |   NO | now()      | -                                 | 更新日時   |
+
+テーブル制約:
+
+- `product_category_id` は `product_categories.id` を参照し、対象カテゴリ削除時は削除する（ON DELETE CASCADE）。
+- `product_brand_id` は `product_brands.id` を参照し、対象ブランド削除時は削除する（ON DELETE CASCADE）。
+- 同じカテゴリとブランドの組み合わせは重複不可。
+- `products(product_category_id, product_brand_id)` の複合外部キー参照先として使うため、`(product_category_id, product_brand_id)` に一意制約を設定する。
+
+DB以外で保証するルール:
+
+- カテゴリマスタ編集画面では、紐付け可能なブランドを `product_brands.name` 昇順で表示する。
+- カテゴリとブランドの紐付けを削除する場合、その組み合わせを使用中の商品がないことを事前に確認し、使用中であれば削除させない。
 
 ## category_spec_definitions
 
@@ -376,7 +410,7 @@ DB以外で保証するルール:
 
 更新ルール:
 
-- 商品・画像・ブランド・カテゴリ・カテゴリスペック定義・選択肢・商品スペック値の追加、更新時は `data_updated_at` を `now()` に更新する。
+- 商品・画像・ブランド・カテゴリ・カテゴリとブランドの紐付け・カテゴリスペック定義・選択肢・商品スペック値の追加、更新時は `data_updated_at` を `now()` に更新する。
 - 公開商品や公開カタログに関わるマスタの削除、または商品を公開から非公開に変更した場合は `data_reload_required_at` と `data_updated_at` を同じ `now()` に更新する。
 - ショップ側 IndexedDB のストア構造、インデックス、保存形式が変わり、既存キャッシュを安全に再利用できない場合は `cache_schema_updated_at`、`data_reload_required_at`、`data_updated_at` を同じ `now()` に更新する。
 - Postgres 側の構造変更であっても、ショップ側 IndexedDB のキャッシュ構造や保存形式に影響しない場合は `cache_schema_updated_at` を変更しない。
@@ -413,7 +447,7 @@ DB以外で保証するルール:
 - 管理画面側は `cache_schema_updated_at` がローカル保存値と異なる場合、IndexedDB の管理データキャッシュを削除して再取得する。
 - 管理画面側は Supabase から取得した `admin_data_meta` のコピーを IndexedDB に保持し、差分取得時はローカル保存済みの `data_updated_at` より新しいレコードを取得する。
 - `stock_movements` や `admin_logs` などの追記専用テーブルは、差分取得時に `created_at` を基準にする。
-- 管理画面側の同期対象は、商品系マスタ、配送方法、news、注文、注文明細、在庫変動、管理ログ、管理者許可メールなど、管理画面で一覧表示・通知に使用するデータとする。
+- 管理画面側の同期対象は、商品系マスタ（カテゴリとブランドの紐付けを含む）、配送方法、news、注文、注文明細、在庫変動、管理ログ、管理者許可メールなど、管理画面で一覧表示・通知に使用するデータとする。
 - 注文など個人情報を含むデータは、一覧表示に必要な範囲だけを IndexedDB に保存し、詳細表示では必要に応じてサーバーから再取得する。
 - `stripe_webhook_events` は運用内部の冪等性管理用テーブルのため、管理画面で表示しない限り同期対象に含めない。
 

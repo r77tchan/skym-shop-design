@@ -39,6 +39,8 @@
 ```
 
 `<spec_slug>` は、対象カテゴリで商品一覧フィルタ対象になっているカテゴリスペックのみ有効にする。
+`brand` は `product_brands.slug` を使用する。`/items/<category_slug>` では、対象カテゴリに `product_category_brands` で紐づくブランドのみ有効にする。
+存在しないブランド、または対象カテゴリに紐づかないブランドが指定された場合は、ブランド条件を適用しない。
 
 ## index と canonical
 
