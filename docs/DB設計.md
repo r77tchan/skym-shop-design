@@ -162,6 +162,33 @@ DB以外で保証するルール:
 - 値の種類が `option` のスペックは、選択肢IDを使用する。
 - `category_spec_option_id` を使う場合、その選択肢は同じ `category_spec_definition_id` に紐づくものだけ使用する。
 
+## catalog_meta
+
+ショップ側 IndexedDB の同期判定に使用するカタログ用メタ情報。常に1行だけ保持する。
+
+| カラム名                | 型          | NULL | デフォルト | 制約   | 説明                                   |
+| ----------------------- | ----------- | ---: | ---------- | ------ | -------------------------------------- |
+| id                      | smallint    |   NO | 1          | 主キー | 固定値。常に `1`                       |
+| data_updated_at         | timestamptz |   NO | now()      | -      | 公開カタログの追加・更新の最終日時     |
+| data_reload_required_at | timestamptz |   NO | now()      | -      | 公開カタログの全件再取得要求日時       |
+| cache_schema_updated_at | timestamptz |   NO | now()      | -      | キャッシュ構造の更新日時               |
+
+テーブル制約:
+
+- `id = 1` のみ許可する。
+
+更新ルール:
+
+- 商品・画像・ブランド・カテゴリ・カテゴリスペック定義・選択肢・商品スペック値の追加、更新時は `data_updated_at` を `now()` に更新する。
+- 公開商品や公開カタログに関わるマスタの削除、または商品を公開から非公開に変更した場合は `data_reload_required_at` と `data_updated_at` を同じ `now()` に更新する。
+- ショップ側 IndexedDB のストア構造、インデックス、保存形式が変わり、既存キャッシュを安全に再利用できない場合は `cache_schema_updated_at`、`data_reload_required_at`、`data_updated_at` を同じ `now()` に更新する。
+- Postgres 側の構造変更であっても、ショップ側 IndexedDB のキャッシュ構造や保存形式に影響しない場合は `cache_schema_updated_at` を変更しない。
+
+DB以外で保証するルール:
+
+- ショップ側は `cache_schema_updated_at` がローカル保存値と異なる場合、IndexedDB のカタログキャッシュを削除して全件再取得する。
+- ショップ側は Supabase から取得した `catalog_meta` のコピーを IndexedDB に保持し、差分取得時はローカル保存済みの `data_updated_at` より新しいレコードを取得する。
+
 ## news
 
 お知らせ。
