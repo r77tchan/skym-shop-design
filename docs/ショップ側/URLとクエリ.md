@@ -10,6 +10,7 @@
 /contact
 /law
 /privacy
+/checkout
 /checkout/success?session_id={CHECKOUT_SESSION_ID}
 /checkout/cancel
 ```
@@ -44,4 +45,5 @@
 - index・CDN キャッシュ対象はページングのみ：`/items`、`/items?page=N`、`/items/<category_slug>`、`/items/<category_slug>?page=N`。
 - `page=1` は `page` なしの URL に canonical を向ける。
 - フィルタ（`keyword` / `brand` / `sale` / `<spec_slug>`）付き URL は noindex とし、canonical をフィルタなしの該当ページへ向ける。
+- `/checkout`、`/checkout/success`、`/checkout/cancel` は noindex とする。
 - 一覧の挙動詳細は `docs/ショップ側/データ管理.md`「一覧のページングと無限スクロール」を参照。

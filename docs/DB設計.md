@@ -34,6 +34,203 @@
 
 - セール価格を設定する場合は、通常価格より低くする。
 
+## shipping_methods
+
+配送方法マスター。管理画面から配送名、説明テキスト、送料、表示状態、表示順を管理し、Checkout 前の配送方法選択で使用する。
+
+| カラム名    | 型          | NULL | デフォルト | 制約             | 説明               |
+| ----------- | ----------- | ---: | ---------- | ---------------- | ------------------ |
+| id          | bigint      |   NO | 自動採番   | 主キー           | 配送方法ID         |
+| name        | text        |   NO | -          | 一意, 空文字不可 | 配送方法名         |
+| description | text        |  YES | -          | 空文字不可       | 説明テキスト       |
+| price       | integer     |   NO | -          | 0以上            | 送料               |
+| is_active   | boolean     |   NO | true       | -                | 購入者に表示するか |
+| sort_order  | integer     |   NO | -          | 一意, 0以上      | 表示順             |
+| created_at  | timestamptz |   NO | now()      | -                | 作成日時           |
+| updated_at  | timestamptz |   NO | now()      | -                | 更新日時           |
+
+DB以外で保証するルール:
+
+- 購入者が選択できるのは `is_active = true` の配送方法だけにする。
+- 過去注文から参照される可能性があるため、配送方法は原則として物理削除せず、非表示にしたい場合は `is_active = false` にする。
+- 配送方法の名前、説明、送料を変更しても過去注文が変わらないように、注文作成時に `orders` 側へ配送方法情報をスナップショット保存する。
+- `shipping_methods` は公開カタログ用 IndexedDB の同期対象には含めず、Checkout 画面と管理画面でサーバー側から取得する。
+
+## orders
+
+Stripe Checkout を使った注文。Stripe に遷移する前に自前 Checkout 画面で配送先、備考、配送方法を入力し、Checkout Session 作成時に注文を作成する。支払い完了・期限切れなどは Stripe Webhook で更新する。
+
+| カラム名                    | 型          | NULL | デフォルト        | 制約                            | 説明                         |
+| --------------------------- | ----------- | ---: | ----------------- | ------------------------------- | ---------------------------- |
+| id                          | bigint      |   NO | 自動採番          | 主キー                          | 注文ID                       |
+| stripe_checkout_session_id  | text        |  YES | -                 | 一意, 空文字不可                | Stripe Checkout Session ID   |
+| stripe_payment_intent_id    | text        |  YES | -                 | 一意, 空文字不可                | Stripe PaymentIntent ID      |
+| status                      | text        |   NO | 'pending_payment' | 空文字不可                      | 注文状態                     |
+| is_handled                  | boolean     |   NO | false             | -                               | 注文対応済みかどうか         |
+| currency                    | text        |   NO | 'jpy'             | 空文字不可                      | 通貨                         |
+| subtotal_amount             | integer     |   NO | 0                 | 0以上                           | 商品小計                     |
+| shipping_amount             | integer     |   NO | 0                 | 0以上                           | 送料                         |
+| total_amount                | integer     |   NO | 0                 | 0以上                           | 合計金額                     |
+| customer_email              | text        |   NO | -                 | 空文字不可                      | 顧客メールアドレス           |
+| customer_name               | text        |   NO | -                 | 空文字不可                      | 顧客名                       |
+| customer_phone              | text        |   NO | -                 | 空文字不可                      | 顧客電話番号                 |
+| shipping_name               | text        |   NO | -                 | 空文字不可                      | 配送先宛名                   |
+| shipping_postal_code        | text        |   NO | -                 | 空文字不可                      | 配送先郵便番号               |
+| shipping_country            | text        |   NO | 'JP'              | 空文字不可                      | 配送先国                     |
+| shipping_state              | text        |   NO | -                 | 空文字不可                      | 配送先都道府県               |
+| shipping_city               | text        |   NO | -                 | 空文字不可                      | 配送先市区町村               |
+| shipping_line1              | text        |   NO | -                 | 空文字不可                      | 配送先住所1                  |
+| shipping_line2              | text        |  YES | -                 | 空文字不可                      | 配送先住所2                  |
+| shipping_method_id          | bigint      |   NO | -                 | 外部キー（shipping_methods.id） | 配送方法ID                   |
+| shipping_method_name        | text        |   NO | -                 | 空文字不可                      | 配送方法名スナップショット   |
+| shipping_method_description | text        |  YES | -                 | 空文字不可                      | 配送方法説明スナップショット |
+| shipping_note               | text        |  YES | -                 | 空文字不可                      | 配送備考（日時指定など）     |
+| checkout_expires_at         | timestamptz |  YES | -                 | -                               | Checkout Session の有効期限  |
+| paid_at                     | timestamptz |  YES | -                 | -                               | 支払い完了日時               |
+| expired_at                  | timestamptz |  YES | -                 | -                               | Checkout 期限切れ日時        |
+| canceled_at                 | timestamptz |  YES | -                 | -                               | キャンセル日時               |
+| refunded_at                 | timestamptz |  YES | -                 | -                               | 返金日時                     |
+| created_at                  | timestamptz |   NO | now()             | -                               | 作成日時                     |
+| updated_at                  | timestamptz |   NO | now()             | -                               | 更新日時                     |
+
+テーブル制約:
+
+- `shipping_method_id` は `shipping_methods.id` を参照する。
+- `status` は `pending_payment` / `paid` / `expired` / `canceled` / `refunded` のみ許可する。
+- `currency = 'jpy'` のみ許可する。
+- `shipping_country = 'JP'` のみ許可する。
+- `total_amount = subtotal_amount + shipping_amount` にする。
+- `status = 'paid'` の場合は `paid_at` を必須にする。
+- `status = 'expired'` の場合は `expired_at` を必須にする。
+- `status = 'canceled'` の場合は `canceled_at` を必須にする。
+- `status = 'refunded'` の場合は `paid_at` と `refunded_at` を必須にする。
+
+DB以外で保証するルール:
+
+- Stripe に遷移する前の自前 Checkout 画面で、顧客情報、配送先、配送方法、任意の配送備考を入力する。
+- 注文作成時は、有効な配送方法、商品価格、在庫数、合計金額をサーバー側で検証する。
+- Checkout 開始時に、`orders`、`order_items`、`products.stock_quantity` の減算、`stock_movements` の `checkout_reserve` 追加を同じDB処理として実行する。
+- 在庫確保時は対象商品の在庫行をロックするか、`stock_quantity >= 購入数` を条件にした原子的な更新を使い、同時 Checkout で在庫がマイナスにならないようにする。
+- 配送方法は注文作成時点の `shipping_methods` から選び、`shipping_method_name`、`shipping_method_description`、`shipping_amount` にスナップショット保存する。
+- Stripe Checkout Session 作成時は、`client_reference_id` と `metadata.order_id` に `orders.id` を設定し、顧客メールアドレス、配送先、選択済み送料を渡す。
+- Stripe Checkout 側では配送先入力・配送方法選択は行わず、決済だけを行う。
+- Stripe Checkout Session 作成に失敗した場合は、確保済み在庫を戻し、注文を `canceled` にする。
+- 支払い完了時は `checkout.session.completed` Webhook で `status = 'paid'` に更新し、在庫を追加で減らさない。
+- Checkout 期限切れや未決済キャンセル時は `checkout.session.expired` などの Webhook で確保済み在庫を戻し、`status = 'expired'` または `status = 'canceled'` に更新する。
+- セール価格の商品は、`order_items.unit_price` に購入時点の実売価格を保存する。
+- `/checkout/success?session_id=...` では、サーバー側で Stripe Checkout Session と `orders` を照合して表示する。
+- `orders` / `order_items` は公開カタログではないため、ショップ側ブラウザから Supabase へ直接取得させない。
+- 管理画面では `status = 'paid'` かつ `is_handled = false` を未対応、`status = 'paid'` かつ `is_handled = true` を対応済みとして扱う。
+- `pending_payment` / `expired` / `canceled` は注文対応の対象外として扱う。
+- 注文対応状態を変更した履歴は `admin_logs` に残す。
+- 注文は原則として物理削除しない。
+- 未決済のまま期限切れ・キャンセルになった注文にも個人情報が残るため、保持期間とマスキング方針は運用ルールとして別途決める。
+
+## order_items
+
+注文明細。購入時点の商品情報と価格をスナップショットとして保存する。
+
+| カラム名          | 型          | NULL | デフォルト | 制約                    | 説明                     |
+| ----------------- | ----------- | ---: | ---------- | ----------------------- | ------------------------ |
+| id                | bigint      |   NO | 自動採番   | 主キー                  | 注文明細ID               |
+| order_id          | bigint      |   NO | -          | 外部キー（orders.id）   | 注文ID                   |
+| product_id        | bigint      |  YES | -          | 外部キー（products.id） | 商品ID                   |
+| product_name      | text        |   NO | -          | 空文字不可              | 購入時点の商品名         |
+| product_sku       | text        |  YES | -          | 空文字不可              | 購入時点の自社管理コード |
+| product_image_url | text        |  YES | -          | 空文字不可              | 購入時点の商品画像URL    |
+| unit_price        | integer     |   NO | -          | 1以上                   | 購入時点の単価           |
+| quantity          | integer     |   NO | -          | 1以上                   | 数量                     |
+| subtotal_amount   | integer     |   NO | -          | 1以上                   | 明細小計                 |
+| created_at        | timestamptz |   NO | now()      | -                       | 作成日時                 |
+| updated_at        | timestamptz |   NO | now()      | -                       | 更新日時                 |
+
+テーブル制約:
+
+- `product_id` は `products.id` を参照し、対象商品削除時は `NULL` にする。
+- `subtotal_amount = unit_price * quantity` にする。
+- 同じ注文内に同じ商品IDを重複登録しない。
+
+DB以外で保証するルール:
+
+- Checkout 開始時点の商品名、SKU、画像URL、単価を保存し、その後の商品変更で過去注文の明細が変わらないようにする。
+- 注文作成後は原則として更新・削除しない。
+
+## stripe_webhook_events
+
+Stripe Webhook の受信・処理状態。Webhook の重複受信による注文や在庫の二重更新を防ぐために使用する。
+
+| カラム名          | 型          | NULL | デフォルト   | 制約             | 説明                         |
+| ----------------- | ----------- | ---: | ------------ | ---------------- | ---------------------------- |
+| id                | bigint      |   NO | 自動採番     | 主キー           | WebhookイベントID            |
+| stripe_event_id   | text        |   NO | -            | 一意, 空文字不可 | Stripe Event ID              |
+| event_type        | text        |   NO | -            | 空文字不可       | Stripe イベント種別          |
+| object_type       | text        |  YES | -            | 空文字不可       | 対象オブジェクト種別         |
+| object_id         | text        |  YES | -            | 空文字不可       | 対象オブジェクトID           |
+| processing_status | text        |   NO | 'processing' | 空文字不可       | 処理状態                     |
+| livemode          | boolean     |   NO | -            | -                | Stripe live mode かどうか    |
+| retry_count       | integer     |   NO | 0            | 0以上            | 再処理回数                   |
+| error_message     | text        |  YES | -            | 空文字不可       | 処理失敗時のエラーメッセージ |
+| metadata          | jsonb       |   NO | '{}'::jsonb  | -                | 必要最小限の補足情報         |
+| received_at       | timestamptz |   NO | now()        | -                | 受信日時                     |
+| processed_at      | timestamptz |  YES | -            | -                | 処理完了日時                 |
+| updated_at        | timestamptz |   NO | now()        | -                | 更新日時                     |
+
+テーブル制約:
+
+- `processing_status` は `processing` / `processed` / `failed` / `ignored` のみ許可する。
+- `metadata` は JSON オブジェクトのみ許可する。
+
+DB以外で保証するルール:
+
+- Webhook 処理では Stripe 署名を検証してから登録・処理する。
+- Webhook 受信時は、業務処理の前に `stripe_event_id` を登録する。
+- 同じ `stripe_event_id` がすでに `processed` または `ignored` の場合、注文・在庫更新を再実行しない。
+- 同じ `stripe_event_id` が `failed` の場合は、必要に応じて `retry_count` を増やして再処理する。
+- `checkout.session.completed` は注文の支払い完了処理に使用する。
+- `checkout.session.expired` は未決済注文の在庫確保解除に使用する。
+- サーバー側の Webhook 処理だけが追加・更新し、ブラウザから直接参照・変更させない。
+- `metadata` には個人情報や Stripe Event 全文を丸ごと保存せず、処理に必要な最小限の情報だけを保存する。
+
+## stock_movements
+
+商品在庫の増減履歴。`products.stock_quantity` は現在の在庫数を保持し、このテーブルは在庫がなぜ増減したかを追跡する在庫台帳として使用する。
+
+| カラム名       | 型          | NULL | デフォルト  | 制約                      | 説明                                        |
+| -------------- | ----------- | ---: | ----------- | ------------------------- | ------------------------------------------- |
+| id             | bigint      |   NO | 自動採番    | 主キー                    | 在庫変動ID                                  |
+| product_id     | bigint      |  YES | -           | 外部キー（products.id）   | 商品ID                                      |
+| order_id       | bigint      |  YES | -           | 外部キー（orders.id）     | 注文起点の在庫変動の場合の注文ID            |
+| product_name   | text        |   NO | -           | 空文字不可                | 変動時点の商品名スナップショット            |
+| product_sku    | text        |  YES | -           | 空文字不可                | 変動時点の自社管理コードスナップショット    |
+| quantity_delta | integer     |   NO | -           | 0以外                     | 在庫増減数。減少は負数、増加は正数          |
+| stock_after    | integer     |   NO | -           | 0以上                     | 変動後の在庫数                              |
+| reason         | text        |   NO | -           | 空文字不可                | 変動理由                                    |
+| actor_user_id  | uuid        |  YES | -           | 外部キー（auth.users.id） | 管理者操作の場合の Supabase Auth ユーザーID |
+| actor_email    | text        |  YES | -           | 空文字不可                | 管理者操作の場合のメールアドレス            |
+| note           | text        |  YES | -           | 空文字不可                | 管理者操作時の任意メモ                      |
+| metadata       | jsonb       |   NO | '{}'::jsonb | -                         | 必要最小限の補足情報                        |
+| created_at     | timestamptz |   NO | now()       | -                         | 作成日時                                    |
+
+テーブル制約:
+
+- `product_id` は `products.id` を参照し、対象商品削除時は `NULL` にする。
+- `order_id` は `orders.id` を参照し、対象注文削除時は `NULL` にする。
+- `reason` は `checkout_reserve` / `checkout_release` / `restock` / `manual_adjustment` / `order_cancel` のみ許可する。
+- `actor_user_id` は `auth.users.id` を参照し、対象ユーザー削除時は `NULL` にする。
+
+DB以外で保証するルール:
+
+- 在庫数を変更する処理では、`products.stock_quantity` の更新と `stock_movements` の追加を同じ処理として実行する。
+- Checkout 開始時は `products.stock_quantity` を減らし、`checkout_reserve` として記録する。
+- Checkout 期限切れや未決済キャンセル時は `products.stock_quantity` を戻し、`checkout_release` として記録する。
+- 支払い完了時は確保済み在庫を正式な注文にするだけで、在庫を追加で減らさない。
+- 支払い完了後の注文キャンセルで在庫を戻す場合は、`order_cancel` として記録する。
+- 管理者操作による `restock` / `manual_adjustment` では、`actor_user_id` と `actor_email` を保存する。
+- 注文起点の `checkout_reserve` / `checkout_release` / `order_cancel` では、`order_id` を保存する。
+- 商品や管理者が削除されても履歴を追跡できるように、`product_name`、`product_sku`、`actor_email` には変動時点の値を保存する。
+- `metadata` には個人情報や注文内容の全文データを丸ごと保存せず、必要最小限の補足だけを保存する。
+- `admin_logs` には管理者操作としての概要を残し、在庫数の具体的な増減は `stock_movements` に残す。
+
 ## product_images
 
 商品ごとの画像。
@@ -189,6 +386,37 @@ DB以外で保証するルール:
 - ショップ側は `cache_schema_updated_at` がローカル保存値と異なる場合、IndexedDB のカタログキャッシュを削除して全件再取得する。
 - ショップ側は Supabase から取得した `catalog_meta` のコピーを IndexedDB に保持し、差分取得時はローカル保存済みの `data_updated_at` より新しいレコードを取得する。
 
+## admin_data_meta
+
+管理画面側 IndexedDB の同期判定に使用する管理データ用メタ情報。常に1行だけ保持する。公開カタログ用の `catalog_meta` とは分けて管理する。
+
+| カラム名                | 型          | NULL | デフォルト | 制約   | 説明                                 |
+| ----------------------- | ----------- | ---: | ---------- | ------ | ------------------------------------ |
+| id                      | smallint    |   NO | 1          | 主キー | 固定値。常に `1`                     |
+| data_updated_at         | timestamptz |   NO | now()      | -      | 管理画面用データの追加・更新最終日時 |
+| data_reload_required_at | timestamptz |   NO | now()      | -      | 管理画面用データの全件再取得要求日時 |
+| cache_schema_updated_at | timestamptz |   NO | now()      | -      | 管理画面側キャッシュ構造の更新日時   |
+
+テーブル制約:
+
+- `id = 1` のみ許可する。
+
+更新ルール:
+
+- 管理画面側 IndexedDB の同期対象データを追加・更新した場合は `data_updated_at` を `now()` に更新する。
+- 管理画面側 IndexedDB の同期対象データを物理削除した場合は `data_reload_required_at` と `data_updated_at` を同じ `now()` に更新する。
+- 管理画面側 IndexedDB のストア構造、インデックス、保存形式が変わり、既存キャッシュを安全に再利用できない場合は `cache_schema_updated_at`、`data_reload_required_at`、`data_updated_at` を同じ `now()` に更新する。
+- Postgres 側の構造変更であっても、管理画面側 IndexedDB のキャッシュ構造や保存形式に影響しない場合は `cache_schema_updated_at` を変更しない。
+
+DB以外で保証するルール:
+
+- 管理画面側は `cache_schema_updated_at` がローカル保存値と異なる場合、IndexedDB の管理データキャッシュを削除して再取得する。
+- 管理画面側は Supabase から取得した `admin_data_meta` のコピーを IndexedDB に保持し、差分取得時はローカル保存済みの `data_updated_at` より新しいレコードを取得する。
+- `stock_movements` や `admin_logs` などの追記専用テーブルは、差分取得時に `created_at` を基準にする。
+- 管理画面側の同期対象は、商品系マスタ、配送方法、news、注文、注文明細、在庫変動、管理ログ、管理者許可メールなど、管理画面で一覧表示・通知に使用するデータとする。
+- 注文など個人情報を含むデータは、一覧表示に必要な範囲だけを IndexedDB に保存し、詳細表示では必要に応じてサーバーから再取得する。
+- `stripe_webhook_events` は運用内部の冪等性管理用テーブルのため、管理画面で表示しない限り同期対象に含めない。
+
 ## admin_allowed_emails
 
 管理画面へのログインを許可するメールアドレス。認証自体は Supabase Auth + Google OAuth を使用し、このテーブルは管理画面への認可に使用する。
@@ -207,6 +435,33 @@ DB以外で保証するルール:
 DB以外で保証するルール:
 
 - 許可メールを削除した場合は、管理画面の削除処理で Supabase Admin API を使用し、同じメールアドレスの `auth.users` も削除する。
+
+## admin_logs
+
+管理者による操作ログ。監査ログを主目的とし、管理画面内の更新通知はこのテーブルの追加を Supabase Realtime で購読して表示する。
+
+| カラム名      | 型          | NULL | デフォルト  | 制約                      | 説明                              |
+| ------------- | ----------- | ---: | ----------- | ------------------------- | --------------------------------- |
+| id            | bigint      |   NO | 自動採番    | 主キー                    | 管理ログID                        |
+| actor_user_id | uuid        |  YES | -           | 外部キー（auth.users.id） | 操作した Supabase Auth ユーザーID |
+| actor_email   | text        |   NO | -           | 空文字不可                | 操作時点の管理者メールアドレス    |
+| action        | text        |   NO | -           | 空文字不可                | 操作種別                          |
+| target_type   | text        |   NO | -           | 空文字不可                | 操作対象の種類                    |
+| target_id     | text        |  YES | -           | 空文字不可                | 操作対象ID                        |
+| target_label  | text        |  YES | -           | 空文字不可                | 操作対象の表示名スナップショット  |
+| summary       | text        |   NO | -           | 空文字不可                | ログ一覧・通知に表示する短い説明  |
+| metadata      | jsonb       |   NO | '{}'::jsonb | -                         | 変更フィールドなどの補足情報      |
+| created_at    | timestamptz |   NO | now()       | -                         | 作成日時                          |
+
+テーブル制約:
+
+- `actor_user_id` は `auth.users.id` を参照し、対象ユーザー削除時は `NULL` にする。
+
+DB以外で保証するルール:
+
+- 操作した管理者が削除されても追跡できるように、`actor_email` には操作時点のメールアドレスを保存する。
+- `metadata` には個人情報や変更前後の全文データを丸ごと保存せず、必要最小限の補足だけを保存する。
+- `action` と `target_type` はアプリ側で定数管理し、表記ゆれを防ぐ。
 
 ## news
 
