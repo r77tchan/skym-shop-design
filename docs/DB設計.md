@@ -162,6 +162,45 @@ DB以外で保証するルール:
 - Checkout 開始時点の商品名、SKU、画像URL、単価を保存し、その後の商品変更で過去注文の明細が変わらないようにする。
 - 注文作成後は原則として更新・削除しない。
 
+## inquiries
+
+ショップのお問い合わせフォームから受け付けた問い合わせ。管理画面で対応状況を管理する。
+
+| カラム名        | 型          | NULL | デフォルト  | 制約                  | 説明                 |
+| --------------- | ----------- | ---: | ----------- | --------------------- | -------------------- |
+| id              | bigint      |   NO | 自動採番    | 主キー                | 問い合わせID         |
+| order_id        | bigint      |  YES | -           | 外部キー（orders.id） | 紐付け済み注文ID     |
+| status          | text        |   NO | 'unhandled' | 空文字不可            | 対応状態             |
+| category        | text        |   NO | -           | 空文字不可            | 問い合わせ種別       |
+| customer_name   | text        |   NO | -           | 空文字不可            | 問い合わせ者名       |
+| customer_email  | text        |   NO | -           | 空文字不可            | 返信先メールアドレス |
+| order_reference | text        |  YES | -           | 空文字不可            | 入力された注文番号   |
+| subject         | text        |   NO | -           | 空文字不可            | 件名                 |
+| body            | text        |   NO | -           | 空文字不可            | 問い合わせ本文       |
+| handled_at      | timestamptz |  YES | -           | -                     | 対応済みにした日時   |
+| created_at      | timestamptz |   NO | now()       | -                     | 受付日時             |
+| updated_at      | timestamptz |   NO | now()       | -                     | 更新日時             |
+
+テーブル制約:
+
+- `order_id` は `orders.id` を参照し、対象注文削除時は `NULL` にする。
+- `status` は `unhandled` / `in_progress` / `handled` のみ許可する。
+- `category` は `product` / `order_shipping` / `payment` / `return_exchange` / `event_other` のみ許可する。
+- `status = 'handled'` の場合は `handled_at` を必須にする。
+- `status <> 'handled'` の場合は `handled_at` を `NULL` にする。
+- `customer_email` は小文字で保存する。
+
+DB以外で保証するルール:
+
+- `/contact` は API route へ POST し、ブラウザから Supabase に直接 insert させない。
+- 送信時はサーバー側で必須項目、メール形式、最大文字数、問い合わせ種別を検証する。
+- `order_reference` は入力値をそのまま保存し、注文と照合できた場合だけ `order_id` を設定する。
+- 問い合わせ追加・ステータス更新時は `admin_data_meta.data_updated_at` を更新する。
+- ステータス更新は `admin_logs` に残す。
+- 管理画面一覧の IndexedDB には一覧表示に必要な範囲だけ保存し、本文など詳細情報は詳細表示時に取得する。
+- 問い合わせは個人情報を含むため、原則として物理削除せず、保持期間とマスキング方針を別途運用ルールで決める。
+- `inquiries` は公開カタログ用 IndexedDB の同期対象には含めない。
+
 ## stripe_webhook_events
 
 Stripe Webhook の受信・処理状態。Webhook の重複受信による注文や在庫の二重更新を防ぐために使用する。
@@ -447,7 +486,7 @@ DB以外で保証するルール:
 - 管理画面側は `cache_schema_updated_at` がローカル保存値と異なる場合、IndexedDB の管理データキャッシュを削除して再取得する。
 - 管理画面側は Supabase から取得した `admin_data_meta` のコピーを IndexedDB に保持し、差分取得時はローカル保存済みの `data_updated_at` より新しいレコードを取得する。
 - `stock_movements` や `admin_logs` などの追記専用テーブルは、差分取得時に `created_at` を基準にする。
-- 管理画面側の同期対象は、商品系マスタ（カテゴリとブランドの紐付けを含む）、配送方法、news、注文、注文明細、在庫変動、管理ログ、管理者許可メールなど、管理画面で一覧表示・通知に使用するデータとする。
+- 管理画面側の同期対象は、商品系マスタ（カテゴリとブランドの紐付けを含む）、配送方法、news、注文、注文明細、問い合わせ、在庫変動、管理ログ、管理者許可メールなど、管理画面で一覧表示・通知に使用するデータとする。
 - 注文など個人情報を含むデータは、一覧表示に必要な範囲だけを IndexedDB に保存し、詳細表示では必要に応じてサーバーから再取得する。
 - `stripe_webhook_events` は運用内部の冪等性管理用テーブルのため、管理画面で表示しない限り同期対象に含めない。
 
